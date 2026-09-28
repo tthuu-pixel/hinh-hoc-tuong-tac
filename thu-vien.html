@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thư viện mô hình</title>
+<link rel="stylesheet" href="chung/giao-dien.css">
+<script src="chung/cau-hinh.js"></script>
+<script src="chung/dang-nhap.js" data-goc="./"></script>
+<style>
+  .noi-dung { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+  .dau { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+  .dau h1 { margin: 0; font-size: 30px; }
+  .dau p { margin: 4px 0 0; color: var(--chu-phu); }
+  .tim { position: relative; width: min(320px, 100%); }
+  .tim svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--chu-phu); }
+  .tim .o-nhap { padding-left: 42px; }
+
+  .loc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .loc button {
+    min-height: 40px; padding: 6px 16px; border-radius: 99px; border: 1px solid var(--vien); background: #fff;
+    font-weight: 700; cursor: pointer; color: var(--chu-phu);
+  }
+  .loc button.bat { background: var(--chu); color: #fff; border-color: var(--chu); }
+  .loc .ngan { width: 1px; background: var(--vien); margin: 4px 6px; }
+
+  .nhom-lop { margin-bottom: 34px; }
+  .nhom-lop h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 20px; }
+  .nhom-lop h2 .the-lop { color: #fff; padding: 3px 12px; border-radius: 99px; font-size: 14px; }
+  .nhom-lop h2 small { font-weight: 500; color: var(--chu-phu); font-size: 15px; }
+  .luoi { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+
+  .o-mh {
+    --mau: var(--chinh);
+    position: relative; display: flex; flex-direction: column; overflow: hidden; color: var(--chu);
+    background: #fff; border: 1px solid var(--vien); border-radius: var(--bo-goc); box-shadow: var(--bong);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  a.o-mh:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--mau) 45%, #fff); box-shadow: 0 10px 28px rgba(22,33,58,.12); }
+  .o-mh .anh { height: 128px; display: grid; place-items: center; color: var(--mau);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--mau) 9%, #fff), color-mix(in srgb, var(--mau) 16%, #fff)); }
+  .o-mh .anh svg { width: 120px; height: 90px; }
+  .o-mh .chu { padding: 12px 14px 14px; }
+  .o-mh h3 { margin: 0 0 3px; font-size: 17px; }
+  .o-mh p { margin: 0; font-size: 14px; color: var(--chu-phu); line-height: 1.4; }
+  .o-mh .loai { position: absolute; top: 10px; left: 10px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    background: rgba(255,255,255,.9); color: var(--mau); padding: 2px 8px; border-radius: 99px; }
+  .o-mh.sap-co { opacity: .62; }
+  .o-mh.sap-co .anh { filter: grayscale(.5); }
+  .o-mh .sap { position: absolute; top: 10px; right: 10px; font-size: 11px; font-weight: 800; background: #E9EEF7; color: var(--chu-phu); padding: 2px 8px; border-radius: 99px; }
+  .trong { text-align: center; color: var(--chu-phu); padding: 40px 0; }
+  .chan { text-align: center; color: var(--chu-phu); font-size: 14px; line-height: 1.6; padding: 10px 20px 70px; }
+</style>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<main class="noi-dung">
+  <div class="dau">
+    <div>
+      <h1>Thư viện mô hình</h1>
+      <p id="loi-chao"></p>
+    </div>
+    <label class="tim">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>
+      <input class="o-nhap" id="tim" placeholder="Tìm hình… (vd: lập phương)" autocomplete="off">
+    </label>
+  </div>
+  <div class="loc" id="loc-nhom">
+    <button data-nhom="" class="bat">Tất cả</button>
+    <button data-nhom="khong-gian">Hình không gian</button>
+    <button data-nhom="phang">Hình phẳng</button>
+    <span class="ngan"></span>
+    <button data-lop="">Mọi lớp</button>
+    <button data-lop="6">Lớp 6</button>
+    <button data-lop="7">Lớp 7</button>
+    <button data-lop="8">Lớp 8</button>
+    <button data-lop="9">Lớp 9</button>
+  </div>
+  <div id="ds"></div>
+</main>
+<footer class="chan" id="chan"></footer>
+
+<script src="chung/danh-muc.js"></script>
+<script>
+(function () {
+  var CH = window.CAU_HINH, p = DangNhap.phien();
+  document.title = 'Thư viện · ' + (CH.TEN_NGAN || CH.TEN_SAN_PHAM);
+  GiaoDien.thanhTren();
+  DangNhap.kiemTraMayChu();
+  document.getElementById('loi-chao').textContent = 'Xin chào ' + (p.hoTen || '') + '! Chọn một hình để bắt đầu khám phá.';
+  var nhom = {}; (CH.TAC_GIA || []).forEach(function (t) { (nhom[t.vaiTro] = nhom[t.vaiTro] || []).push(t.ten); });
+  var tg = Object.keys(nhom).map(function (k) { return k + ': ' + nhom[k].join(', '); }).join(' · ');
+  document.getElementById('chan').innerHTML = [CH.TEN_SAN_PHAM, CH.DON_VI, tg].filter(Boolean).map(GiaoDien.thoat).join('<br>');
+
+  var loc = { nhom: '', lop: '', tim: '' };
+  try { var cu = JSON.parse(localStorage.getItem('mh3d_loc')); if (cu) { loc.nhom = cu.nhom || ''; loc.lop = cu.lop || ''; } } catch (e) {}
+  var MAU_LOP = { 6: 'var(--lop6)', 7: 'var(--lop7)', 8: 'var(--lop8)', 9: 'var(--lop9)' };
+
+  function boDau(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase(); }
+
+  function ve() {
+    document.querySelectorAll('#loc-nhom [data-nhom]').forEach(function (b) { b.classList.toggle('bat', b.dataset.nhom === loc.nhom); });
+    document.querySelectorAll('#loc-nhom [data-lop]').forEach(function (b) { b.classList.toggle('bat', b.dataset.lop === loc.lop); });
+    var q = boDau(loc.tim.trim());
+    var ds = DANH_MUC.filter(function (m) {
+      return (!loc.nhom || m.nhom === loc.nhom) && (!loc.lop || String(m.lop) === loc.lop) &&
+             (!q || boDau(m.ten + ' ' + m.moTa).indexOf(q) >= 0);
+    });
+    var h = '';
+    [6, 7, 8, 9].forEach(function (lop) {
+      var dsLop = ds.filter(function (m) { return m.lop === lop; });
+      if (!dsLop.length) return;
+      dsLop.sort(function (a, b) { return (a.trangThai === 'san-sang' ? 0 : 1) - (b.trangThai === 'san-sang' ? 0 : 1); });
+      var sanSang = dsLop.filter(function (m) { return m.trangThai === 'san-sang'; }).length;
+      h += '<section class="nhom-lop"><h2><span class="the-lop" style="background:' + MAU_LOP[lop] + '">Lớp ' + lop + '</span>' +
+           '<small>' + sanSang + ' / ' + dsLop.length + ' mô hình sẵn sàng</small></h2><div class="luoi">';
+      dsLop.forEach(function (m) {
+        var san = m.trangThai === 'san-sang';
+        var the = san ? 'a href="' + m.duongDan + '"' : 'div';
+        h += '<' + the + ' class="o-mh' + (san ? '' : ' sap-co') + '" style="--mau:' + MAU_LOP[lop] + '">' +
+             '<div class="anh"><svg viewBox="0 0 120 90">' + (BIEU_TUONG[m.hinh] || '') + '</svg></div>' +
+             '<span class="loai">' + (m.nhom === 'khong-gian' ? 'Không gian' : 'Phẳng') + '</span>' +
+             (san ? '' : '<span class="sap">Sắp có</span>') +
+             '<div class="chu"><h3>' + GiaoDien.thoat(m.ten) + '</h3><p>' + GiaoDien.thoat(m.moTa) + '</p></div></' + (san ? 'a' : 'div') + '>';
+      });
+      h += '</div></section>';
+    });
+    document.getElementById('ds').innerHTML = h || '<p class="trong">Không tìm thấy hình phù hợp.</p>';
+    try { localStorage.setItem('mh3d_loc', JSON.stringify({ nhom: loc.nhom, lop: loc.lop })); } catch (e) {}
+  }
+  document.querySelectorAll('#loc-nhom button').forEach(function (b) {
+    b.onclick = function () {
+      if (b.dataset.nhom !== undefined) loc.nhom = b.dataset.nhom;
+      if (b.dataset.lop !== undefined) loc.lop = b.dataset.lop;
+      ve();
+    };
+  });
+  document.getElementById('tim').addEventListener('input', function (e) { loc.tim = e.target.value; ve(); });
+  ve();
+})();
+</script>
+</body>
+</html>

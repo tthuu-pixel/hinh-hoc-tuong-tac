@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quản trị tài khoản</title>
+<link rel="stylesheet" href="chung/giao-dien.css">
+<script src="chung/cau-hinh.js"></script>
+<script src="chung/dang-nhap.js" data-goc="./" data-vai-tro="admin"></script>
+<style>
+  .noi-dung { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  .mo-ta { margin: 0 0 22px; color: var(--chu-phu); }
+  .thong-ke { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+  .tk { padding: 14px 16px; }
+  .tk b { display: block; font-size: 28px; line-height: 1.2; }
+  .tk span { color: var(--chu-phu); font-size: 14px; font-weight: 600; }
+  .cong-cu { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .cong-cu .o-nhap { width: auto; min-height: 42px; }
+  .cong-cu .gian { flex: 1; }
+  .bang-bao { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--vien); font-size: 15px; vertical-align: middle; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--chu-phu); background: #F8FAFE; position: sticky; top: 0; }
+  tr:last-child td { border-bottom: 0; }
+  td.ten-dn { font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
+  .vt { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .vt.admin { background: #FDE8EF; color: #B0124A; }
+  .vt.giaovien { background: #E6EDFD; color: var(--chinh); }
+  .vt.hocsinh { background: #E3F5EE; color: #0E7C66; }
+  .tt-khoa { color: var(--loi); font-weight: 700; }
+  .tt-hd { color: var(--tot); font-weight: 600; }
+  .thao-tac { display: flex; gap: 6px; flex-wrap: nowrap; }
+  .trong { text-align: center; color: var(--chu-phu); padding: 30px; }
+
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(560px, calc(100% - 24px)); box-shadow: 0 20px 60px rgba(0,0,0,.25); color: var(--chu); }
+  dialog::backdrop { background: rgba(22,33,58,.45); }
+  .hop { padding: 24px; }
+  .hop h2 { margin: 0 0 16px; font-size: 21px; }
+  .hop .hang { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .hop .hang.mot { grid-template-columns: 1fr; }
+  .hop textarea { min-height: 170px; font-family: ui-monospace, Consolas, monospace; font-size: 14px; resize: vertical; }
+  .hop .chan-hop { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .goi-y { font-size: 13px; color: var(--chu-phu); margin: 6px 0 0; }
+  .tab-hop { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-hop button { flex: 1; min-height: 40px; border-radius: 10px; border: 1px solid var(--vien); background: #fff; font-weight: 700; cursor: pointer; }
+  .tab-hop button.bat { background: var(--chinh-nhat); border-color: var(--chinh); color: var(--chinh); }
+  .kq-mk { max-height: 300px; overflow: auto; border: 1px solid var(--vien); border-radius: 10px; }
+  .kq-mk table { min-width: 0; }
+  .kq-mk td { font-family: ui-monospace, Consolas, monospace; font-size: 14px; padding: 7px 12px; }
+  .canh-bao { background: #FFF6E8; color: #7A3E00; border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; }
+  .loi-hop { color: var(--loi); font-size: 14px; margin-top: 8px; white-space: pre-line; }
+  @media (max-width: 700px) {
+    .thong-ke { grid-template-columns: 1fr 1fr; }
+    .hop .hang { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<main class="noi-dung">
+  <h1>Quản trị tài khoản</h1>
+  <p class="mo-ta">Tạo tài khoản cho giáo viên, học sinh; khoá hoặc đặt lại mật khẩu khi cần.</p>
+
+  <div class="thong-ke">
+    <div class="the tk"><b id="tk-tong">–</b><span>Tổng tài khoản</span></div>
+    <div class="the tk"><b id="tk-hs">–</b><span>Học sinh</span></div>
+    <div class="the tk"><b id="tk-gv">–</b><span>Giáo viên</span></div>
+    <div class="the tk"><b id="tk-khoa">–</b><span>Đang bị khoá</span></div>
+  </div>
+
+  <div class="cong-cu">
+    <input class="o-nhap" id="tim" placeholder="Tìm tên, họ tên, lớp…" style="min-width:220px">
+    <select class="o-nhap" id="loc-vt">
+      <option value="">Mọi vai trò</option><option value="hocsinh">Học sinh</option><option value="giaovien">Giáo viên</option><option value="admin">Quản trị</option>
+    </select>
+    <select class="o-nhap" id="loc-lop"><option value="">Mọi lớp</option></select>
+    <span class="gian"></span>
+    <button class="nut" id="nut-doi-mk">Đổi mật khẩu của tôi</button>
+    <button class="nut" id="nut-xuat">Xuất danh sách</button>
+    <button class="nut chinh" id="nut-them">+ Thêm tài khoản</button>
+  </div>
+
+  <div class="the bang-bao">
+    <table>
+      <thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Lớp</th><th>Trạng thái</th><th>Đăng nhập gần nhất</th><th>Số lần</th><th>Thao tác</th></tr></thead>
+      <tbody id="ds"><tr><td colspan="8" class="trong">Đang tải…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Thêm tài khoản -->
+<dialog id="hop-them"><form class="hop" method="dialog" id="form-them">
+  <h2>Thêm tài khoản</h2>
+  <div class="tab-hop">
+    <button type="button" data-tab="mot" class="bat">Từng người</button>
+    <button type="button" data-tab="danh-sach">Dán danh sách</button>
+    <button type="button" data-tab="nhanh">Tạo nhanh theo lớp</button>
+  </div>
+  <div class="hang">
+    <div><label class="nhan-o">Vai trò</label>
+      <select class="o-nhap" id="t-vt"><option value="hocsinh">Học sinh</option><option value="giaovien">Giáo viên</option><option value="admin">Quản trị</option></select></div>
+    <div><label class="nhan-o">Lớp</label><input class="o-nhap" id="t-lop" placeholder="vd: 7A1"></div>
+  </div>
+  <div data-noi="mot">
+    <div class="hang">
+      <div><label class="nhan-o">Tên đăng nhập</label><input class="o-nhap" id="t-ten" placeholder="vd: an.nguyen" autocapitalize="none"></div>
+      <div><label class="nhan-o">Họ tên</label><input class="o-nhap" id="t-hoten" placeholder="vd: Nguyễn Văn An"></div>
+    </div>
+    <div class="hang mot"><div><label class="nhan-o">Mật khẩu</label><input class="o-nhap" id="t-mk" placeholder="Để trống để tự tạo"></div></div>
+  </div>
+  <div data-noi="danh-sach" class="an">
+    <label class="nhan-o">Mỗi dòng một người: <b>tên đăng nhập, họ tên</b> (thêm <b>, mật khẩu</b> nếu muốn tự đặt)</label>
+    <textarea class="o-nhap" id="t-ds" placeholder="an.nguyen, Nguyễn Văn An&#10;binh.tran, Trần Thị Bình&#10;cuong.le, Lê Minh Cường, cuong2026"></textarea>
+    <p class="goi-y">Có thể dán thẳng hai cột từ Excel (tên đăng nhập, họ tên).</p>
+  </div>
+  <div data-noi="nhanh" class="an">
+    <div class="hang">
+      <div><label class="nhan-o">Tiền tố tên đăng nhập</label><input class="o-nhap" id="t-tien-to" placeholder="vd: 7a1_"></div>
+      <div><label class="nhan-o">Số lượng</label><input class="o-nhap" id="t-so" type="number" min="1" max="60" value="40"></div>
+    </div>
+    <p class="goi-y">Sẽ tạo: <span id="xem-truoc" class="toan"></span> — mật khẩu tự tạo.</p>
+  </div>
+  <div class="loi-hop" id="loi-them"></div>
+  <div class="chan-hop"><button class="nut" value="huy" formnovalidate>Huỷ</button><button class="nut chinh" id="nut-tao" type="button">Tạo tài khoản</button></div>
+</form></dialog>
+
+<!-- Kết quả mật khẩu -->
+<dialog id="hop-kq"><div class="hop">
+  <h2 id="kq-tieu-de">Đã tạo tài khoản</h2>
+  <div class="canh-bao">Hãy <b>tải hoặc sao chép danh sách</b> ngay. Vì lý do an toàn, mật khẩu không xem lại được sau khi đóng hộp này.</div>
+  <div class="kq-mk"><table><thead><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Mật khẩu</th></tr></thead><tbody id="kq-ds"></tbody></table></div>
+  <div class="loi-hop" id="kq-loi"></div>
+  <div class="chan-hop"><button class="nut" id="kq-sao-chep">Sao chép</button><button class="nut" id="kq-tai">Tải về (Excel)</button><button class="nut chinh" id="kq-dong">Xong</button></div>
+</div></dialog>
+
+<!-- Xác nhận -->
+<dialog id="hop-xn"><div class="hop">
+  <h2 id="xn-tieu-de">Xác nhận</h2>
+  <p id="xn-noi-dung"></p>
+  <div class="chan-hop"><button class="nut" id="xn-huy">Huỷ</button><button class="nut chinh" id="xn-dong-y">Đồng ý</button></div>
+</div></dialog>
+
+<!-- Đổi mật khẩu -->
+<dialog id="hop-mk"><form class="hop" method="dialog">
+  <h2>Đổi mật khẩu của tôi</h2>
+  <div class="hang mot"><div><label class="nhan-o">Mật khẩu hiện tại</label><input class="o-nhap" id="mk-cu" type="password" autocomplete="current-password"></div></div>
+  <div class="hang mot"><div><label class="nhan-o">Mật khẩu mới (ít nhất 6 ký tự)</label><input class="o-nhap" id="mk-moi" type="password" autocomplete="new-password"></div></div>
+  <div class="loi-hop" id="loi-mk"></div>
+  <div class="chan-hop"><button class="nut" value="huy" formnovalidate>Huỷ</button><button class="nut chinh" type="button" id="nut-luu-mk">Lưu</button></div>
+</form></dialog>
+
+<script>
+(function () {
+  var CH = window.CAU_HINH, thoat = GiaoDien.thoat;
+  document.title = 'Quản trị · ' + (CH.TEN_NGAN || CH.TEN_SAN_PHAM);
+  GiaoDien.thanhTren({ anQuanTri: true, quayLai: 'thu-vien.html' });
+  var DS = [], $ = function (id) { return document.getElementById(id); };
+
+  function taiLai() {
+    return API.goi('dsTaiKhoan').then(function (kq) {
+      if (!kq.ok) { $('ds').innerHTML = '<tr><td colspan="8" class="trong">' + thoat(kq.loi) + '</td></tr>'; return; }
+      DS = kq.ds; ve();
+    });
+  }
+  function ngay(s) {
+    if (!s) return '<span style="color:var(--chu-phu)">Chưa đăng nhập</span>';
+    var d = new Date(s); if (isNaN(d)) return thoat(s);
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getHours()) + ':' + p(d.getMinutes()) + ' · ' + p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+  function ve() {
+    $('tk-tong').textContent = DS.length;
+    $('tk-hs').textContent = DS.filter(function (t) { return t.vaiTro === 'hocsinh'; }).length;
+    $('tk-gv').textContent = DS.filter(function (t) { return t.vaiTro === 'giaovien'; }).length;
+    $('tk-khoa').textContent = DS.filter(function (t) { return t.trangThai === 'khoa'; }).length;
+    var lopCu = $('loc-lop').value, dsLop = {};
+    DS.forEach(function (t) { if (t.lop) dsLop[t.lop] = 1; });
+    $('loc-lop').innerHTML = '<option value="">Mọi lớp</option>' + Object.keys(dsLop).sort().map(function (l) { return '<option' + (l === lopCu ? ' selected' : '') + '>' + thoat(l) + '</option>'; }).join('');
+    var q = $('tim').value.trim().toLowerCase(), vt = $('loc-vt').value, lop = $('loc-lop').value;
+    var ds = DS.filter(function (t) {
+      return (!vt || t.vaiTro === vt) && (!lop || t.lop === lop) &&
+        (!q || (t.ten + ' ' + t.hoTen + ' ' + t.lop).toLowerCase().indexOf(q) >= 0);
+    });
+    var toi = (DangNhap.phien() || {}).ten;
+    $('ds').innerHTML = ds.length ? ds.map(function (t) {
+      var khoa = t.trangThai === 'khoa';
+      return '<tr><td class="ten-dn">' + thoat(t.ten) + '</td><td>' + thoat(t.hoTen) + '</td>' +
+        '<td><span class="vt ' + t.vaiTro + '">' + (GiaoDien.TEN_VAI_TRO[t.vaiTro] || t.vaiTro) + '</span></td>' +
+        '<td>' + thoat(t.lop || '') + '</td>' +
+        '<td>' + (khoa ? '<span class="tt-khoa">Đang khoá</span>' : '<span class="tt-hd">Hoạt động</span>') + '</td>' +
+        '<td>' + ngay(t.lanCuoi) + '</td><td>' + (t.soLan || 0) + '</td>' +
+        '<td><div class="thao-tac">' +
+          '<button class="nut nho" data-hd="mk" data-ten="' + thoat(t.ten) + '">Đặt lại MK</button>' +
+          (t.ten === toi ? '' :
+          '<button class="nut nho" data-hd="khoa" data-ten="' + thoat(t.ten) + '">' + (khoa ? 'Mở khoá' : 'Khoá') + '</button>' +
+          '<button class="nut nho nguy" data-hd="xoa" data-ten="' + thoat(t.ten) + '">Xoá</button>') +
+        '</div></td></tr>';
+    }).join('') : '<tr><td colspan="8" class="trong">Không có tài khoản phù hợp.</td></tr>';
+  }
+  ['tim', 'loc-vt', 'loc-lop'].forEach(function (id) { $(id).addEventListener('input', ve); });
+
+  /* ---------- Xác nhận ---------- */
+  function xacNhan(tieuDe, noiDung) {
+    return new Promise(function (ok) {
+      $('xn-tieu-de').textContent = tieuDe; $('xn-noi-dung').innerHTML = noiDung;
+      $('hop-xn').showModal();
+      $('xn-huy').onclick = function () { $('hop-xn').close(); ok(false); };
+      $('xn-dong-y').onclick = function () { $('hop-xn').close(); ok(true); };
+    });
+  }
+
+  /* ---------- Thao tác từng dòng ---------- */
+  $('ds').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-hd]'); if (!b) return;
+    var ten = b.dataset.ten, tk = DS.filter(function (t) { return t.ten === ten; })[0];
+    if (b.dataset.hd === 'mk') {
+      xacNhan('Đặt lại mật khẩu', 'Tạo mật khẩu mới cho <b>' + thoat(ten) + '</b>?').then(function (ok) {
+        if (!ok) return;
+        API.goi('datLaiMatKhau', { ten: ten }).then(function (kq) {
+          if (!kq.ok) return GiaoDien.thongBao(kq.loi, 'loi');
+          hienKetQua('Mật khẩu mới', [{ ten: ten, hoTen: tk.hoTen, matKhau: kq.matKhau }], []);
+        });
+      });
+    } else if (b.dataset.hd === 'khoa') {
+      var moi = tk.trangThai === 'khoa' ? 'hoat-dong' : 'khoa';
+      API.goi('capNhatTaiKhoan', { ten: ten, trangThai: moi }).then(function (kq) {
+        if (!kq.ok) return GiaoDien.thongBao(kq.loi, 'loi');
+        GiaoDien.thongBao(moi === 'khoa' ? 'Đã khoá ' + ten : 'Đã mở khoá ' + ten, 'tot'); taiLai();
+      });
+    } else if (b.dataset.hd === 'xoa') {
+      xacNhan('Xoá tài khoản', 'Xoá hẳn tài khoản <b>' + thoat(ten) + '</b> (' + thoat(tk.hoTen) + ')? Không hoàn tác được.').then(function (ok) {
+        if (!ok) return;
+        API.goi('xoaTaiKhoan', { ten: ten }).then(function (kq) {
+          if (!kq.ok) return GiaoDien.thongBao(kq.loi, 'loi');
+          GiaoDien.thongBao('Đã xoá ' + ten, 'tot'); taiLai();
+        });
+      });
+    }
+  });
+
+  /* ---------- Thêm tài khoản ---------- */
+  var tab = 'mot';
+  $('nut-them').onclick = function () { $('loi-them').textContent = ''; $('hop-them').showModal(); };
+  document.querySelectorAll('.tab-hop button').forEach(function (b) {
+    b.onclick = function () {
+      tab = b.dataset.tab;
+      document.querySelectorAll('.tab-hop button').forEach(function (x) { x.classList.toggle('bat', x === b); });
+      document.querySelectorAll('[data-noi]').forEach(function (x) { x.classList.toggle('an', x.dataset.noi !== tab); });
+      xemTruoc();
+    };
+  });
+  function tenNhanh(i) { var tt = ($('t-tien-to').value.trim() || ($('t-lop').value.trim().toLowerCase() + '_')).toLowerCase(); return tt + (i < 10 ? '0' : '') + i; }
+  function xemTruoc() {
+    var n = Math.max(1, Math.min(60, parseInt($('t-so').value, 10) || 1));
+    $('xem-truoc').textContent = tenNhanh(1) + (n > 1 ? ' … ' + tenNhanh(n) : '');
+  }
+  ['t-tien-to', 't-so', 't-lop'].forEach(function (id) { $(id).addEventListener('input', xemTruoc); });
+
+  $('nut-tao').onclick = function () {
+    var vt = $('t-vt').value, lop = $('t-lop').value.trim(), ds = [];
+    if (tab === 'mot') {
+      if (!$('t-ten').value.trim()) { $('loi-them').textContent = 'Hãy nhập tên đăng nhập.'; return; }
+      ds.push({ ten: $('t-ten').value.trim(), hoTen: $('t-hoten').value.trim(), matKhau: $('t-mk').value.trim() });
+    } else if (tab === 'danh-sach') {
+      $('t-ds').value.split(/\r?\n/).forEach(function (dong) {
+        if (!dong.trim()) return;
+        var c = dong.split(/\t|,|;/).map(function (x) { return x.trim(); });
+        ds.push({ ten: c[0], hoTen: c[1] || '', matKhau: c[2] || '' });
+      });
+      if (!ds.length) { $('loi-them').textContent = 'Danh sách đang trống.'; return; }
+    } else {
+      var n = Math.max(1, Math.min(60, parseInt($('t-so').value, 10) || 1));
+      for (var i = 1; i <= n; i++) ds.push({ ten: tenNhanh(i), hoTen: (lop ? 'Học sinh ' + lop + ' – ' : 'Học sinh ') + i });
+    }
+    ds.forEach(function (d) { d.vaiTro = vt; d.lop = lop; });
+    $('nut-tao').disabled = true;
+    API.goi('themTaiKhoan', { ds: ds }).then(function (kq) {
+      $('nut-tao').disabled = false;
+      if (!kq.ok) { $('loi-them').textContent = kq.loi; return; }
+      $('hop-them').close();
+      $('t-ten').value = $('t-hoten').value = $('t-mk').value = $('t-ds').value = '';
+      hienKetQua('Đã tạo ' + kq.daTao.length + ' tài khoản', kq.daTao, kq.loi || []);
+      taiLai();
+    });
+  };
+
+  /* ---------- Kết quả mật khẩu ---------- */
+  var kqHienTai = [];
+  function hienKetQua(tieuDe, ds, loi) {
+    kqHienTai = ds;
+    $('kq-tieu-de').textContent = tieuDe;
+    $('kq-ds').innerHTML = ds.map(function (t) { return '<tr><td>' + thoat(t.ten) + '</td><td style="font-family:var(--phong)">' + thoat(t.hoTen || '') + '</td><td><b>' + thoat(t.matKhau) + '</b></td></tr>'; }).join('') ||
+      '<tr><td colspan="3">Không tạo được tài khoản nào.</td></tr>';
+    $('kq-loi').textContent = loi.length ? 'Bỏ qua:\n' + loi.join('\n') : '';
+    $('hop-kq').showModal();
+  }
+  $('kq-dong').onclick = function () { $('hop-kq').close(); };
+  $('kq-sao-chep').onclick = function () {
+    var s = kqHienTai.map(function (t) { return t.ten + '\t' + (t.hoTen || '') + '\t' + t.matKhau; }).join('\n');
+    (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(
+      function () { GiaoDien.thongBao('Đã sao chép', 'tot'); },
+      function () { GiaoDien.thongBao('Không sao chép được, hãy dùng nút Tải về', 'loi'); });
+  };
+  function taiCSV(tenTep, hang) {
+    var csv = '﻿' + hang.map(function (r) { return r.map(function (o) { return '"' + String(o == null ? '' : o).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = tenTep; document.body.appendChild(a); a.click(); a.remove();
+  }
+  $('kq-tai').onclick = function () {
+    taiCSV('tai-khoan-moi.csv', [['Tên đăng nhập', 'Họ tên', 'Mật khẩu']].concat(kqHienTai.map(function (t) { return [t.ten, t.hoTen, t.matKhau]; })));
+  };
+  $('nut-xuat').onclick = function () {
+    taiCSV('danh-sach-tai-khoan.csv', [['Tên đăng nhập', 'Họ tên', 'Vai trò', 'Lớp', 'Trạng thái', 'Đăng nhập gần nhất', 'Số lần']].concat(
+      DS.map(function (t) { return [t.ten, t.hoTen, GiaoDien.TEN_VAI_TRO[t.vaiTro], t.lop, t.trangThai === 'khoa' ? 'Khoá' : 'Hoạt động', t.lanCuoi, t.soLan]; })));
+  };
+
+  /* ---------- Đổi mật khẩu của tôi ---------- */
+  $('nut-doi-mk').onclick = function () { $('mk-cu').value = $('mk-moi').value = ''; $('loi-mk').textContent = ''; $('hop-mk').showModal(); };
+  $('nut-luu-mk').onclick = function () {
+    var moi = $('mk-moi').value;
+    if (moi.length < 6) { $('loi-mk').textContent = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return; }
+    API.goi('doiMatKhau', { cu: $('mk-cu').value, moi: moi }).then(function (kq) {
+      if (!kq.ok) { $('loi-mk').textContent = kq.loi; return; }
+      $('hop-mk').close(); GiaoDien.thongBao('Đã đổi mật khẩu', 'tot');
+    });
+  };
+
+  xemTruoc();
+  taiLai();
+})();
+</script>
+</body>
+</html>

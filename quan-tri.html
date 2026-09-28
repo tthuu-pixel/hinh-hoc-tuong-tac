@@ -146,6 +146,8 @@
   <h2>Đổi mật khẩu của tôi</h2>
   <div class="hang mot"><div><label class="nhan-o">Mật khẩu hiện tại</label><input class="o-nhap" id="mk-cu" type="password" autocomplete="current-password"></div></div>
   <div class="hang mot"><div><label class="nhan-o">Mật khẩu mới (ít nhất 6 ký tự)</label><input class="o-nhap" id="mk-moi" type="password" autocomplete="new-password"></div></div>
+  <div class="hang mot"><div><label class="nhan-o">Nhập lại mật khẩu mới</label><input class="o-nhap" id="mk-moi2" type="password" autocomplete="new-password"></div></div>
+  <label style="display:flex;gap:6px;align-items:center;font-size:14px;margin-top:4px"><input type="checkbox" id="mk-hien"> Hiện mật khẩu</label>
   <div class="loi-hop" id="loi-mk"></div>
   <div class="chan-hop"><button class="nut" value="huy" formnovalidate>Huỷ</button><button class="nut chinh" type="button" id="nut-luu-mk">Lưu</button></div>
 </form></dialog>
@@ -317,10 +319,12 @@
   };
 
   /* ---------- Đổi mật khẩu của tôi ---------- */
-  $('nut-doi-mk').onclick = function () { $('mk-cu').value = $('mk-moi').value = ''; $('loi-mk').textContent = ''; $('hop-mk').showModal(); };
+  $('nut-doi-mk').onclick = function () { $('mk-cu').value = $('mk-moi').value = $('mk-moi2').value = ''; $('mk-hien').checked = false; $('mk-hien').onchange(); $('loi-mk').textContent = ''; $('hop-mk').showModal(); };
+  $('mk-hien').onchange = function () { var t = $('mk-hien').checked ? 'text' : 'password'; ['mk-cu', 'mk-moi', 'mk-moi2'].forEach(function (id) { $(id).type = t; }); };
   $('nut-luu-mk').onclick = function () {
     var moi = $('mk-moi').value;
     if (moi.length < 6) { $('loi-mk').textContent = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return; }
+    if (moi !== $('mk-moi2').value) { $('loi-mk').textContent = 'Hai lần nhập mật khẩu mới không giống nhau.'; return; }
     API.goi('doiMatKhau', { cu: $('mk-cu').value, moi: moi }).then(function (kq) {
       if (!kq.ok) { $('loi-mk').textContent = kq.loi; return; }
       $('hop-mk').close(); GiaoDien.thongBao('Đã đổi mật khẩu', 'tot');

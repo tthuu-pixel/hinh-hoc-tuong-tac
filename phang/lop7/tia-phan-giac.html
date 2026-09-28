@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tia phân giác của một góc</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   TIA PHÂN GIÁC CỦA MỘT GÓC — Toán 7
+   Kéo x, y để thay đổi góc xOy. Tia Ot là tia phân giác.
+   Hoạt hình: gấp giấy 3D theo Ot, vẽ bằng thước đo góc, vẽ bằng compa.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+// Kéo tia: hướng tia được làm tròn tới số nguyên độ để số đo góc luôn là số nguyên
+function tronGoc(p, O, minD) { var d = H.dai(p, O); if (d < minD) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + d * Math.cos(a), O[1] + d * Math.sin(a)]; }
+var xa = function (p, P) { return tronGoc(p, P.O, 1.5); };
+function soDo(P) {
+  var O = P.O, a0 = H.huong(O, P.x), da = H.huong(O, P.y) - a0;
+  while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  var at = a0 + da / 2, L = Math.min(H.dai(O, P.x), H.dai(O, P.y));
+  return { a0: a0, da: da, at: at, t: [O[0] + L * Math.cos(at), O[1] + L * Math.sin(at)], L: L, deg: Math.abs(da) * 180 / Math.PI };
+}
+function quat(P, n) { var s = soDo(P), O = P.O, ds = [O]; for (var i = 0; i <= (n || 30); i++) { var a = s.a0 + s.da * i / (n || 30); ds.push([O[0] + s.L * Math.cos(a), O[1] + s.L * Math.sin(a)]); } return ds; }
+function cung(g, O, r, a0, a1, o) { var ds = []; for (var i = 0; i <= 30; i++) { var a = a0 + (a1 - a0) * i / 30; ds.push([O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]); } g.duong(ds, o || { mau: '#0D9488', rong: 2 }); }
+
+function diemTron(O, r, a) { return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
+function danhPG(g, P, s, r) { g.goc(P.x, P.O, s.t, { mau: M.duongCheo, r: r || 34, nhan: true, le: 1, doMoTo: 0.25 }); g.goc(s.t, P.O, P.y, { mau: M.duongCheo, r: r || 34, nhan: true, le: 1, kyHieu: 1, doMoTo: 0.25 }); }
+// Vẽ bằng thước đo góc
+function kbThuoc(P) {
+  var s = soDo(P), O = P.O, D = KhungPhang.dung, dT = H.nhan(H.tru(s.t, O), 1.15);
+  return KhungPhang.kichBan([
+    D.doGoc(O, P.x, P.y, { r: s.L * 0.72, ghi: '<b>Bước 1.</b> Đặt thước đo góc có tâm trùng $O$, vạch $0^\\circ$ nằm trên tia $Ox$. Đọc được $\\widehat{xOy} = ' + soL(s.deg, 0) + '^\\circ$.' }),
+    D.danhDauGoc(O, s.a0, s.at, { r: s.L * 0.72, ghi: '<b>Bước 2.</b> Tính $' + soL(s.deg, 0) + '^\\circ : 2 = ' + soL(s.deg / 2, 1) + '^\\circ$, đánh dấu điểm ở vạch $' + soL(s.deg / 2, 1) + '^\\circ$.' }),
+    D.doan(O, dT, { ghi: '<b>Bước 3.</b> Dùng thước vẽ tia $Ot$ đi qua điểm vừa đánh dấu: $Ot$ là tia phân giác của $\\widehat{xOy}$.', net: { mau: M.duongCheo, rong: 4 },
+      sau: function (g) { danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(H.tru(s.t, O), 1.25)), 't', { nghieng: true, mau: M.duongCheo }); } }),
+  ]);
+}
+// Vẽ bằng compa
+function kbCompa(P) {
+  var s = soDo(P), O = P.O, D = KhungPhang.dung, sg = Math.sign(s.da) || 1;
+  var R = s.L * 0.45, A = diemTron(O, R, s.a0), B = diemTron(O, R, s.a0 + s.da);
+  var r2 = H.dai(A, B) * 0.8, K = H.trung(A, B), hC = Math.sqrt(Math.max(0, r2 * r2 - Math.pow(H.dai(A, B) / 2, 2)));
+  var dir = H.tru(K, O), l = Math.hypot(dir[0], dir[1]); dir = [dir[0] / l, dir[1] / l];
+  var C = H.cong(K, H.nhan(dir, hC)), aAC = H.huong(A, C), aBC = H.huong(B, C), dT = H.nhan(H.tru(s.t, O), 1.15);
+  var c0 = s.a0 - 0.15 * sg, c1 = s.a0 + s.da + 0.15 * sg;
+  return KhungPhang.kichBan([
+    D.doCompa(O, diemTron(O, R, c0), { ghi: '<b>Bước 1.</b> Mở compa một khoảng tùy ý, đặt mũi kim tại $O$.' }),
+    D.cung(O, R, c0, c1, { tg: 1.5, ghi: 'Vẽ cung tròn tâm $O$, cắt $Ox$ tại $A$, cắt $Oy$ tại $B$: $OA = OB$.',
+      sau: function (g) { g.diem(A, 'A', { huong: [0.3, -1], mau: '#0D9488' }); g.diem(B, 'B', { huong: [-0.6, 0.8], mau: '#0D9488' }); g.kyHieu(O, A, 1, '#0D9488'); g.kyHieu(O, B, 1, '#0D9488'); } }),
+    D.chuyenCompa(O, diemTron(O, R, c1), A, diemTron(A, r2, aAC - 0.35), { ghi: '<b>Bước 2.</b> Đặt mũi kim tại $A$, mở compa một khoảng thích hợp.' }),
+    D.cung(A, r2, aAC - 0.35, aAC + 0.35, { ghi: 'Vẽ cung tròn tâm $A$.' }),
+    D.chuyenCompa(A, diemTron(A, r2, aAC + 0.35), B, diemTron(B, r2, aBC + 0.35), { ghi: 'Giữ nguyên độ mở của compa, đặt mũi kim tại $B$.' }),
+    D.cung(B, r2, aBC + 0.35, aBC - 0.35, { ghi: 'Vẽ cung tròn tâm $B$ cùng bán kính, cắt cung trước tại $C$ ở trong góc.',
+      sau: function (g) { g.diem(C, 'C', { mau: '#0D9488', huong: dir }); g.doan(A, C, { mau: '#0D9488', rong: 1.5, dut: '5 4', kyHieu: 2 }); g.doan(B, C, { mau: '#0D9488', rong: 1.5, dut: '5 4', kyHieu: 2 }); } }),
+    D.doan(O, dT, { ghi: '<b>Bước 3.</b> Dùng thước vẽ tia $OC$: đó là tia phân giác của $\\widehat{xOy}$ (vì $\\triangle OAC = \\triangle OBC$ theo c.c.c).', net: { mau: M.duongCheo, rong: 4 },
+      sau: function (g) { danhPG(g, P, s, 30); } }),
+  ]);
+}
+
+KhungPhang.tao({
+  ten: 'Tia phân giác của một góc',
+  lop: 7,
+  diem: { O: [0, 0], x: [4.5, 0], y: [1.5391, 4.2286] },
+  coDinh: ['O'],
+  buocLuoi: 0.5,
+  rangBuoc: { x: xa, y: xa },
+
+  lamSang: [
+    { id: 'goc', nhan: 'Góc xOy', mau: '#475569', ghiChu: function (P) { return '$\\widehat{xOy} = ' + soL(soDo(P).deg, 0) + '^\\circ$.'; } },
+    { id: 'pg', nhan: 'Tia phân giác Ot', mau: M.duongCheo,
+      ghiChu: function (P) { var d = soDo(P).deg; return 'Tia $Ot$ nằm giữa hai cạnh và tạo với chúng hai góc bằng nhau: $\\widehat{xOt} = \\widehat{tOy} = ' + soL(d, 0) + '^\\circ : 2 = \\mathbf{' + soL(d / 2, 1) + '}^\\circ$.'; } },
+  ],
+
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp giấy theo Ot', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp tờ giấy hình góc $xOy$ sao cho cạnh $Ox$ trùng với cạnh $Oy$…' : 'Nếp gấp chính là <b>tia phân giác</b> $Ot$: hai góc $\\widehat{xOt}$ và $\\widehat{tOy}$ trùng khít nhau.'; } },
+    { id: 'thuoc', nhan: 'Vẽ bằng thước đo góc', anDiem: true,
+      thoiGian: function (P) { return kbThuoc(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbThuoc(P).ghi(t); } },
+    { id: 'compa', nhan: 'Vẽ bằng compa', anDiem: true,
+      thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
+  ],
+
+  ve: function (g, P, ts) {
+    var O = P.O, s = soDo(P), tg = g.hoat('gap'), tt = g.hoat('thuoc'), tc = g.hoat('compa');
+    function canh() {
+      g.tia(O, P.x, { rong: 3 }); g.tia(O, P.y, { rong: 3 }); g.diem(O, 'O', { huong: [-0.6, -1] });
+      g.chu(H.cong(O, H.nhan(H.tru(P.x, O), 1 + 1.4 / H.dai(O, P.x))), 'x', { nghieng: true });
+      g.chu(H.cong(O, H.nhan(H.tru(P.y, O), 1 + 1.4 / H.dai(O, P.y))), 'y', { nghieng: true });
+    }
+    if (tg !== null) {
+      DX.ve(g, { ten: 'Góc xOy', ds: quat(P), truc: [[O, s.t]], tam: null, to: '#93C5FD' }, { truc: 0 });
+      return;
+    }
+    if (tt !== null) { canh(); kbThuoc(P).ve(g, tt); return; }
+    if (tc !== null) { canh(); kbCompa(P).ve(g, tc); return; }
+    g.daGiac(quat(P), { to: '#93C5FD', doMoTo: 0.25, rong: 0 });
+    if (g.bat('goc')) g.goc(P.x, O, P.y, { mau: '#475569', r: 64, doMoTo: 0.1 });
+    if (g.bat('pg')) {
+      var T = H.nhan(H.tru(s.t, O), 1.1);
+      g.doan(O, T, { sang: 'pg', rongSang: 4 });
+      g.goc(P.x, O, s.t, { mau: M.duongCheo, r: 46, doMoTo: 0.25, le: 1 }); g.goc(s.t, O, P.y, { mau: M.duongCheo, r: 46, doMoTo: 0.25, le: 1 });
+      g.chu(H.cong(O, H.nhan(H.tru(s.t, O), 1.22)), 't', { nghieng: true, mau: M.duongCheo });
+    }
+    canh();
+  },
+  nhanXet: function (P) { var d = soDo(P).deg; return '$\\widehat{xOy} = ' + soL(d, 0) + '^\\circ \\Rightarrow \\widehat{xOt} = \\widehat{tOy} = \\mathbf{' + soL(d / 2, 1) + '}^\\circ$'; },
+  congThuc: function (P, ts, C) { return [{ id: 'pg', ten: 'Ot là tia phân giác của góc xOy', bt: '$' + C.m('pg', '\\widehat{xOt} = \\widehat{tOy}') + ' = \\dfrac{\\widehat{xOy}}{2}$' }]; },
+  khungNhin: function () { return [[-2, -1], [5.5, 5]]; },
+  le: 0.5,
+});
+</script>
+</body>
+</html>

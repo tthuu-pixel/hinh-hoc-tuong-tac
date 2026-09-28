@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường phân giác – Đường tròn nội tiếp</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐƯỜNG PHÂN GIÁC – ĐƯỜNG TRÒN NỘI TIẾP — Toán 7
+   Kéo A, B, C. AD, BE, CF là ba đường phân giác, đồng quy tại I;
+   I cách đều ba cạnh, là tâm đường tròn nội tiếp tam giác.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var MAU_T = { AD: '#E0342F', BE: '#1E6FE0', CF: '#16A34A' }, MI = '#D97706';
+function chanPG(A, B, C) { var b = H.dai(A, C), c = H.dai(A, B); return H.lerp(B, C, c / (b + c)); }
+function pg(P) {
+  var A = P.A, B = P.B, C = P.C, I = H.noiTiep(A, B, C);
+  var r = 2 * H.dienTich([A, B, C]) / (H.dai(A, B) + H.dai(B, C) + H.dai(C, A));
+  return { A: A, B: B, C: C, I: I, r: r,
+    ds: [{ id: 'AD', dinh: A, X: B, Y: C, chan: chanPG(A, B, C), ten: 'D', vach: 1 },
+         { id: 'BE', dinh: B, X: C, Y: A, chan: chanPG(B, C, A), ten: 'E', vach: 2 },
+         { id: 'CF', dinh: C, X: A, Y: B, chan: chanPG(C, A, B), ten: 'F', vach: 3 }],
+    tx: [[B, C], [C, A], [A, B]].map(function (c) { return { K: H.chan(I, c[0], c[1]), Y: c[1] }; }) };
+}
+function ghiPG(ten, dinh) { return '$' + ten + '$ chia góc $' + dinh + '$ thành hai góc bằng nhau: $' + ten + '$ là <b>đường phân giác</b> xuất phát từ đỉnh $' + dinh + '$ của tam giác.'; }
+
+KhungPhang.tao({
+  ten: 'Đường phân giác – Đường tròn nội tiếp',
+  lop: 7,
+  diem: { A: [-1, 5], B: [-4, 0], C: [4.5, 0] },
+  buocLuoi: 0.5,
+  batDau: ['AD'],
+
+  lamSang: [
+    { id: 'AD', nhan: 'Phân giác AD', mau: MAU_T.AD, ghiChu: ghiPG('AD', 'A') },
+    { id: 'BE', nhan: 'Phân giác BE', mau: MAU_T.BE, ghiChu: ghiPG('BE', 'B') },
+    { id: 'CF', nhan: 'Phân giác CF', mau: MAU_T.CF, ghiChu: ghiPG('CF', 'C') },
+    { id: 'I', nhan: 'Giao điểm I', mau: MI, ghiChu: 'Ba đường phân giác của một tam giác <b>cùng đi qua một điểm</b> $I$.' },
+    { id: 'kc', nhan: 'I cách đều ba cạnh', mau: '#0D9488',
+      ghiChu: function (P) { var q = pg(P); return 'Giao điểm $I$ của ba đường phân giác <b>cách đều ba cạnh</b> của tam giác: $IK = IL = IN \\approx ' + soL(q.r) + '$ cm.'; } },
+    { id: 'dt', nhan: 'Đường tròn nội tiếp', mau: '#7C3AED',
+      ghiChu: 'Đường tròn tâm $I$, bán kính $IK$ tiếp xúc với cả ba cạnh: đó là <b>đường tròn nội tiếp</b> tam giác, $I$ là tâm.' },
+  ],
+
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp giấy theo phân giác AD', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp tờ giấy tam giác theo nếp đi qua $A$ sao cho hai cạnh $AB$ và $AC$ nằm chồng lên nhau…' : 'Nếp gấp $AD$ chia góc $A$ thành hai góc trùng khít: $AD$ là <b>tia phân giác</b> của góc $A$.'; } },
+    { id: 'no', nhan: 'Đường tròn nở ra từ I', thoiGian: 5000,
+      ghiChu: function (P, ts, t) { return t < 0.85 ? 'Vẽ đường tròn tâm $I$ với bán kính tăng dần…' : 'Đường tròn chạm <b>cả ba cạnh cùng lúc</b> (vì $I$ cách đều ba cạnh): đó là đường tròn nội tiếp.'; } },
+  ],
+
+  ve: function (g, P) {
+    var q = pg(P), A = q.A, B = q.B, C = q.C, I = q.I, tg = g.hoat('gap'), tn = g.hoat('no');
+    function nhan() { var G = H.trongTam(A, B, C); g.diem(A, 'A', { huong: H.tru(A, G) }); g.diem(B, 'B', { huong: H.tru(B, G) }); g.diem(C, 'C', { huong: H.tru(C, G) }); }
+    if (tg !== null) { DX.ve(g, { ten: 'Tam giác', ds: [A, B, C], truc: [H.dai(A, B) <= H.dai(A, C) ? [q.ds[0].chan, A] : [A, q.ds[0].chan]], tam: null, to: '#93C5FD' }, { truc: 0 }); return; }
+
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
+    if (tn !== null) {
+      var e = H.em(H.doan(tn, 0.05, 0.85));
+      g.duongTron(I, q.r * e, { mau: '#7C3AED', rong: 2.5, to: '#DDD6FE', doMoTo: 0.35 });
+      if (tn > 0.85) q.tx.forEach(function (t) { g.diem(t.K, '', { r: 5, mau: '#0D9488' }); });
+      g.diem(I, 'I', { r: 5, mau: MI, huong: [0.8, 0.8] }); nhan(); return;
+    }
+
+    var onI = g.bat('I') || g.bat('kc') || g.bat('dt');
+    q.ds.forEach(function (d) {
+      var on = g.bat(d.id);
+      if (!on && !onI) return;
+      if (on) g.doan(d.dinh, d.chan, { sang: d.id }); else g.doan(d.dinh, d.chan, { mau: MAU_T[d.id], rong: 2, doMo: 0.75 });
+      g.goc(d.X, d.dinh, d.chan, { mau: MAU_T[d.id], r: 30, nhan: false, kyHieu: d.vach, doMoTo: on ? 0.3 : 0.12 });
+      g.goc(d.chan, d.dinh, d.Y, { mau: MAU_T[d.id], r: 30, nhan: false, kyHieu: d.vach, doMoTo: on ? 0.3 : 0.12 });
+      if (on) g.diem(d.chan, d.ten, { r: 3.5, mau: MAU_T[d.id], huong: H.tru(d.chan, d.dinh) });
+    });
+    if (g.bat('dt')) g.duongTron(I, q.r, { sang: 'dt', to: '#DDD6FE', doMoTo: 0.3 });
+    if (g.bat('kc') || g.bat('dt')) {
+      var ten = ['K', 'L', 'N'];
+      q.tx.forEach(function (t, i) {
+        g.doan(I, t.K, { mau: '#0D9488', rong: g.bat('kc') ? 3 : 2, kyHieu: g.bat('kc') ? 1 : 0 });
+        g.goc(I, t.K, t.Y, { mau: '#0D9488', r: 11, to: false });
+        g.diem(t.K, ten[i], { r: 3.5, mau: '#0D9488', huong: H.tru(t.K, I) });
+      });
+    }
+    if (onI) g.diem(I, 'I', { r: 6, mau: MI, huong: [0.4, 1] });
+    nhan();
+  },
+
+  nhanXet: function (P) {
+    var q = pg(P);
+    return 'Khoảng cách từ $I$ đến ba cạnh:<br>$IK = IL = IN = \\mathbf{' + q.tx.map(function (t) { return soL(H.dai(q.I, t.K)); }).join(' = ') + '}$ (cm)<br><span class="dung">Kéo các đỉnh: $I$ luôn nằm trong tam giác và cách đều ba cạnh.</span>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'kc', ten: 'Giao điểm ba đường phân giác', bt: '$' + C.m('kc', 'IK = IL = IN') + '$ ($I$ cách đều ba cạnh)' }]; },
+});
+</script>
+</body>
+</html>

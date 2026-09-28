@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình vuông</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH VUÔNG ABCD — Toán 6
+   Nhận dạng, chu vi, diện tích và tính đối xứng (4 trục, có tâm).
+   Kéo A, B; C và D được dựng để ABCD luôn là hình vuông.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinh(P) {
+  var u = H.tru(P.B, P.A), v = [-u[1], u[0]];
+  return { A: P.A, B: P.B, C: H.cong(P.B, v), D: H.cong(P.A, v) };
+}
+function thongTin(P) {
+  var q = dinh(P), O = H.trung(q.A, q.C);
+  return { ten: 'Hình vuông', ds: [q.A, q.B, q.C, q.D], tam: O,
+    truc: [[H.trung(q.A, q.B), H.trung(q.D, q.C)], [H.trung(q.D, q.A), H.trung(q.B, q.C)], [q.A, q.C], [q.B, q.D]] };
+}
+function nam(P) { var q = dinh(P); return Math.abs(q.A[1] - q.B[1]) < 1e-9 && q.B[0] > q.A[0] && Number.isInteger(q.A[0]) && Number.isInteger(q.A[1]) && Number.isInteger(q.B[0]); }
+
+KhungPhang.tao({
+  ten: 'Hình vuông',
+  lop: 6,
+  diem: { A: [0, 0], B: [4, 0] },
+  buocLuoi: 1,
+  luaChon: [DX.luaChonTruc(4)],
+  hopChon: [DX.hopChonVet],
+
+  lamSang: DX.lamSang(thongTin).concat([
+    { id: 'dt', nhan: 'Diện tích', mau: M.dienTich,
+      ghiChu: function (P) { var a = H.dai(P.A, P.B); return 'Diện tích hình vuông cạnh $a$: $S = a \\cdot a = ' + soL(a) + ' \\cdot ' + soL(a) + ' = \\mathbf{' + soL(a * a) + '}$ <b>cm²</b>.'; } },
+  ]),
+
+  hoatHinh: DX.hoatHinh(thongTin).concat([
+    { id: 'dem', nhan: 'Đếm ô vuông 1 cm²', thoiGian: 5000,
+      ghiChu: function (P, ts, t) {
+        if (!nam(P)) return 'Hãy đặt cạnh $AB$ nằm ngang trên một dòng kẻ của lưới để đếm ô (bấm <b>Đặt lại</b>).';
+        var a = Math.round(H.dai(P.A, P.B)), n = Math.min(a * a, Math.floor(t * a * a + 1e-9));
+        return 'Đã đếm <b>' + n + '</b> ô vuông 1 cm²' + (n >= a * a ? ' — mỗi hàng ' + a + ' ô, có ' + a + ' hàng: <b>$' + a + ' \\cdot ' + a + ' = ' + a * a + '$ cm²</b>.' : '…');
+      } },
+  ]),
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = thongTin(P), t = g.hoat('dem'), hoat3D = DX.dangHoat(g);
+    if (!hoat3D) {
+      g.daGiac(f.ds, { sang: 'dt', to: t !== null ? 'none' : undefined });
+      if (t !== null && nam(P)) { var a = Math.round(H.dai(q.A, q.B)); g.oVuong(q.A[0], q.A[1], a, a, Math.floor(t * a * a + 1e-9)); }
+    }
+    DX.ve(g, f, ts);
+    if (hoat3D) return;
+    g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)) + ' cm', { benTrai: false });
+    g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var a = H.dai(P.A, P.B);
+    return [
+      { id: null, ten: 'Chu vi', bt: '$C = 4 \\cdot a = 4 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(4 * a) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích', bt: '$S = a \\cdot a = ' + soL(a) + ' \\cdot ' + soL(a) + ' = \\mathbf{' + soL(a * a) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br>Cạnh $a = ' + soL(H.dai(P.A, P.B)) + '$ cm'; },
+  khungNhin: function (P) { var q = dinh(P); return [q.C, q.D]; },
+});
+</script>
+</body>
+</html>

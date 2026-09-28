@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tổng ba góc của tam giác</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   TỔNG BA GÓC CỦA MỘT TAM GIÁC — Toán 7
+   Kéo A, B, C. Hoạt hình "xé ba góc ghép lại" tại đỉnh C.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var soL = KhungPhang.soL;
+function goc(V, P1, P2) {   // góc tại V, quét từ tia VP1 sang tia VP2 (chiều ngắn)
+  var a0 = H.huong(V, P1), da = H.huong(V, P2) - a0;
+  while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  return [a0, a0 + da];
+}
+
+KhungPhang.tao({
+  ten: 'Tổng ba góc của tam giác',
+  lop: 7,
+  diem: { A: [-3.5, 0], B: [3.5, 0], C: [1, 3.5] },
+  buocLuoi: 0.5,
+
+  lamSang: [
+    { id: 'goc', nhan: 'Ba góc của tam giác', mau: M.goc1, ghiChu: 'Ba góc $\\widehat{A}$, $\\widehat{B}$, $\\widehat{C}$ được tô ba màu khác nhau. Kéo các đỉnh và quan sát tổng ba góc.' },
+    { id: 'ss', nhan: 'Đường thẳng qua C song song AB', mau: M.song,
+      ghiChu: 'Kẻ đường thẳng $xy$ qua $C$ song song với $AB$. Các góc so le trong bằng nhau nên ba góc tại $C$ ghép lại thành góc bẹt $180^\\circ$.' },
+  ],
+
+  hoatHinh: [
+    { id: 'xe', nhan: 'Xé ba góc ghép lại', thoiGian: 7000,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.12) return 'Cắt rời ba góc của tam giác (như xé giấy).';
+        if (t < 0.52) return 'Đặt $\\widehat{A}$ sát cạnh $\\widehat{C}$…';
+        if (t < 0.92) return 'Đặt $\\widehat{B}$ sát cạnh bên kia của $\\widehat{C}$…';
+        return 'Ba góc ghép lại thành một <b>góc bẹt</b>: <b>$\\widehat{A}+\\widehat{B}+\\widehat{C}=180^\\circ$</b>.';
+      } },
+  ],
+
+  ve: function (g, P) {
+    var A = P.A, B = P.B, C = P.C, t = g.hoat('xe');
+    var r = Math.min(H.dai(A, B), H.dai(B, C), H.dai(C, A)) * 0.28;
+    g.daGiac([A, B, C], { rong: 2.8 });
+    var gA = goc(A, B, C), gB = goc(B, C, A), gC = goc(C, A, B);
+    if (t !== null) {
+      var eA = H.em(H.doan(t, 0.14, 0.5)), eB = H.em(H.doan(t, 0.56, 0.9));
+      g.quat(C, r, gC[0], gC[1], { to: M.goc3, doMoTo: 0.7, mau: '#15803D' });
+      var OA = H.lerp(A, C, eA), OB = H.lerp(B, C, eB);
+      g.quat(A, r, gA[0], gA[1], { to: '#fff', doMoTo: 0.9, mau: '#CBD5E1', rong: 1 });
+      g.quat(B, r, gB[0], gB[1], { to: '#fff', doMoTo: 0.9, mau: '#CBD5E1', rong: 1 });
+      g.quat(OA, r, gA[0] + Math.PI * eA, gA[1] + Math.PI * eA, { to: M.goc1, doMoTo: 0.7, mau: '#B91C1C' });
+      g.quat(OB, r, gB[0] - Math.PI * eB, gB[1] - Math.PI * eB, { to: M.goc2, doMoTo: 0.7, mau: '#1D4ED8' });
+      if (t > 0.9) {
+        var u = H.tru(B, A), L = Math.hypot(u[0], u[1]); u = [u[0] / L * (r * 1.8), u[1] / L * (r * 1.8)];
+        g.doan(H.tru(C, u), H.cong(C, u), { mau: M.song, rong: 3 });
+        g.chu(H.cong(C, [0, r * 1.25]), '180°', { mau: M.song });
+      }
+    } else {
+      var hien = g.bat('goc');
+      g.quat(A, r, gA[0], gA[1], { to: M.goc1, doMoTo: hien ? 0.55 : 0.25, mau: M.goc1, rong: 1.5 });
+      g.quat(B, r, gB[0], gB[1], { to: M.goc2, doMoTo: hien ? 0.55 : 0.25, mau: M.goc2, rong: 1.5 });
+      g.quat(C, r, gC[0], gC[1], { to: M.goc3, doMoTo: hien ? 0.55 : 0.25, mau: M.goc3, rong: 1.5 });
+      if (g.hienSo()) {
+        [[A, gA, M.goc1, H.gocDo(B, A, C)], [B, gB, M.goc2, H.gocDo(C, B, A)], [C, gC, M.goc3, H.gocDo(A, C, B)]].forEach(function (x) {
+          var am = (x[1][0] + x[1][1]) / 2, rr = r + 0.55;
+          g.chu([x[0][0] + rr * Math.cos(am), x[0][1] + rr * Math.sin(am)], so(x[3], 1) + '°', { mau: x[2] });
+        });
+      }
+      if (g.bat('ss')) {
+        var v = H.tru(B, A), l = Math.hypot(v[0], v[1]); v = [v[0] / l * 3, v[1] / l * 3];
+        g.doan(H.tru(C, v), H.cong(C, v), { sang: 'ss' });
+        g.goc(H.tru(C, v), C, A, { mau: M.goc1, r: 32, doMoTo: 0.35 });
+        g.goc(B, C, H.cong(C, v), { mau: M.goc2, r: 32, doMoTo: 0.35 });
+        g.chu(H.cong(H.tru(C, v), [-0.3, 0.3]), 'x', { nghieng: true }); g.chu(H.cong(H.cong(C, v), [0.3, 0.3]), 'y', { nghieng: true });
+      }
+    }
+    g.diem(A, 'A', { huong: [-1, -0.6] }); g.diem(B, 'B', { huong: [1, -0.6] }); g.diem(C, 'C', { huong: [0, 1] });
+  },
+
+  nhanXet: function (P) {
+    var a = H.gocDo(P.B, P.A, P.C), b = H.gocDo(P.C, P.B, P.A), c = H.gocDo(P.A, P.C, P.B);
+    return '<b style="color:' + M.goc1 + '">$\\widehat{A} \\approx ' + soL(a, 1) + '^\\circ$</b> · <b style="color:' + M.goc2 + '">$\\widehat{B} \\approx ' + soL(b, 1) + '^\\circ$</b> · <b style="color:' + M.goc3 + '">$\\widehat{C} \\approx ' + soL(c, 1) + '^\\circ$</b><br>' +
+      'Tổng: $\\widehat{A}+\\widehat{B}+\\widehat{C} = \\mathbf{' + soL(a + b + c, 0) + '}^\\circ$<br><span class="dung">Kéo các đỉnh: tổng luôn bằng $180^\\circ$.</span>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'goc', ten: 'Định lí tổng ba góc', bt: '$' + C.m('goc', '\\widehat{A}') + '+\\widehat{B}+\\widehat{C}=180^\\circ$' }]; },
+});
+</script>
+</body>
+</html>

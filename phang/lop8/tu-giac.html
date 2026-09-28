@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tứ giác</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   TỨ GIÁC — Toán 8
+   Kéo tự do bốn đỉnh; hệ thống tự NHẬN BIẾT tứ giác theo các dấu hiệu.
+   ===================================================================== */
+var MAU_SAN = {
+  thuong: { A: [-3, -1.5], B: [3, -2], C: [2, 2.5], D: [-2, 2] },
+  thang: { A: [-3.5, -1.5], B: [3.5, -1.5], C: [1.5, 2], D: [-2, 2] },
+  thangCan: { A: [-3.5, -1.5], B: [3.5, -1.5], C: [2, 2], D: [-2, 2] },
+  thangVuong: { A: [-3, -1.5], B: [3.5, -1.5], C: [1, 2], D: [-3, 2] },
+  binhHanh: { A: [-3.5, -1.5], B: [2, -1.5], C: [3.5, 2], D: [-2, 2] },
+  chuNhat: { A: [-3, -2], B: [3, -2], C: [3, 2], D: [-3, 2] },
+  thoi: { A: [-3, 0], B: [0, -2], C: [3, 0], D: [0, 2] },
+  vuong: { A: [-2.5, -2.5], B: [2.5, -2.5], C: [2.5, 2.5], D: [-2.5, 2.5] },
+};
+function datMau(k) { return function (P, ts, api) { var m = MAU_SAN[k]; Object.keys(m).forEach(function (x) { P[x] = m[x].slice(); }); api.vuaKhung(); }; }
+function q_(P) { return { A: P.A, B: P.B, C: P.C, D: P.D }; }
+
+KhungPhang.tao({
+  ten: 'Tứ giác – Nhận biết tứ giác',
+  lop: 8,
+  diem: { A: [-3, -1.5], B: [3, -2], C: [2, 2.5], D: [-2, 2] },
+  buocLuoi: 0.5,
+  tieuDeNutPhu: 'Đưa nhanh về dạng (rồi kéo thử)',
+  nutPhu: [
+    { nhan: 'Tứ giác', bam: datMau('thuong') }, { nhan: 'Hình thang', bam: datMau('thang') }, { nhan: 'Thang cân', bam: datMau('thangCan') },
+    { nhan: 'Thang vuông', bam: datMau('thangVuong') }, { nhan: 'Bình hành', bam: datMau('binhHanh') }, { nhan: 'Chữ nhật', bam: datMau('chuNhat') },
+    { nhan: 'Hình thoi', bam: datMau('thoi') }, { nhan: 'Hình vuông', bam: datMau('vuong') },
+  ],
+
+  lamSang: [
+    { id: 'canh', nhan: 'Bốn cạnh', mau: '#475569', ghiChu: 'Tứ giác $ABCD$ có bốn cạnh $AB, BC, CD, DA$. Các cạnh bằng nhau được đánh cùng số vạch.' },
+    { id: 'ss', nhan: 'Cạnh đối song song', mau: M.song, ghiChu: 'Cặp cạnh đối nào <b>song song</b> sẽ được tô màu: ${AB \\parallel DC}$ (đỏ), ${AD \\parallel BC}$ (xanh).' },
+    { id: 'goc', nhan: 'Bốn góc', mau: MG1, ghiChu: function (P) { return 'Tổng bốn góc của một tứ giác bằng <b>$360^\\circ$</b>: $' + TG.nhanDang(q_(P)).goc.map(function (x) { return soL(x, 0) + '^\\circ'; }).join(' + ') + ' = 360^\\circ$.'; } },
+    { id: 'cheo', nhan: 'Hai đường chéo', mau: M.duongCheo, ghiChu: 'Hai đường chéo $AC$ và $BD$: có cắt nhau tại trung điểm mỗi đường? có bằng nhau? có vuông góc? Các dấu hiệu này giúp nhận biết tứ giác.' },
+  ],
+  hoatHinh: [
+    { id: 'chia', nhan: 'Vì sao tổng bốn góc là 360°?', thoiGian: 6000,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.3) return 'Kẻ đường chéo $AC$ chia tứ giác thành hai tam giác.';
+        if (t < 0.65) return 'Tổng ba góc của tam giác $ABC$ bằng $180^\\circ$.';
+        return 'Tổng ba góc của tam giác $ACD$ cũng bằng $180^\\circ$. Vậy tổng bốn góc của tứ giác bằng $180^\\circ + 180^\\circ = \\mathbf{360^\\circ}$.';
+      } },
+  ],
+
+  ve: function (g, P) {
+    var q = q_(P), d = TG.nhanDang(q), tc = g.hoat('chia');
+    g.daGiac([q.A, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
+    if (tc !== null) {
+      if (tc > 0.3) g.daGiac([q.A, q.B, q.C], { to: '#FCA5A5', doMoTo: 0.5 * H.doan(tc, 0.3, 0.4), rong: 0 });
+      if (tc > 0.65) g.daGiac([q.A, q.C, q.D], { to: '#FDE68A', doMoTo: 0.6 * H.doan(tc, 0.65, 0.75), rong: 0 });
+      TG.canh(q).forEach(function (c) { g.doan(c[0], c[1], { rong: 2.8 }); });
+      g.doan(q.A, H.lerp(q.A, q.C, H.em(H.doan(tc, 0.02, 0.25))), { mau: M.duongCheo, rong: 3 });
+      if (tc > 0.3) { g.goc(q.C, q.A, q.B, { mau: '#DC2626', r: 26 }); g.goc(q.A, q.B, q.C, { mau: '#DC2626', r: 26 }); g.goc(q.B, q.C, q.A, { mau: '#DC2626', r: 26 }); }
+      if (tc > 0.65) { g.goc(q.D, q.A, q.C, { mau: '#B45309', r: 34 }); g.goc(q.A, q.C, q.D, { mau: '#B45309', r: 34 }); g.goc(q.C, q.D, q.A, { mau: '#B45309', r: 26 }); }
+      TG.nhanDinh(g, q); return;
+    }
+    var kh = {};
+    if (g.bat('canh')) {
+      var nhom = [];
+      d.canh.forEach(function (x, i) { var j = nhom.findIndex(function (y) { return H.bang(y.gt, x); }); if (j < 0) { nhom.push({ gt: x, ds: [] }); j = nhom.length - 1; } nhom[j].ds.push(i); });
+      var n = 0; nhom.forEach(function (k) { if (k.ds.length > 1) { n++; k.ds.forEach(function (i) { kh[i] = n; }); } });
+    }
+    var sa = g.bat('ss');
+    TG.canh(q).forEach(function (c, i) {
+      var mau = sa && (((i === 0 || i === 2) && d.ss1) || ((i === 1 || i === 3) && d.ss2)) ? (i % 2 === 0 ? M1 : M2) : (g.bat('canh') ? '#475569' : undefined);
+      g.doan(c[0], c[1], { mau: mau, rong: mau && sa ? 5 : 2.8, kyHieu: kh[i] || 0 });
+      if (g.bat('canh')) g.nhanDo(c[0], c[1], so(d.canh[i]), { mau: '#475569', kc: 16 });
+    });
+    if (g.bat('cheo')) TG.cheo(g, q, { sang: 'cheo', trung: d.catTrung, vuong: d.cheoVuong, bang: d.catTrung && d.cheoBang });
+    if (g.bat('goc')) [0, 1, 2, 3].forEach(function (i) { TG.goc(g, q, i, { mau: [MG1, MG2, '#16A34A', '#DC2626'][i], r: 28, doMoTo: 0.3, nhan: true }); });
+    TG.nhanDinh(g, q);
+  },
+
+  nhanXet: function (P) {
+    var d = TG.nhanDang(q_(P)), dh = function (ok, s) { return '<div class="' + (ok ? 'dung' : 'sai') + '">' + (ok ? '✓ ' : '✗ ') + s + '</div>'; };
+    return '<div style="font-size:16px;margin-bottom:6px">Tứ giác $ABCD$ là: <b style="font-size:19px;color:#1D4ED8">' + d.ten + '</b></div>' +
+      dh(d.ss1, '${AB \\parallel DC}$') + dh(d.ss2, '${AD \\parallel BC}$') + dh(d.catTrung, 'Hai đường chéo cắt nhau tại trung điểm mỗi đường') +
+      dh(d.cheoBang, 'Hai đường chéo bằng nhau') + dh(d.cheoVuong, 'Hai đường chéo vuông góc') + dh(d.coGocVuong, 'Có góc vuông') + dh(d.ke4Bang, 'Bốn cạnh bằng nhau') +
+      '<div style="margin-top:6px">Tổng bốn góc: $\\widehat{A} + \\widehat{B} + \\widehat{C} + \\widehat{D} = \\mathbf{' + soL(d.tongGoc, 0) + '^\\circ}$</div>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'goc', ten: 'Tổng các góc của tứ giác', bt: '$' + C.m('goc', '\\widehat{A} + \\widehat{B} + \\widehat{C} + \\widehat{D} = 360^\\circ') + '$' }]; },
+});
+</script>
+</body>
+</html>

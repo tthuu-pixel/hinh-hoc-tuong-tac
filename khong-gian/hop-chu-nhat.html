@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình hộp chữ nhật</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH HỘP CHỮ NHẬT  ABCD.A'B'C'D'  — Toán 7
+   a = chiều dài (AB), b = chiều rộng (BC), c = chiều cao (AA')
+   Trục: x sang phải, y hướng lên, z hướng về người xem
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+
+KhongGian.tao({
+  ten: 'Hình hộp chữ nhật',
+  lop: 7,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'a', nhan: 'Chiều dài a', min: 1, max: 8, buoc: 1, gt: 5, donVi: 'cm', mau: M.chieuDai },
+    { khoa: 'b', nhan: 'Chiều rộng b', min: 1, max: 8, buoc: 1, gt: 3, donVi: 'cm', mau: M.chieuRong },
+    { khoa: 'c', nhan: 'Chiều cao c', min: 1, max: 8, buoc: 1, gt: 4, donVi: 'cm', mau: M.chieuCao },
+  ],
+
+  daDien: function (ts) {
+    var x = ts.a / 2, z = ts.b / 2, c = ts.c;
+    return {
+      dinh: {
+        A: [-x, 0, z], B: [x, 0, z], C: [x, 0, -z], D: [-x, 0, -z],
+        "A'": [-x, c, z], "B'": [x, c, z], "C'": [x, c, -z], "D'": [-x, c, -z],
+      },
+      diemPhu: { O: [0, c / 2, 0] },
+      mat: [
+        { ten: 'ABCD',     dinh: ['A', 'B', 'C', 'D'] },
+        { ten: "ABB'A'",   dinh: ['A', 'B', "B'", "A'"] },
+        { ten: "BCC'B'",   dinh: ['B', 'C', "C'", "B'"] },
+        { ten: "CDD'C'",   dinh: ['C', 'D', "D'", "C'"] },
+        { ten: "DAA'D'",   dinh: ['D', 'A', "A'", "D'"] },
+        { ten: "A'B'C'D'", dinh: ["A'", "B'", "C'", "D'"] },
+      ],
+    };
+  },
+
+  lamSang: [
+    {
+      id: 'a', nhan: 'Chiều dài a', mau: M.chieuDai,
+      canh: [['A', 'B'], ['D', 'C'], ["A'", "B'"], ["D'", "C'"]],
+      nhanDo: function (ts) { return [{ doan: ['A', 'B'], chu: '<i>a</i> = ' + so(ts.a) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Có <b>4 cạnh</b> bằng chiều dài: $AB = DC = A\'B\' = D\'C\' = a = ' + soL(ts.a) + '$ cm.'; },
+    },
+    {
+      id: 'b', nhan: 'Chiều rộng b', mau: M.chieuRong,
+      canh: [['B', 'C'], ['A', 'D'], ["B'", "C'"], ["A'", "D'"]],
+      nhanDo: function (ts) { return [{ doan: ['B', 'C'], chu: '<i>b</i> = ' + so(ts.b) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Có <b>4 cạnh</b> bằng chiều rộng: $BC = AD = B\'C\' = A\'D\' = b = ' + soL(ts.b) + '$ cm.'; },
+    },
+    {
+      id: 'c', nhan: 'Chiều cao c', mau: M.chieuCao,
+      canh: [['A', "A'"], ['B', "B'"], ['C', "C'"], ['D', "D'"]],
+      nhanDo: function (ts) { return [{ doan: ['B', "B'"], chu: '<i>c</i> = ' + so(ts.c) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Có <b>4 cạnh bên</b> bằng chiều cao: $AA\' = BB\' = CC\' = DD\' = c = ' + soL(ts.c) + '$ cm.'; },
+    },
+    {
+      id: 'cheo', nhan: 'Đường chéo', mau: M.duongCheo,
+      doan: [['A', "C'"], ['B', "D'"], ['C', "A'"], ['D', "B'"]], hienDiem: ['O'],
+      ghiChu: 'Hình hộp chữ nhật có <b>4 đường chéo</b>: $AC\', BD\', CA\', DB\'$. Chúng bằng nhau và cắt nhau tại $O$.',
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['ABCD', "A'B'C'D'"],
+      nhanDo: function () { return [{ mat: 'ABCD', chu: 'đáy' }, { mat: "A'B'C'D'", chu: 'đáy' }]; },
+      ghiChu: function (ts) { return 'Hai mặt đáy $ABCD$ và $A\'B\'C\'D\'$ là hình chữ nhật, diện tích $a\\cdot b = ' + soL(ts.a * ts.b) + '$ cm².'; },
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
+      mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
+      ghiChu: 'Diện tích xung quanh là tổng diện tích <b>4 mặt bên</b>. Trải ra, 4 mặt bên ghép thành một hình chữ nhật có chiều dài bằng chu vi đáy.',
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Thể tích là phần không gian bên trong hình. Xếp đầy các khối lập phương 1 cm³ vào hình rồi đếm số khối.',
+    },
+  ],
+
+  congThuc: function (ts, C) {
+    var a = ts.a, b = ts.b, c = ts.c, A = C.m('a', 'a'), B = C.m('b', 'b'), H = C.m('c', 'c'), n = C.soL;
+    return [
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = 2(' + A + ' + ' + B + ')\\cdot ' + H + ' = 2(' + n(a) + ' + ' + n(b) + ')\\cdot ' + n(c) + ' = \\mathbf{' + n(2 * (a + b) * c) + '}$ (cm²)' },
+      { id: null, ten: 'Diện tích toàn phần', bt: '$S_{tp} = S_{xq} + 2' + A + B + ' = ' + n(2 * (a + b) * c) + ' + 2\\cdot ' + n(a) + '\\cdot ' + n(b) + ' = \\mathbf{' + n(2 * (a + b) * c + 2 * a * b) + '}$ (cm²)' },
+      { id: 'V', ten: 'Thể tích', bt: '$V = ' + A + '\\cdot ' + B + '\\cdot ' + H + ' = ' + n(a) + '\\cdot ' + n(b) + '\\cdot ' + n(c) + ' = \\mathbf{' + n(a * b * c) + '}$ (cm³)' },
+    ];
+  },
+
+  traiHinh: { matGoc: 'ABCD', cay: { "A'B'C'D'": "ABB'A'" } },
+
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.c, 0] }; } },
+    { id: 'dung', nhan: 'Song song với mặt bên',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 0, 1], diem: [0, 0, -ts.b / 2 + t * ts.b] }; } },
+    { id: 'cheo', nhan: 'Mặt chéo', diemDacBiet: [0.5],
+      matPhang: function (ts, t) {
+        var x = ts.a / 2, z = ts.b / 2;
+        return { phapTuyen: [ts.b, 0, -ts.a], diem: [-x + t * ts.a, 0, z - t * ts.b] };
+      } },
+    { id: 'nghieng', nhan: 'Vuông góc đường chéo', batDau: 0.5,
+      matPhang: function (ts, t) {
+        var x = ts.a / 2, z = ts.b / 2;
+        return { phapTuyen: [ts.a, ts.c, -ts.b], diem: [-x + t * ts.a, t * ts.c, z - t * ts.b] };
+      } },
+  ],
+
+  khoiDonVi: function (ts) { return { n: [ts.a, ts.c, ts.b], goc: [-ts.a / 2, 0, -ts.b / 2] }; },
+});
+</script>
+</body>
+</html>

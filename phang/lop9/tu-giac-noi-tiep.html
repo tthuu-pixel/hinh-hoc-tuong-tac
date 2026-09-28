@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tứ giác nội tiếp</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   TỨ GIÁC NỘI TIẾP — Toán 9
+   Chế độ "Nội tiếp": A, B, C, D chạy trên đường tròn (O; 3).
+   Chế độ "Kiểm tra": D kéo tự do; đường tròn qua A, B, C vẽ nét đứt.
+   ===================================================================== */
+var R = 3, MA = '#F59E0B', MB = '#7C3AED', MO = '#0D9488';
+function q_(P) { return { A: P.A, B: P.B, C: P.C, D: P.D }; }
+function tong(P) { var q = q_(P), g = [H.gocDo(q.D, q.A, q.B), H.gocDo(q.A, q.B, q.C), H.gocDo(q.B, q.C, q.D), H.gocDo(q.C, q.D, q.A)]; return { g: g, AC: g[0] + g[2], BD: g[1] + g[3] }; }
+function tren(p, P, ts) { return ts.che === 'nt' ? lenDT(O0, R)(p) : p; }
+function datTG(ds) { return function (P, ts, api) { api.datLuaChon('che', 'nt'); ['A', 'B', 'C', 'D'].forEach(function (k, i) { P[k] = diemDT(O0, R, ds[i] * Math.PI / 180); }); api.vuaKhung(); }; }
+
+KhungPhang.tao({
+  ten: 'Tứ giác nội tiếp',
+  lop: 9,
+  diem: { A: diemDT(O0, R, DO(205)), B: diemDT(O0, R, DO(300)), C: diemDT(O0, R, DO(30)), D: diemDT(O0, R, DO(125)) },
+  buocLuoi: 0.5,
+  rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R), C: lenDT(O0, R), D: tren },
+  luaChon: [{ khoa: 'che', gt: 'nt', nhan: 'Chế độ', ds: [{ gt: 'nt', nhan: 'D trên đường tròn' }, { gt: 'kt', nhan: 'Kéo D tự do (kiểm tra)' }],
+    khiDoi: function (gt, P) { if (gt === 'nt') P.D = lenDT(O0, R)(P.D) || diemDT(O0, R, DO(125)); } }],
+  tieuDeNutPhu: 'Tứ giác nội tiếp đặc biệt',
+  nutPhu: [{ nhan: 'Hình chữ nhật', bam: datTG([210, 330, 30, 150]) }, { nhan: 'Hình vuông', bam: datTG([225, 315, 45, 135]) }, { nhan: 'Hình thang cân', bam: datTG([200, 340, 60, 120]) }],
+  batDau: ['AC'],
+
+  lamSang: [
+    { id: 'AC', nhan: 'Â + Ĉ', mau: MA, ghiChu: function (P) { var t = tong(P); return 'Tổng hai góc đối $\\widehat{A}$ và $\\widehat{C}$: $' + soL(t.g[0], 1) + '^\\circ + ' + soL(t.g[2], 1) + '^\\circ = \\mathbf{' + soL(t.AC, 1) + '^\\circ}$.'; } },
+    { id: 'BD', nhan: 'B̂ + D̂', mau: MB, ghiChu: function (P) { var t = tong(P); return 'Tổng hai góc đối $\\widehat{B}$ và $\\widehat{D}$: $' + soL(t.g[1], 1) + '^\\circ + ' + soL(t.g[3], 1) + '^\\circ = \\mathbf{' + soL(t.BD, 1) + '^\\circ}$.'; } },
+    { id: 'O', nhan: 'Tâm O cách đều 4 đỉnh', mau: MO, ghiChu: 'Tứ giác nội tiếp có bốn đỉnh nằm trên một đường tròn tâm $O$: $OA = OB = OC = OD$.' },
+  ],
+
+  ve: function (g, P, ts) {
+    var q = q_(P), t = tong(P), Oc = H.ngoaiTiep(P.A, P.B, P.C) || O0, Rc = H.dai(Oc, P.A), nt = Math.abs(H.dai(Oc, P.D) - Rc) < 1e-3;
+    if (ts.che === 'nt') g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.12, rong: 2.5 });
+    else g.duongTron(Oc, Rc, { mau: nt ? '#16A34A' : '#94A3B8', rong: 2, dut: '7 5', to: 'none' });
+    g.daGiac([q.A, q.B, q.C, q.D], { to: '#FDE68A', doMoTo: 0.25, rong: 3 });
+    if (g.bat('O') && ts.che === 'nt') ['A', 'B', 'C', 'D'].forEach(function (k) { g.doan(O0, q[k], { mau: MO, rong: 2, kyHieu: 1 }); });
+    var oA = g.bat('AC'), oB = g.bat('BD'), ds = [q.A, q.B, q.C, q.D];
+    [0, 1, 2, 3].forEach(function (i) {
+      var on = i % 2 === 0 ? oA : oB, mau = i % 2 === 0 ? MA : MB;
+      g.goc(ds[(i + 3) % 4], ds[i], ds[(i + 1) % 4], { mau: on ? mau : '#94A3B8', r: 28, kyHieu: i % 2 + 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 1 });
+    });
+    if (ts.che === 'nt' || g.bat('O')) g.diem(ts.che === 'nt' ? O0 : Oc, 'O', { r: 4, huong: [0.6, -1] });
+    var T = H.trongTam(q.A, q.B, q.C);
+    ['A', 'B', 'C', 'D'].forEach(function (k) { g.diem(q[k], k, { huong: H.tru(q[k], ts.che === 'nt' ? O0 : T) }); });
+  },
+  nhanXet: function (P, ts) {
+    var t = tong(P), Oc = H.ngoaiTiep(P.A, P.B, P.C), nt = Oc && Math.abs(H.dai(Oc, P.D) - H.dai(Oc, P.A)) < 1e-3, bang = Math.abs(t.AC - 180) < 0.05;
+    var r = '$\\widehat{A} + \\widehat{C} = \\mathbf{' + soL(t.AC, 1) + '^\\circ}$; $\\widehat{B} + \\widehat{D} = \\mathbf{' + soL(t.BD, 1) + '^\\circ}$<br>';
+    if (ts.che === 'nt') r += '<span class="dung">Tứ giác nội tiếp → tổng hai góc đối bằng $180^\\circ$.</span>';
+    else r += bang || nt ? '<span class="dung">Tổng hai góc đối bằng $180^\\circ$ → $D$ nằm trên đường tròn qua $A$, $B$, $C$: tứ giác nội tiếp!</span>' : '<span class="sai">Tổng hai góc đối khác $180^\\circ$ → tứ giác không nội tiếp. Kéo $D$ để tìm vị trí thích hợp.</span>';
+    return r + GACH + '<b>Định lí:</b> trong một tứ giác nội tiếp, tổng số đo hai góc đối bằng $180^\\circ$.<br><b>Dấu hiệu:</b> tứ giác có tổng hai góc đối bằng $180^\\circ$ thì nội tiếp được đường tròn.<br>Hình chữ nhật, hình vuông, hình thang cân đều nội tiếp được đường tròn.';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'AC', ten: 'Tứ giác ABCD nội tiếp', bt: '$' + C.m('AC', '\\widehat{A} + \\widehat{C} = 180^\\circ') + '$; $' + C.m('BD', '\\widehat{B} + \\widehat{D} = 180^\\circ') + '$' }]; },
+  khungNhin: function () { return [[-R - 0.8, -R - 0.8], [R + 0.8, R + 0.8]]; },
+});
+</script>
+</body>
+</html>

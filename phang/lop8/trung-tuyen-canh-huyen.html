@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường trung tuyến ứng với cạnh huyền</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   ĐƯỜNG TRUNG TUYẾN ỨNG VỚI CẠNH HUYỀN — Toán 8 (áp dụng hình chữ nhật)
+   BC cố định, M là trung điểm BC.
+   Thuận: A chạy trên nửa đường tròn đường kính BC (tam giác vuông tại A) → AM = BC : 2.
+   Đảo: kéo A tự do; khi AM = BC : 2 thì tam giác vuông tại A.
+   ===================================================================== */
+var B0 = [-2.5, 0], C0 = [2.5, 0], M0 = [0, 0], R0 = 2.5;
+var MAM = '#E0342F', MDT = '#0D9488', MHCN = '#7C3AED', MG1 = '#F59E0B', MG2 = '#1E6FE0';
+function A_(P, ts) { return ts.che === 'dao' ? P.Q : P.A; }
+function soDo(P, ts) { var A = A_(P, ts), am = H.dai(A, M0); return { A: A, am: am, bc: 2 * R0, goc: H.gocDo(B0, A, C0), vuong: Math.abs(am - R0) < 1e-6 }; }
+function laThuan(P, ts) { return ts.che !== 'dao'; }
+function laDao(P, ts) { return ts.che === 'dao'; }
+
+KhungPhang.tao({
+  ten: 'Đường trung tuyến ứng với cạnh huyền',
+  lop: 8,
+  diem: { A: [1.5, 2], Q: [1, 2.5] },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { var d = H.dai(p, M0); if (d < 1e-6 || p[1] < 0.3) return null; return [p[0] * R0 / d, p[1] * R0 / d]; },
+    Q: function (p) { return [p[0], Math.max(0.5, p[1])]; },
+  },
+  anTayCam: function (k, P, ts) { return ts.che === 'dao' ? k === 'A' : k === 'Q'; },
+  luaChon: [{ khoa: 'che', gt: 'thuan', nhan: 'Nội dung', vuaKhung: true, ds: [{ gt: 'thuan', nhan: 'Định lí thuận' }, { gt: 'dao', nhan: 'Định lí đảo' }] }],
+  batDau: ['am'],
+
+  lamSang: [
+    { id: 'am', nhan: 'Trung tuyến AM', mau: MAM,
+      ghiChu: function (P, ts) {
+        var s = soDo(P, ts);
+        if (ts.che !== 'dao') return 'Trong tam giác vuông, <b>đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền</b>: $AM = \\dfrac{BC}{2} = ' + soL(s.bc / 2) + '$.';
+        return 'So sánh $AM \\approx ' + soL(s.am) + '$ với $\\dfrac{BC}{2} = ' + soL(R0) + '$. Nếu một tam giác có <b>đường trung tuyến ứng với một cạnh bằng nửa cạnh ấy</b> thì tam giác đó là <b>tam giác vuông</b>.';
+      } },
+    { id: 'hcn', nhan: 'Vì sao? (hình chữ nhật)', mau: MHCN, hien: laThuan, vuaKhung: true,
+      ghiChu: 'Lấy $D$ đối xứng với $A$ qua $M$. Tứ giác $ABDC$ có hai đường chéo cắt nhau tại trung điểm mỗi đường và $\\widehat{BAC} = 90^\\circ$ nên là <b>hình chữ nhật</b>. Suy ra $AD = BC$, do đó $AM = \\dfrac{AD}{2} = \\dfrac{BC}{2}$.' },
+    { id: 'cm', nhan: 'Vì sao? (tam giác cân)', mau: MHCN, hien: laDao,
+      ghiChu: 'Nếu $MA = MB = MC$ thì $\\triangle MAB$ và $\\triangle MAC$ cân tại $M$, nên $\\widehat{MAB} = \\widehat{B}$, $\\widehat{MAC} = \\widehat{C}$. Do đó $\\widehat{BAC} = \\widehat{B} + \\widehat{C}$, mà tổng ba góc bằng $180^\\circ$ nên $\\widehat{BAC} = 90^\\circ$.' },
+    { id: 'dt', nhan: 'Đường tròn đường kính BC', mau: MDT,
+      ghiChu: function (P, ts) { return ts.che !== 'dao' ? 'Vì $MA = MB = MC$ nên $A$, $B$, $C$ cùng nằm trên đường tròn tâm $M$ đường kính $BC$: <b>tâm đường tròn ngoại tiếp tam giác vuông là trung điểm cạnh huyền</b>.' : 'Kéo $A$ lên đường tròn đường kính $BC$ thì $AM = \\dfrac{BC}{2}$ và góc $A$ vuông; $A$ ở trong đường tròn thì góc $A$ tù, ở ngoài thì góc $A$ nhọn.'; } },
+  ],
+  hoatHinh: [
+    { id: 'chay', nhan: 'Cho A chạy trên nửa đường tròn', thoiGian: 8000, hien: laThuan,
+      ghiChu: function () { return 'Điểm $A$ thay đổi, tam giác $ABC$ luôn vuông tại $A$ và luôn có $AM = \\dfrac{BC}{2} = ' + soL(R0) + '$.'; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var s = soDo(P, ts), A = s.A, tc = g.hoat('chay');
+    if (tc !== null) { var a = Math.PI * (0.1 + 0.8 * (0.5 - 0.5 * Math.cos(2 * Math.PI * tc))); A = diemDT(a); s = { A: A, am: R0, bc: 2 * R0, goc: 90, vuong: true }; }
+    var dao = ts.che === 'dao', oDt = g.bat('dt');
+    if (oDt || tc !== null) g.duongTron(M0, R0, { mau: MDT, rong: 2, dut: dao ? '6 5' : false, to: MDT, doMoTo: 0.05 });
+    if (g.bat('hcn') && !dao) {
+      var D = [-A[0], -A[1]];
+      g.daGiac([A, B0, D, C0], { to: MHCN, doMoTo: 0.1, mauNet: MHCN, rong: 2, dut: '6 4' });
+      g.doan(A, D, { mau: MHCN, rong: 2.5 }); g.goc(B0, D, C0, { mau: MHCN, r: 14 });
+      g.diem(D, 'D', { huong: [-A[0], -A[1]], mau: MHCN });
+    }
+    g.daGiac([A, B0, C0], { to: '#93C5FD', doMoTo: 0.25, rong: 2.8 });
+    var oAm = g.bat('am');
+    g.doan(A, M0, oAm ? { sang: 'am', kyHieu: s.vuong ? 1 : 0 } : { mau: MAM, rong: 2.5 });
+    if (s.vuong || !dao) { g.kyHieu(B0, M0, 1, oAm ? MAM : '#1B2540'); g.kyHieu(M0, C0, 1, oAm ? MAM : '#1B2540'); }
+    else { g.kyHieu(B0, M0, 1, '#1B2540'); g.kyHieu(M0, C0, 1, '#1B2540'); }
+    if (g.bat('cm') && dao) {
+      g.goc(M0, A, B0, { mau: MG1, r: 26, doMoTo: 0.3, nhan: false }); g.goc(A, B0, M0, { mau: MG1, r: 26, doMoTo: 0.3, nhan: false });
+      g.goc(C0, A, M0, { mau: MG2, r: 32, kyHieu: 2, doMoTo: 0.3, nhan: false }); g.goc(M0, C0, A, { mau: MG2, r: 32, kyHieu: 2, doMoTo: 0.3, nhan: false });
+    }
+    if (s.vuong) g.goc(B0, A, C0, { r: 16, mau: '#16A34A' });
+    else g.goc(B0, A, C0, { r: 30, mau: s.goc > 90 ? '#E0342F' : '#1E6FE0', doMoTo: 0.2, nhan: true, le: 1 });
+    if (g.hienSo()) { g.nhanDo(A, M0, so(s.am), { mau: MAM }); g.nhanDo(B0, C0, 'BC = ' + so(s.bc), { benTrai: false, t: 0.8 }); }
+    g.diem(M0, 'M', { r: 4, huong: [0, -1] });
+    g.diem(A, 'A', { huong: [A[0] * 0.3, 1] }); g.diem(B0, 'B', { huong: [-1, -0.5] }); g.diem(C0, 'C', { huong: [1, -0.5] });
+  },
+
+  nhanXet: function (P, ts) {
+    var s = soDo(P, ts);
+    if (ts.che !== 'dao') return '$\\widehat{BAC} = 90^\\circ$, $M$ là trung điểm $BC$<br>$AM = ' + soL(s.am) + ' = \\dfrac{BC}{2} = \\dfrac{' + soL(s.bc) + '}{2}$';
+    return '$AM \\approx ' + soL(s.am) + '$ ; $\\dfrac{BC}{2} = ' + soL(R0) + '$<br>' + (s.vuong ? '<span class="dung">$AM = \\dfrac{BC}{2}$ → tam giác $ABC$ vuông tại $A$!</span>' : 'Chưa bằng nhau → $\\widehat{BAC} \\approx ' + soL(s.goc, 1) + '^\\circ$ ' + (s.goc > 90 ? '(tù)' : '(nhọn)') + '. Kéo $A$ để $AM = \\dfrac{BC}{2}$.') +
+      '<br><span style="font-size:13px;color:#64748B">Gợi ý vị trí: (1,5; 2), (2; 1,5), (0; 2,5)…</span>';
+  },
+  congThuc: function (P, ts, C) {
+    if (ts.che !== 'dao') return [{ id: 'am', ten: 'Định lí', bt: '$\\triangle ABC$ vuông tại $A$, $AM$ là trung tuyến $\\Rightarrow ' + C.m('am', 'AM = \\dfrac{BC}{2}') + '$' }];
+    return [{ id: 'am', ten: 'Định lí đảo', bt: '$\\triangle ABC$ có trung tuyến $' + C.m('am', 'AM = \\dfrac{BC}{2}') + ' \\Rightarrow \\triangle ABC$ vuông tại $A$' }];
+  },
+  khungNhin: function (P, ts, bat) { return [[-3.3, bat('hcn') && ts.che !== 'dao' ? -3.1 : -0.8], [3.3, 3.4]]; },
+});
+function diemDT(a) { return [R0 * Math.cos(a), R0 * Math.sin(a)]; }
+</script>
+</body>
+</html>

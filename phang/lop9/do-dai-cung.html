@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Độ dài cung – Hình quạt – Vành khuyên</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   ĐỘ DÀI CUNG – HÌNH QUẠT – HÌNH VÀNH KHUYÊN — Toán 9
+   Chọn nội dung; dùng thanh trượt để đổi bán kính R, số đo n°, bán kính r.
+   ===================================================================== */
+var MC = '#E0342F', MQ = '#F59E0B', MV = '#0D9488';
+function vanh(g, R, r, o) {   // hình vành khuyên (tô chẵn-lẻ)
+  function vong(rr) { var s = ''; for (var i = 0; i <= 96; i++) { var p = diemDT(O0, rr, 2 * Math.PI * i / 96); s += (i ? 'L' : 'M') + g.X(p).toFixed(1) + ' ' + g.Y(p).toFixed(1) + ' '; } return s + 'Z '; }
+  g.raw('<path d="' + vong(R) + vong(r) + '" fill="' + o.to + '" fill-opacity="' + o.doMo + '" fill-rule="evenodd" stroke="none"/>');
+}
+function laChe(c) { return function (P, ts) { return ts.che === c; }; }
+
+KhungPhang.tao({
+  ten: 'Độ dài cung – Hình quạt – Vành khuyên',
+  lop: 9,
+  diem: {},
+  luaChon: [{ khoa: 'che', gt: 'cung', nhan: 'Nội dung', vuaKhung: true, ds: [{ gt: 'cung', nhan: 'Độ dài cung' }, { gt: 'quat', nhan: 'Hình quạt' }, { gt: 'vanh', nhan: 'Hình vành khuyên' }] }],
+  thamSo: [
+    { khoa: 'R', nhan: 'Bán kính R', min: 1, max: 5, buoc: 0.5, gt: 3, donVi: 'cm', vuaKhung: true },
+    { khoa: 'n', nhan: 'Số đo cung n', min: 10, max: 360, buoc: 5, gt: 120, hienThi: function (ts) { return so(ts.n, 0) + '°'; }, hien: function (P, ts) { return ts.che !== 'vanh'; } },
+    { khoa: 'r', nhan: 'Bán kính r (đường tròn nhỏ)', min: 0.5, max: 4.5, buoc: 0.5, gt: 1.5, donVi: 'cm', hien: laChe('vanh') },
+  ],
+  batDau: ['cung'],
+
+  lamSang: [
+    { id: 'cung', nhan: 'Cung n°', mau: MC, hien: laChe('cung'), ghiChu: function (P, ts) { return 'Độ dài cung $n^\\circ$ của đường tròn bán kính $R$: <b>$l = \\dfrac{\\pi R n}{180}$</b> $= \\dfrac{\\pi \\cdot ' + soL(ts.R) + ' \\cdot ' + soL(ts.n, 0) + '}{180} \\approx ' + soL(Math.PI * ts.R * ts.n / 180) + '$ <b>cm</b>.'; } },
+    { id: 'chuVi', nhan: 'Cả đường tròn', mau: '#475569', hien: laChe('cung'), ghiChu: function (P, ts) { return 'Độ dài đường tròn (chu vi): <b>$C = 2\\pi R$</b> $\\approx ' + soL(2 * Math.PI * ts.R) + '$ cm ứng với $360^\\circ$; mỗi $1^\\circ$ ứng với $\\dfrac{2\\pi R}{360} = \\dfrac{\\pi R}{180}$.'; } },
+    { id: 'quat', nhan: 'Hình quạt n°', mau: MQ, hien: laChe('quat'), ghiChu: function (P, ts) { return 'Diện tích hình quạt tròn bán kính $R$, cung $n^\\circ$: <b>$S = \\dfrac{\\pi R^2 n}{360} \\approx ' + soL(Math.PI * ts.R * ts.R * ts.n / 360) + '\\text{ cm}^2$</b> (hay $S = \\dfrac{l \\cdot R}{2}$).'; } },
+    { id: 'hinhTron', nhan: 'Cả hình tròn', mau: '#475569', hien: laChe('quat'), ghiChu: function (P, ts) { return 'Diện tích hình tròn <b>$S = \\pi R^2$</b> $\\approx ' + soL(Math.PI * ts.R * ts.R) + '\\text{ cm}^2$ ứng với $360^\\circ$. Hình quạt $' + soL(ts.n, 0) + '^\\circ$ chiếm $\\dfrac{' + soL(ts.n, 0) + '}{360}$ hình tròn.'; } },
+    { id: 'vanh', nhan: 'Hình vành khuyên', mau: MV, hien: laChe('vanh'), ghiChu: function (P, ts) { var r = Math.min(ts.r, ts.R - 0.5); return 'Hình vành khuyên là phần nằm giữa hai đường tròn đồng tâm: <b>$S = \\pi(R^2 - r^2)$</b> $= \\pi(' + soL(ts.R) + '^2 - ' + soL(r) + '^2) \\approx ' + soL(Math.PI * (ts.R * ts.R - r * r)) + '\\text{ cm}^2$.'; } },
+  ],
+  hoatHinh: [
+    { id: 'duoi', nhan: 'Duỗi thẳng cung', thoiGian: 5000, hien: laChe('cung'),
+      ghiChu: function (P, ts, t) { var l = Math.PI * ts.R * ts.n / 180; return t < 1 ? 'Duỗi cung thành một đoạn thẳng…' : 'Đoạn thẳng thu được dài đúng bằng độ dài cung: <b>$l \\approx ' + soL(l) + '$ cm</b>.'; } },
+    { id: 'quet', nhan: 'Quét hình quạt', thoiGian: 5000, hien: laChe('quat'),
+      ghiChu: function (P, ts, t) { var e = H.em(H.doan(t, 0.05, 0.9)), n = ts.n * e; return 'Quạt $' + soL(n, 0) + '^\\circ$ có diện tích $\\pi R^2 \\cdot \\dfrac{' + soL(n, 0) + '}{360} \\approx ' + soL(Math.PI * ts.R * ts.R * n / 360) + '\\text{ cm}^2$.'; } },
+    { id: 'khoet', nhan: 'Khoét hình tròn nhỏ', thoiGian: 4500, hien: laChe('vanh'),
+      ghiChu: function (P, ts, t) { return t < 0.45 ? 'Hình tròn lớn có diện tích $\\pi R^2$…' : 'Khoét bỏ hình tròn nhỏ (diện tích $\\pi r^2$), phần còn lại là hình vành khuyên: <b>$S = \\pi R^2 - \\pi r^2$</b>.'; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var R = ts.R, n = ts.n * Math.PI / 180, A = diemDT(O0, R, 0);
+    if (ts.che === 'cung') {
+      var td = g.hoat('duoi');
+      g.duongTron(O0, R, { rong: g.bat('chuVi') ? 4 : 2, mau: g.bat('chuVi') ? '#475569' : '#94A3B8', to: '#93C5FD', doMoTo: 0.12 });
+      g.doan(O0, A, { rong: 2 }); g.doan(O0, diemDT(O0, R, n), { rong: 2 });
+      g.goc(A, O0, diemDT(O0, R, n), { mau: MQ, r: 30, nhan: so(ts.n, 0) + '°', lon: ts.n > 180, vuong: false });
+      if (td !== null) {
+        var e = H.em(H.doan(td, 0.05, 0.9)), l = R * n, y = -R - 1.3, ds = [];
+        for (var i = 0; i <= 60; i++) { var s = i / 60, cu = diemDT(O0, R, n * s), moi = [-l / 2 + l * s, y]; ds.push(H.lerp(cu, moi, e)); }
+        g.duong(ds, { mau: MC, rong: 6 });
+        if (td >= 1) g.nhanDo([-l / 2, y], [l / 2, y], 'l ≈ ' + so(l) + ' cm', { mau: MC, benTrai: false });
+      } else veCung(g, O0, R, 0, n, g.bat('cung') ? { sang: 'cung', rongSang: 6 } : { mau: MC, rong: 4 });
+      g.nhanDo(O0, A, 'R = ' + so(R), { benTrai: false });
+    } else if (ts.che === 'quat') {
+      var tq = g.hoat('quet'), m = tq !== null ? n * H.em(H.doan(tq, 0.05, 0.9)) : n;
+      g.duongTron(O0, R, { rong: 2, mau: g.bat('hinhTron') ? '#475569' : '#94A3B8', to: '#94A3B8', doMoTo: g.bat('hinhTron') ? 0.25 : 0.08 });
+      if (m > 0.001) g.quat(O0, R, 0, m, { to: MQ, doMoTo: g.bat('quat') ? 0.65 : 0.45, mau: '#B45309', rong: g.bat('quat') ? 3.5 : 2 });
+      g.nhanDo(O0, A, 'R = ' + so(R), { benTrai: false });
+      g.chu(diemDT(O0, R * 0.55, m / 2), so(m * 180 / Math.PI, 0) + '°', { mau: '#92400E' });
+    } else {
+      var r = Math.min(ts.r, R - 0.5), tk = g.hoat('khoet');
+      if (tk !== null) {
+        g.duongTron(O0, R, { to: MV, doMoTo: 0.45, mau: '#0F766E', rong: 2.5 });
+        var e2 = H.em(H.doan(tk, 0.45, 0.9));
+        if (tk > 0.45) { g.duongTron(O0, r, { to: '#FFFFFF', doMoTo: e2, mau: '#0F766E', rong: 2.5 }); g.duongTron(H.cong(O0, [R + r + 0.8, 0]), r, { to: MV, doMoTo: 0.45 * (1 - e2) + 0.2, mau: '#0F766E', rong: 2, dut: '5 4' }); }
+      } else {
+        vanh(g, R, r, { to: MV, doMo: g.bat('vanh') ? 0.6 : 0.4 });
+        g.duongTron(O0, R, { rong: 2.5, mau: '#0F766E' }); g.duongTron(O0, r, { rong: 2.5, mau: '#0F766E' });
+      }
+      g.doan(O0, diemDT(O0, R, 0.5), { rong: 2, mau: '#B45309' }); g.doan(O0, diemDT(O0, r, 2.4), { rong: 2, mau: '#1E6FE0' });
+      g.chu(diemDT(O0, R * 0.8, 0.5), 'R', { nghieng: true, mau: '#B45309' }); g.chu(diemDT(O0, r * 0.6, 2.4), 'r', { nghieng: true, mau: '#1E6FE0' });
+    }
+    g.diem(O0, 'O', { r: 4, huong: [-0.8, -0.9] });
+  },
+  congThuc: function (P, ts, C) {
+    var R = ts.R, r = Math.min(ts.r, R - 0.5);
+    if (ts.che === 'cung') return [{ id: 'cung', ten: 'Độ dài cung n°', bt: '$' + C.m('cung', 'l = \\dfrac{\\pi R n}{180}') + ' \\approx \\mathbf{' + soL(Math.PI * R * ts.n / 180) + '}\\text{ cm}$' }, { id: 'chuVi', ten: 'Độ dài đường tròn', bt: '$' + C.m('chuVi', 'C = 2\\pi R') + ' \\approx ' + soL(2 * Math.PI * R) + '\\text{ cm}$' }];
+    if (ts.che === 'quat') return [{ id: 'quat', ten: 'Diện tích hình quạt', bt: '$' + C.m('quat', 'S = \\dfrac{\\pi R^2 n}{360}') + ' \\approx \\mathbf{' + soL(Math.PI * R * R * ts.n / 360) + '}\\text{ cm}^2$' }, { id: 'hinhTron', ten: 'Diện tích hình tròn', bt: '$' + C.m('hinhTron', 'S = \\pi R^2') + ' \\approx ' + soL(Math.PI * R * R) + '\\text{ cm}^2$' }];
+    return [{ id: 'vanh', ten: 'Diện tích hình vành khuyên', bt: '$' + C.m('vanh', 'S = \\pi(R^2 - r^2)') + ' \\approx \\mathbf{' + soL(Math.PI * (R * R - r * r)) + '}\\text{ cm}^2$' }];
+  },
+  nhanXet: function (P, ts) {
+    if (ts.che === 'vanh' && ts.r > ts.R - 0.5) return '<span class="sai">Cần $r \\lt R$: đang dùng $r = ' + soL(ts.R - 0.5) + '$.</span>';
+    return 'Với $R = ' + soL(ts.R) + '$ cm' + (ts.che !== 'vanh' ? ', $n = ' + soL(ts.n, 0) + '^\\circ$' : ', $r = ' + soL(ts.r) + '$ cm') + '. Thay đổi thanh trượt để thấy công thức thay đổi.';
+  },
+  khungNhin: function (P, ts) { var R = ts.R; return ts.che === 'cung' ? [[-Math.max(R, Math.PI * R * ts.n / 360) - 0.5, -R - 2], [R + 0.5, R + 0.5]] : ts.che === 'vanh' ? [[-R, -R], [R + 2 * Math.min(ts.r, R - 0.5) + 1, R]] : [[-R, -R], [R, R]]; },
+});
+</script>
+</body>
+</html>

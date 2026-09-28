@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình thang cân</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH THANG CÂN ABCD — Toán 6
+   Nhận dạng, chu vi, diện tích và tính đối xứng (1 trục, không có tâm).
+   Đáy lớn AB nằm ngang (A cố định, kéo B), kéo D; C đối xứng với D.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, D: D, C: [A[0] + B[0] - D[0], D[1]], Hc: [D[0], A[1]] }; }
+function soDo(P) { var q = dinh(P); return { a: H.dai(q.A, q.B), b: H.dai(q.D, q.C), h: q.D[1] - q.A[1], ben: H.dai(q.A, q.D) }; }
+function thongTin(P) {
+  var q = dinh(P);
+  return { ten: 'Hình thang cân', ds: [q.A, q.B, q.C, q.D], tam: null, tamThu: [(q.A[0] + q.B[0]) / 2, (q.A[1] + q.D[1]) / 2],
+    truc: [[H.trung(q.A, q.B), H.trung(q.D, q.C)]] };
+}
+
+KhungPhang.tao({
+  ten: 'Hình thang cân',
+  lop: 6,
+  diem: { A: [0, 0], B: [7, 0], D: [2, 3] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: {
+    B: function (p, P) { return [Math.max(P.A[0] + 2, Math.max(p[0], 2 * P.D[0] - P.A[0] + 0.5)), P.A[1]]; },
+    D: function (p, P) { var gi = (P.A[0] + P.B[0]) / 2; return [Math.min(Math.max(p[0], P.A[0] - 3), gi - 0.25), Math.max(P.A[1] + 0.5, p[1])]; },
+  },
+  hopChon: [DX.hopChonVet],
+
+  lamSang: DX.lamSang(thongTin).concat([
+    { id: 'day', nhan: 'Hai đáy a, b', mau: M.chieuDai, ghiChu: function (P) { var s = soDo(P); return 'Đáy lớn $a = ' + soL(s.a) + '$ cm, đáy nhỏ $b = ' + soL(s.b) + '$ cm.'; } },
+    { id: 'cao', nhan: 'Chiều cao DH', mau: M.chieuCao, ghiChu: function (P) { return '$DH$ vuông góc với hai đáy, là <b>chiều cao</b>: $h = ' + soL(soDo(P).h) + '$ cm.'; } },
+  ]),
+
+  hoatHinh: DX.hoatHinh(thongTin).concat([
+    { id: 'ghep', nhan: 'Ghép hai hình thang', thoiGian: 6000,
+      vuaKhung: function (P) { var q = dinh(P), s = soDo(P); return [[q.B[0] + s.b, q.A[1]], [q.C[0] + s.a, q.C[1]]]; },
+      ghiChu: function (P, ts, t) {
+        var s = soDo(P);
+        if (t < 0.15) return 'Lấy thêm một hình thang giống hệt hình thang $ABCD$.';
+        if (t < 0.95) return 'Quay hình thang thứ hai nửa vòng quanh trung điểm của $BC$…';
+        return 'Hai hình thang ghép thành <b>hình bình hành</b> có đáy $a + b = ' + soL(s.a + s.b) + '$ cm, chiều cao $h = ' + soL(s.h) + '$ cm.<br>Vậy $S_{\\text{thang}} = (a + b) \\cdot h : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ <b>cm²</b>.';
+      } },
+  ]),
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = thongTin(P), t = g.hoat('ghep'), ds = f.ds;
+    if (t !== null) {
+      var N = H.trung(q.B, q.C), e = H.em(H.doan(t, 0.18, 0.9));
+      g.daGiac(ds, { to: '#93C5FD', doMoTo: 0.65 });
+      if (t > 0.05) g.daGiac(ds.map(function (x) { return H.xoay(x, N, Math.PI * e); }), { to: '#F59E0B', doMoTo: 0.6 * Math.min(1, t / 0.15) });
+      g.diem(N, '', { r: 4, mau: '#0D9488' });
+      g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [0, -1] }); g.diem(q.C, 'C', { huong: [0, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+      return;
+    }
+    var hoat = DX.dangHoat(g);
+    if (!hoat) {
+      g.daGiac(ds, { rong: 0 });
+      g.doan(q.A, q.B, { sang: 'day' }); g.doan(q.D, q.C, { sang: 'day' }); g.doan(q.A, q.D, {}); g.doan(q.B, q.C, {});
+      if (g.bat('cao')) {
+        g.doan(q.D, q.Hc, { sang: 'cao' }); g.goc(q.D, q.Hc, q.B, { mau: M.chieuCao, nhan: false, r: 12 });
+        g.nhanDo(q.Hc, q.D, 'h = ' + so(q.D[1] - q.A[1]), { sang: 'cao', kc: 30 }); g.diem(q.Hc, 'H', { huong: [0, -1], mau: M.chieuCao });
+      }
+    }
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)), { benTrai: false, sang: 'day', t: 0.7 });
+    g.nhanDo(q.D, q.C, 'b = ' + so(H.dai(q.D, q.C)), { sang: 'day' });
+    g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var s = soDo(P);
+    return [
+      { id: null, ten: 'Chu vi', bt: '$C = ' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ' + 2 \\cdot AD \\approx \\mathbf{' + soL(s.a + s.b + 2 * s.ben) + '}$ (cm)' },
+      { id: 'cao', ten: 'Diện tích', bt: '$S = (' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ') \\cdot ' + C.m('cao', 'h') + ' : 2 = (' + soL(s.a) + ' + ' + soL(s.b) + ') \\cdot ' + soL(s.h) + ' : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)); },
+  khungNhin: function (P) { return [dinh(P).C]; },
+});
+</script>
+</body>
+</html>

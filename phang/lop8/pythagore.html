@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Định lí Pythagore</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐỊNH LÍ PYTHAGORE — Toán 8
+   Chế độ "Định lí": tam giác ABC vuông tại A, kéo B, C. Hình vuông trên
+   các cạnh chỉ hiện khi bấm nút; hoạt hình chứng minh bằng cắt ghép.
+   Chế độ "Định lí đảo": kéo A tự do, so sánh AB² + AC² với BC².
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
+var MAU_AB = '#E0342F', MAU_AC = '#1E6FE0', MAU_BC = '#F59E0B';
+function vuongNgoai(P1, P2, ben) {   // hình vuông dựng trên P1P2 về phía "ben" (+1 hoặc -1)
+  var d = H.tru(P2, P1), n = [-d[1] * ben, d[0] * ben];
+  return [P1, P2, H.cong(P2, n), H.cong(P1, n)];
+}
+// Hai cách xếp 4 tam giác vuông (cạnh góc vuông a, b) trong hình vuông cạnh a + b, góc dưới trái tại (x0, 0)
+function xepHinh(a, b, x0) {
+  var s = a + b, D = function (p) { return [p[0] + x0, p[1]]; };
+  var truoc = [[[0, 0], [a, 0], [0, b]], [[s, 0], [s, a], [a, 0]], [[s, s], [b, s], [s, a]], [[0, s], [0, b], [b, s]]];
+  var sau = [[[a, a], [a, 0], [s, a]], [[s, 0], [s, a], [a, 0]], [[a, s], [0, s], [a, a]], [[0, a], [a, a], [0, s]]];
+  return { s: s, truoc: truoc.map(function (t) { return t.map(D); }), sau: sau.map(function (t) { return t.map(D); }), D: D };
+}
+
+
+var MAU_TOI = '#1B2540', B2 = [0, 0], C2 = [5, 0];
+function tg(P, ts) { return ts.che === 'dao' ? { A: P.Q, B: B2, C: C2 } : { A: P.A, B: P.B, C: P.C }; }
+function ngoai(P1, P2, T) {   // hình vuông dựng trên P1P2 về phía ngoài tam giác (T là trọng tâm)
+  var d = H.tru(P2, P1), n = [-d[1], d[0]], m = H.trung(P1, P2);
+  var ben = (T[0] - m[0]) * n[0] + (T[1] - m[1]) * n[1] > 0 ? -1 : 1;
+  return vuongNgoai(P1, P2, ben);
+}
+function soSanh(P, ts) {
+  var q = tg(P, ts), c = H.dai(q.A, q.B), b = H.dai(q.A, q.C), a = H.dai(q.B, q.C), tong = c * c + b * b;
+  return { a: a, b: b, c: c, tong: tong, a2: a * a, goc: H.gocDo(q.B, q.A, q.C), kq: Math.abs(tong - a * a) < 1e-6 ? 0 : tong > a * a ? 1 : -1 };
+}
+function laThuan(P, ts) { return ts.che !== 'dao'; }
+
+KhungPhang.tao({
+  ten: 'Định lí Pythagore',
+  lop: 8,
+  diem: { A: [0, 0], B: [4, 0], C: [0, 3], Q: [1.5, 2.5] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: {
+    B: function (p) { return [Math.max(1, p[0]), 0]; },
+    C: function (p) { return [0, Math.max(1, p[1])]; },
+    Q: function (p) { return [p[0], Math.max(0.5, p[1])]; },
+  },
+  anTayCam: function (k, P, ts) { return ts.che === 'dao' ? k !== 'Q' : k === 'Q'; },
+  luaChon: [{ khoa: 'che', gt: 'thuan', nhan: 'Nội dung', vuaKhung: true,
+    ds: [{ gt: 'thuan', nhan: 'Định lí Pythagore' }, { gt: 'dao', nhan: 'Định lí đảo' }] }],
+
+  lamSang: [
+    { id: 'ab', vuaKhung: true, nhan: 'Hình vuông cạnh AB', mau: MAU_AB, ghiChu: function (P, ts) { var s = soSanh(P, ts); return 'Hình vuông dựng trên cạnh $AB$ có diện tích $AB^2 = ' + soL(s.c * s.c) + '$ cm².'; } },
+    { id: 'ac', vuaKhung: true, nhan: 'Hình vuông cạnh AC', mau: MAU_AC, ghiChu: function (P, ts) { var s = soSanh(P, ts); return 'Hình vuông dựng trên cạnh $AC$ có diện tích $AC^2 = ' + soL(s.b * s.b) + '$ cm².'; } },
+    { id: 'bc', vuaKhung: true, nhan: 'Hình vuông cạnh BC', mau: MAU_BC, ghiChu: function (P, ts) {
+      var s = soSanh(P, ts);
+      return 'Hình vuông dựng trên cạnh ' + (ts.che === 'dao' ? '' : 'huyền ') + '$BC$ có diện tích $BC^2 = ' + soL(s.a2) + '$ cm²' +
+        (ts.che === 'dao' ? (s.kq === 0 ? ' — đúng bằng $AB^2 + AC^2$!' : ' — khác $AB^2 + AC^2 = ' + soL(s.tong) + '$ cm².') : ' — bằng tổng diện tích hai hình vuông kia!');
+    } },
+    { id: 'goiY', nhan: 'Gợi ý: nửa đường tròn đường kính BC', mau: '#0D9488', hien: function (P, ts) { return ts.che === 'dao'; },
+      ghiChu: 'Những vị trí của $A$ làm góc $A$ vuông nằm trên nửa đường tròn đường kính $BC$. Thử kéo $A$ tới điểm $(1;\\,2),$ $(2{,}5;\\,2{,}5)$ hoặc $(4;\\,2)$.' },
+  ],
+
+  hoatHinh: [
+    { id: 'ghep', nhan: 'Chứng minh bằng cắt ghép', thoiGian: 8000, hien: laThuan,
+      vuaKhung: function (P) { var c = H.dai(P.A, P.B), b = H.dai(P.A, P.C), x0 = c + b + 2; return [[x0, -0.3], [x0 + b + c, b + c + 0.3], [-b - 0.5, -c - 0.5]]; },
+      ghiChu: function (P, ts, t) {
+        if (t < 0.22) return 'Xếp 4 tam giác vuông bằng tam giác $ABC$ vào hình vuông cạnh $AB + AC$: phần còn trống là hình vuông cạnh $BC$ (màu vàng).';
+        if (t < 0.8) return 'Dời các tam giác sang cách xếp khác (hình vuông lớn không đổi)…';
+        return 'Phần còn trống bây giờ là hai hình vuông cạnh $AB$ và $AC$. Diện tích phần trống không đổi nên <b>$BC^2 = AB^2 + AC^2$</b>.';
+      } },
+  ],
+
+  ve: function (g, P, ts) {
+    var q = tg(P, ts), A = q.A, B = q.B, C = q.C, T = H.trongTam(A, B, C), s = soSanh(P, ts), dao = ts.che === 'dao';
+    var t = dao ? null : g.hoat('ghep');
+    if (g.bat('goiY') && dao) {
+      var O = H.trung(B, C), ds = [];
+      for (var i = 0; i <= 48; i++) { var a = Math.PI * i / 48; ds.push([O[0] + 2.5 * Math.cos(a), O[1] + 2.5 * Math.sin(a)]); }
+      g.duong(ds, { mau: '#0D9488', rong: 2, dut: '6 5' });
+    }
+    if (g.bat('ab')) g.daGiac(ngoai(A, B, T), { sang: 'ab' });
+    if (g.bat('ac')) g.daGiac(ngoai(A, C, T), { sang: 'ac' });
+    if (g.bat('bc')) g.daGiac(ngoai(B, C, T), { sang: 'bc' });
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.3, rong: 0 });
+    g.doan(A, B, { mau: MAU_AB, rong: 3.5 }); g.doan(A, C, { mau: MAU_AC, rong: 3.5 }); g.doan(B, C, { mau: '#B45309', rong: 3.5 });
+    if (!dao || s.kq === 0) g.goc(B, A, C, { r: 16, mau: dao ? '#16A34A' : MAU_TOI });
+    else g.goc(B, A, C, { r: 26, mau: s.kq > 0 ? '#1E6FE0' : '#E0342F', doMoTo: 0.2, le: 1 });
+    if (g.hienSo()) {
+      g.nhanDo(A, B, so(s.c), { mau: MAU_AB }); g.nhanDo(C, A, so(s.b), { mau: MAU_AC }); g.nhanDo(B, C, so(s.a), { mau: '#B45309' });
+      if (g.bat('ab')) g.chu(H.trongTam.apply(null, ngoai(A, B, T).slice(0, 3)), so(s.c * s.c) + ' cm²', { mau: '#B91C1C' });
+      if (g.bat('ac')) g.chu(H.trongTam.apply(null, ngoai(A, C, T).slice(0, 3)), so(s.b * s.b) + ' cm²', { mau: '#1D4ED8' });
+      if (g.bat('bc')) { var qb = ngoai(B, C, T); g.chu(H.trung(qb[0], qb[2]), so(s.a2) + ' cm²', { mau: '#B45309' }); }
+    }
+    g.diem(A, 'A', { huong: H.tru(A, T) }); g.diem(B, 'B', { huong: H.tru(B, T) }); g.diem(C, 'C', { huong: H.tru(C, T) });
+    if (t !== null) {
+      var c = s.c, b = s.b, x = xepHinh(c, b, c + b + 2), S = x.s, e = H.em(H.doan(t, 0.24, 0.78));
+      g.daGiac([x.D([0, 0]), x.D([S, 0]), x.D([S, S]), x.D([0, S])], { to: '#fff', doMoTo: 1, rong: 3 });
+      if (t < 0.5) g.daGiac([x.D([c, 0]), x.D([S, c]), x.D([b, S]), x.D([0, b])], { to: MAU_BC, doMoTo: 0.55 * (1 - H.doan(t, 0.24, 0.5)), khongVien: true });
+      if (t > 0.6) {
+        var k = H.doan(t, 0.6, 0.85);
+        g.daGiac([x.D([0, 0]), x.D([c, 0]), x.D([c, c]), x.D([0, c])], { to: MAU_AB, doMoTo: 0.55 * k, khongVien: true });
+        g.daGiac([x.D([c, c]), x.D([S, c]), x.D([S, S]), x.D([c, S])], { to: MAU_AC, doMoTo: 0.55 * k, khongVien: true });
+      }
+      var mau = ['#94A3B8', '#CBD5E1', '#94A3B8', '#CBD5E1'];
+      [0, 1, 2, 3].forEach(function (i) { g.daGiac(H.doiHinh(x.truoc[i], x.sau[i], e), { to: mau[i], doMoTo: 0.95, rong: 2 }); });
+      if (t < 0.22) g.chu(x.D([S / 2, S / 2]), 'BC²', { mau: '#B45309' });
+      if (t > 0.85) { g.chu(x.D([c / 2, c / 2]), 'AB²', { mau: '#B91C1C' }); g.chu(x.D([c + b / 2, c + b / 2]), 'AC²', { mau: '#1D4ED8' }); }
+    }
+  },
+
+  congThuc: function (P, ts, C) {
+    var s = soSanh(P, ts);
+    if (ts.che === 'dao') return [
+      { id: 'bc', vuaKhung: true, ten: 'Định lí Pythagore đảo', bt: 'Nếu $' + C.m('bc', 'BC^2') + ' = ' + C.m('ab', 'AB^2') + ' + ' + C.m('ac', 'AC^2') + '$ thì $\\triangle ABC$ vuông tại $A$' },
+      { id: null, ten: 'Với số đo hiện tại', bt: '$' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = ' + soL(s.tong) + (s.kq === 0 ? ' = ' : s.kq > 0 ? ' \\gt ' : ' \\lt ') + soL(s.a2) + '$' },
+    ];
+    return [
+      { id: 'bc', vuaKhung: true, ten: 'Định lí Pythagore (tam giác ABC vuông tại A)', bt: '$' + C.m('bc', 'BC^2') + ' = ' + C.m('ab', 'AB^2') + ' + ' + C.m('ac', 'AC^2') + '$' },
+      { id: null, ten: 'Kiểm tra với số đo hiện tại', bt: '$' + soL(s.a) + '^2 \\approx ' + soL(s.c) + '^2 + ' + soL(s.b) + '^2$<br>$' + soL(s.a2) + ' = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + '$' },
+      { id: null, ten: 'Tính cạnh huyền', bt: '$BC = \\sqrt{AB^2 + AC^2} \\approx \\mathbf{' + soL(s.a) + '}$ (cm)' },
+    ];
+  },
+  nhanXet: function (P, ts) {
+    var s = soSanh(P, ts);
+    if (ts.che === 'dao') {
+      return '$AB^2 + AC^2 = \\mathbf{' + soL(s.tong) + '}$ ; $BC^2 = \\mathbf{' + soL(s.a2) + '}$<br>' +
+        (s.kq === 0 ? '<span class="dung">Bằng nhau → $\\triangle ABC$ vuông tại $A$ ($\\widehat{A} = 90^\\circ$)!</span>' :
+          'Chưa bằng nhau → $\\widehat{A} \\approx ' + soL(s.goc, 1) + '^\\circ$ ' + (s.kq > 0 ? '(nhọn)' : '(tù)') + '. Kéo $A$ để hai số bằng nhau.');
+    }
+    var dep = Number.isInteger(Math.round(s.a * 1e6) / 1e6) ? '<br><span class="dung">Bộ ba số đẹp: $' + soL(s.c) + '$, $' + soL(s.b) + '$, $' + soL(s.a) + '$!</span>' : '';
+    return '$AB^2 + AC^2 = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = \\mathbf{' + soL(s.tong) + '}$<br>$BC^2 = \\mathbf{' + soL(s.a2) + '}$' + dep;
+  },
+  khungNhin: function (P, ts, bat) {
+    var q = tg(P, ts), T = H.trongTam(q.A, q.B, q.C), ds = [q.A, q.B, q.C];
+    if (bat('ab')) ds = ds.concat(ngoai(q.A, q.B, T)); if (bat('ac')) ds = ds.concat(ngoai(q.A, q.C, T)); if (bat('bc')) ds = ds.concat(ngoai(q.B, q.C, T));
+    if (ts.che === 'dao') ds.push([-0.3, -0.5], [5.3, 3]);
+    return ds;
+  },
+});
+</script>
+</body>
+</html>

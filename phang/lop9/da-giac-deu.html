@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đa giác đều và phép quay</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   ĐA GIÁC ĐỀU VÀ PHÉP QUAY — Toán 9
+   Chọn số cạnh n; kéo đỉnh A để xoay/phóng to đa giác đều nội tiếp (O).
+   Phép quay tâm O góc α (thuận/ngược chiều kim đồng hồ).
+   ===================================================================== */
+var TEN = 'ABCDEFGHIK', MC = '#E0342F', MG = '#F59E0B', MO = '#0D9488', MQ = '#7C3AED';
+function dinh(P, ts) { var R = H.dai(P.A, O0), a0 = gocCua(P.A), ds = []; for (var i = 0; i < ts.n; i++) ds.push(diemDT(O0, R, a0 + 2 * Math.PI * i / ts.n)); return { ds: ds, R: R, a0: a0 }; }
+function quay(p, deg, ts) { return H.xoay(p, O0, (ts.chieu === 'thuan' ? -1 : 1) * deg * Math.PI / 180); }
+function giuNguyen(ts) { var k = 360 / ts.n; return Math.abs(ts.alpha / k - Math.round(ts.alpha / k)) < 1e-6; }
+var TENDG = { 3: 'Tam giác đều', 4: 'Hình vuông', 5: 'Ngũ giác đều', 6: 'Lục giác đều', 7: 'Thất giác đều', 8: 'Bát giác đều', 9: 'Cửu giác đều', 10: 'Thập giác đều' };
+
+KhungPhang.tao({
+  ten: 'Đa giác đều và phép quay',
+  lop: 9,
+  diem: { A: [3, 0] },
+  buocLuoi: 0.5,
+  rangBuoc: { A: function (p) { return H.dai(p, O0) < 1.2 ? null : p; } },
+  thamSo: [
+    { khoa: 'n', nhan: 'Số cạnh n', min: 3, max: 10, buoc: 1, gt: 6, hienThi: function (ts) { return ts.n + ' (' + TENDG[ts.n] + ')'; } },
+    { khoa: 'alpha', nhan: 'Góc quay α', min: 0, max: 360, buoc: 5, gt: 60, hienThi: function (ts) { return so(ts.alpha, 0) + '°'; } },
+  ],
+  luaChon: [{ khoa: 'chieu', gt: 'thuan', nhan: 'Chiều quay', ds: [{ gt: 'thuan', nhan: 'Thuận chiều kim đồng hồ' }, { gt: 'nguoc', nhan: 'Ngược chiều' }] }],
+  tieuDeNutPhu: 'Phép quay giữ nguyên đa giác',
+  nutPhu: [{ nhan: 'Đặt α = 360°/n', bam: function (P, ts, api) { ts.alpha = Math.round(360 / ts.n * 100) / 100; var el = document.getElementById('ts-alpha'); if (el) { el.value = ts.alpha; el.dispatchEvent(new Event('input')); } } }],
+  batDau: ['canh'],
+
+  lamSang: [
+    { id: 'canh', nhan: 'Các cạnh bằng nhau', mau: MC, ghiChu: function (P, ts) { var q = dinh(P, ts); return 'Đa giác đều có <b>tất cả các cạnh bằng nhau</b> ($\\approx ' + soL(H.dai(q.ds[0], q.ds[1])) + '$ cm)…'; } },
+    { id: 'goc', nhan: 'Các góc bằng nhau', mau: MG, ghiChu: function (P, ts) { return '…và <b>tất cả các góc bằng nhau</b>, mỗi góc bằng $\\dfrac{(n-2)\\cdot 180^\\circ}{n} = \\mathbf{' + soL((ts.n - 2) * 180 / ts.n, 1) + '^\\circ}$.'; } },
+    { id: 'tam', nhan: 'Tâm O, đường tròn ngoại tiếp', mau: MO, ghiChu: function (P, ts) { return 'Mọi đa giác đều đều nội tiếp một đường tròn tâm $O$ (tâm của đa giác đều), $R = OA \\approx ' + soL(dinh(P, ts).R) + '$ cm. Góc ở tâm chắn một cạnh bằng $\\dfrac{360^\\circ}{n} = ' + soL(360 / ts.n, 1) + '^\\circ$.'; } },
+    { id: 'diem', nhan: 'Ảnh của điểm A qua phép quay', mau: MQ, ghiChu: function (P, ts) { return 'Phép quay ' + (ts.chieu === 'thuan' ? 'thuận' : 'ngược') + ' chiều $\\alpha = ' + soL(ts.alpha, 0) + '^\\circ$ tâm $O$ biến $A$ thành $A\'$ sao cho $OA\' = OA$ và tia $OA$ quay ' + (ts.chieu === 'thuan' ? 'thuận' : 'ngược') + ' chiều kim đồng hồ đến tia $OA\'$ một góc $' + soL(ts.alpha, 0) + '^\\circ$.'; } },
+  ],
+  hoatHinh: [
+    { id: 'quay', nhan: 'Quay đa giác một góc α', thoiGian: 5000,
+      ghiChu: function (P, ts, t) { if (t < 1) return 'Quay đa giác quanh $O$ ' + (ts.chieu === 'thuan' ? 'thuận' : 'ngược') + ' chiều kim đồng hồ $' + soL(ts.alpha, 0) + '^\\circ$…'; return giuNguyen(ts) ? '<b>Trùng khít!</b> $\\alpha = ' + soL(ts.alpha, 0) + '^\\circ$ là bội của $\\dfrac{360^\\circ}{' + ts.n + '} = ' + soL(360 / ts.n, 1) + '^\\circ$: phép quay này <b>giữ nguyên</b> đa giác đều.' : 'Không trùng khít: $\\alpha$ không phải là bội của $' + soL(360 / ts.n, 1) + '^\\circ$.'; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var q = dinh(P, ts), ds = q.ds, n = ts.n, tq = g.hoat('quay');
+    if (g.bat('tam') || tq !== null) g.duongTron(O0, q.R, { mau: MO, rong: 2, dut: '6 5', to: 'none' });
+    g.daGiac(ds, { to: '#93C5FD', doMoTo: tq !== null ? 0.2 : 0.3, rong: 0 });
+    var oc = g.bat('canh');
+    ds.forEach(function (p, i) { g.doan(p, ds[(i + 1) % n], oc ? { sang: 'canh', kyHieu: 1 } : { rong: 2.8 }); });
+    if (g.bat('goc')) ds.forEach(function (p, i) { g.goc(ds[(i + n - 1) % n], p, ds[(i + 1) % n], { mau: MG, r: 24, doMoTo: 0.3, nhan: i === 0 ? true : false, le: 1 }); });
+    if (g.bat('tam')) { ds.forEach(function (p) { g.doan(O0, p, { mau: MO, rong: 1.5, doMo: 0.7 }); }); g.goc(ds[0], O0, ds[1], { mau: MO, r: 30, doMoTo: 0.3, nhan: true, le: 1 }); }
+    if (tq !== null) {
+      var e = H.em(H.doan(tq, 0.05, 0.9)), d2 = ds.map(function (p) { return quay(p, ts.alpha * e, ts); });
+      g.daGiac(d2, { to: '#FDBA74', doMoTo: 0.45, mauNet: '#C2410C', rong: 2.5 });
+      g.doan(O0, d2[0], { mau: MQ, rong: 2 }); g.diem(d2[0], "A'", { mau: MQ, huong: H.nhan(d2[0], -1) });
+    }
+    if (g.bat('diem') && tq === null) {
+      var A2 = quay(ds[0], ts.alpha, ts), a1 = gocCua(ds[0]), sgn = ts.chieu === 'thuan' ? -1 : 1;
+      g.doan(O0, ds[0], { mau: MQ, rong: 2.5 }); g.doan(O0, A2, { mau: MQ, rong: 2.5 });
+      var cungDs = veCung(g, O0, q.R * 0.45, a1, a1 + sgn * ts.alpha * Math.PI / 180, { mau: MQ, rong: 2.5 });
+      if (cungDs.length > 2) { var cuoi = cungDs[cungDs.length - 1], truoc = cungDs[cungDs.length - 3]; var u = H.tru(cuoi, truoc), L = Math.hypot(u[0], u[1]) || 1; u = [u[0] / L * 0.25, u[1] / L * 0.25]; var nn = [-u[1], u[0]]; g.duong([H.cong(H.tru(cuoi, u), nn), cuoi, H.tru(H.tru(cuoi, u), nn)], { mau: MQ, rong: 2.5 }); }
+      g.chu(diemDT(O0, q.R * 0.62, a1 + sgn * ts.alpha * Math.PI / 360), so(ts.alpha, 0) + '°', { mau: MQ });
+      g.diem(A2, "A'", { r: 6, mau: MQ, huong: H.nhan(A2, -1) });
+    }
+    ds.forEach(function (p, i) { if (i > 0) g.diem(p, TEN[i], { huong: p }); });
+    g.diem(ds[0], 'A', { huong: ds[0] });
+    g.diem(O0, 'O', { r: 4, mau: MO, huong: [0.6, -1] });
+  },
+  nhanXet: function (P, ts) {
+    var k = 360 / ts.n;
+    return '<b>' + TENDG[ts.n] + '</b>: mỗi góc $' + soL((ts.n - 2) * 180 / ts.n, 1) + '^\\circ$' + GACH + 'Các phép quay tâm $O$ giữ nguyên ' + TENDG[ts.n].toLowerCase() + ': $\\alpha = ' +
+      Array.from({ length: ts.n }, function (_, i) { return soL(k * (i + 1), 1) + '^\\circ'; }).join(';\\ ') + '$.<br>$\\alpha = ' + soL(ts.alpha, 0) + '^\\circ$: ' + (giuNguyen(ts) ? '<span class="dung">giữ nguyên đa giác</span>' : '<span class="sai">không giữ nguyên</span>');
+  },
+  khungNhin: function (P) { var R = H.dai(P.A, O0) + 0.8; return [[-R, -R], [R, R]]; },
+});
+</script>
+</body>
+</html>

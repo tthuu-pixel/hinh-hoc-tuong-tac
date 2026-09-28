@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tam giác cân – vuông cân – đều</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   TAM GIÁC CÂN – VUÔNG CÂN – ĐỀU — Toán 7
+   Chọn loại tam giác. Tam giác luôn cân tại A, BC nằm ngang, AH là trục.
+   Kéo C (B đối xứng với C qua AH); ở chế độ "cân" kéo thêm A lên xuống.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+var MB = '#E0342F', MD = '#7C3AED', MA = '#D97706', MDAY = '#1E6FE0';
+function dinh(P, ts) {
+  var c = P.C[0], h = ts.loai === 'vc' ? c : ts.loai === 'deu' ? c * Math.sqrt(3) : P.A[1];
+  return { A: [0, h], B: [-c, 0], C: [c, 0], Hc: [0, 0], c: c, h: h };
+}
+function soDo(P, ts) {
+  var q = dinh(P, ts);
+  return { ben: H.dai(q.A, q.B), day: 2 * q.c, gA: H.gocDo(q.B, q.A, q.C), gB: H.gocDo(q.A, q.B, q.C) };
+}
+function cung(g, O, r, a0, a1, mau) { var ds = []; for (var i = 0; i <= 32; i++) { var a = a0 + (a1 - a0) * i / 32; ds.push([O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]); } g.duong(ds, { mau: mau || '#0D9488', rong: 2 }); }
+function laCan(P, ts) { return ts.loai !== 'deu'; }
+function laDeu(P, ts) { return ts.loai === 'deu'; }
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+
+// Kịch bản vẽ bằng thước, compa — từng thao tác một
+function kbVe(P, ts) {
+  var q = dinh(P, ts), s = soDo(P, ts), A = q.A, B = q.B, C = q.C, D = KhungPhang.dung, ds = [], n = 0;
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  function ten(V, t, h) { return function (g) { g.diem(V, t, { huong: h, mau: '#0D9488' }); }; }
+  if (ts.loai === 'vc') {
+    var ux = H.tru(B, A), uy = H.tru(C, A), X = H.cong(A, H.nhan(ux, 1.35)), Y = H.cong(A, H.nhan(uy, 1.35)), aB = H.huong(A, B), aC = H.huong(A, C);
+    ds.push(D.doan(A, X, { ghi: Bc('Dùng thước vẽ tia $Ax$.'), net: { rong: 2 }, sau: function (g) { g.chu(H.cong(A, H.nhan(ux, 1.45)), 'x', { nghieng: true }); g.diem(A, 'A', { huong: [0, 1] }); } }));
+    ds.push(D.danhDauGoc(A, aB, aC, { r: s.ben * 0.55, ghi: Bc('Đặt thước đo góc tại $A$, vạch $0^\\circ$ trùng $Ax$, đánh dấu điểm ở vạch $90^\\circ$.') }));
+    ds.push(D.doan(A, Y, { ghi: Bc('Vẽ tia $Ay$ qua điểm vừa đánh dấu: $\\widehat{xAy} = 90^\\circ$.'), net: { rong: 2 }, sau: function (g) { g.goc(B, A, C, { mau: '#475569', r: 22 }); g.chu(H.cong(A, H.nhan(uy, 1.45)), 'y', { nghieng: true }); } }));
+    ds.push(D.doCompa(A, KhungPhang.H.cong(A, H.nhan(ux, 0.95)), { ghi: Bc('Mở compa một khoảng $' + soL(s.ben) + '$ cm, đặt mũi kim tại $A$.') }));
+    ds.push(D.cung(A, s.ben, aB - 0.15, aB + 0.15, { ghi: 'Vạch cung cắt $Ax$ tại $B$.', sau: ten(B, 'B', [-1, -1]) }));
+    ds.push(D.cung(A, s.ben, aC + 0.15, aC - 0.15, { ghi: 'Giữ nguyên độ mở, vạch cung cắt $Ay$ tại $C$: $AB = AC$.', sau: function (g) { ten(C, 'C', [1, -1])(g); g.kyHieu(A, B, 1, MB); g.kyHieu(A, C, 1, MB); } }));
+    ds.push(D.doan(B, C, { ghi: Bc('Nối $B$ với $C$.'), net: { mau: MDAY, rong: 3.5 } }));
+    ds.push(D.hien(function (g) { g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.35, rong: 0 }); g.doan(A, B, { mau: MB, rong: 3.5, kyHieu: 1 }); g.doan(A, C, { mau: MB, rong: 3.5, kyHieu: 1 }); }, { tg: 0.8, ghi: 'Ta được tam giác $ABC$ <b>vuông cân tại $A$</b>.' }));
+    return KhungPhang.kichBan(ds);
+  }
+  var R = ts.loai === 'deu' ? s.day : s.ben, bA = H.huong(B, A), cA = H.huong(C, A), deu = ts.loai === 'deu';
+  ds.push(D.doan(B, C, { ghi: Bc('Dùng thước vẽ đoạn thẳng $BC = ' + soL(s.day) + '$ cm.'), net: { mau: MDAY, rong: 3.5 }, sau: function (g) { g.diem(B, 'B', { huong: [-1, -1] }); g.diem(C, 'C', { huong: [1, -1] }); } }));
+  if (deu) ds.push(D.doCompa(B, C, { ghi: Bc('Đặt compa đo đoạn $BC$ (mũi kim tại $B$, đầu chì tại $C$).') }));
+  else ds.push(D.doCompa(B, diemTron(B, R, bA - 0.3), { ghi: Bc('Mở compa một khoảng $' + soL(R) + '$ cm (lớn hơn $\\dfrac{BC}{2}$), đặt mũi kim tại $B$.') }));
+  ds.push(D.cung(B, R, bA - 0.3, bA + 0.3, { ghi: 'Vẽ cung tròn tâm $B$ bán kính $' + soL(R) + '$ cm.' }));
+  ds.push(D.chuyenCompa(B, diemTron(B, R, bA + 0.3), C, diemTron(C, R, cA + 0.3), { ghi: Bc('Giữ nguyên độ mở của compa, đặt mũi kim tại $C$.') }));
+  ds.push(D.cung(C, R, cA + 0.3, cA - 0.3, { ghi: 'Vẽ cung tròn tâm $C$ cùng bán kính; hai cung cắt nhau tại $A$.', sau: function (g) { g.diem(A, 'A', { huong: [0, 1], mau: '#0D9488' }); } }));
+  ds.push(D.doan(A, B, { ghi: Bc('Kẻ $AB$.'), net: { mau: MB, rong: 3.5 }, sau: function (g) { g.kyHieu(A, B, 1, MB); } }));
+  ds.push(D.doan(A, C, { ghi: 'Kẻ $AC$.', net: { mau: MB, rong: 3.5 }, sau: function (g) { g.kyHieu(A, C, 1, MB); if (deu) g.kyHieu(B, C, 1, MDAY); } }));
+  ds.push(D.hien(function (g) { g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.35, rong: 0 }); }, { tg: 0.8, ghi: 'Ta được tam giác <b>' + (deu ? 'đều' : 'cân tại $A$') + '</b>' + (deu ? ': $AB = BC = CA$.' : ': $AB = AC$.') }));
+  return KhungPhang.kichBan(ds);
+}
+function diemTron(O, r, a) { return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
+
+KhungPhang.tao({
+  ten: 'Tam giác cân · vuông cân · đều',
+  lop: 7,
+  diem: { A: [0, 4], C: [3, 0] },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { return [0, Math.max(0.5, p[1])]; },
+    C: function (p) { return [Math.max(1, p[0]), 0]; },
+  },
+  anTayCam: function (k, P, ts) { return k === 'A' && ts.loai !== 'can'; },
+  luaChon: [{ khoa: 'loai', gt: 'can', nhan: 'Loại tam giác', vuaKhung: true,
+    ds: [{ gt: 'can', nhan: 'Tam giác cân' }, { gt: 'vc', nhan: 'Vuông cân' }, { gt: 'deu', nhan: 'Tam giác đều' }] }],
+
+  lamSang: [
+    { id: 'ben', nhan: 'Hai cạnh bên AB, AC', mau: MB, hien: laCan,
+      ghiChu: function (P, ts) { return 'Tam giác ' + (ts.loai === 'vc' ? 'vuông cân' : 'cân') + ' tại $A$ có <b>hai cạnh bên bằng nhau</b>: $AB = AC \\approx ' + soL(soDo(P, ts).ben) + '\\text{ cm}$. $BC$ là <b>cạnh đáy</b>, $A$ là <b>đỉnh</b>.'; } },
+    { id: 'bacanh', nhan: 'Ba cạnh bằng nhau', mau: MB, hien: laDeu, lap: true,
+      ghiChu: function (P, ts) { return 'Tam giác đều có <b>ba cạnh bằng nhau</b>: $AB = BC = CA = ' + soL(soDo(P, ts).day) + '\\text{ cm}$. Quan sát que $AB$ quay lần lượt trùng khít với $BC$ và $CA$.'; } },
+    { id: 'day', nhan: 'Hai góc ở đáy', mau: MD, hien: laCan,
+      ghiChu: function (P, ts) {
+        var s = soDo(P, ts);
+        if (ts.loai === 'vc') return 'Tam giác vuông cân có hai góc ở đáy <b>bằng nhau và bằng $45^\\circ$</b>: $\\widehat{B} = \\widehat{C} = (180^\\circ - 90^\\circ) : 2 = \\mathbf{45}^\\circ$.';
+        return 'Trong tam giác cân, <b>hai góc ở đáy bằng nhau</b>: $\\widehat{B} = \\widehat{C} \\approx ' + soL(s.gB, 1) + '^\\circ$.';
+      } },
+    { id: 'bagoc', nhan: 'Ba góc bằng nhau', mau: MD, hien: laDeu,
+      ghiChu: 'Tam giác đều có <b>ba góc bằng nhau</b>, mỗi góc bằng $180^\\circ : 3 = \\mathbf{60}^\\circ$.' },
+    { id: 'dinh', nhan: 'Góc ở đỉnh ↔ góc ở đáy', mau: MA, hien: function (P, ts) { return ts.loai === 'can'; },
+      ghiChu: function (P, ts) {
+        var s = soDo(P, ts);
+        return '$\\widehat{A} + 2\\widehat{B} = 180^\\circ$ nên:<br>• $\\widehat{A} = 180^\\circ - 2\\widehat{B} \\approx 180^\\circ - 2 \\cdot ' + soL(s.gB, 1) + '^\\circ = \\mathbf{' + soL(s.gA, 1) + '}^\\circ$<br>• $\\widehat{B} = \\widehat{C} = (180^\\circ - \\widehat{A}) : 2 \\approx \\mathbf{' + soL(s.gB, 1) + '}^\\circ$';
+      } },
+    { id: 'ah', nhan: 'Đường AH đặc biệt', mau: M.duongCheo,
+      ghiChu: function (P, ts) {
+        return 'Trong tam giác cân tại $A$, đoạn $AH$ ($H$ là trung điểm $BC$) đồng thời là: <b>đường cao</b> ($AH \\perp BC$), <b>đường trung tuyến</b> ($HB = HC$), <b>đường phân giác</b> của $\\widehat{A}$ và nằm trên <b>đường trung trực</b> của $BC$.' +
+          (ts.loai === 'deu' ? '<br>Tam giác đều cân tại cả ba đỉnh, nên điều này đúng với <b>cả ba đỉnh</b> (các nét đứt).' : '');
+      } },
+  ],
+
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp giấy theo AH', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp tờ giấy hình tam giác theo đường $AH$…' : 'Hai nửa <b>trùng khít</b>: $B$ trùng $C$, cạnh $AB$ trùng $AC$, $\\widehat{B}$ trùng $\\widehat{C}$. Đường thẳng $AH$ là <b>trục đối xứng</b> của tam giác.'; } },
+    { id: 've', nhan: 'Vẽ bằng thước và compa', anDiem: true,
+      thoiGian: function (P, ts) { return kbVe(P, ts).tong * 1000; },
+      ghiChu: function (P, ts, t) { return kbVe(P, ts).ghi(t); } },
+  ],
+
+  ve: function (g, P, ts) {
+    var q = dinh(P, ts), s = soDo(P, ts), A = q.A, B = q.B, C = q.C, Hc = q.Hc;
+    var tg = g.hoat('gap'), tv = g.hoat('ve');
+
+    /* --- Gấp giấy 3D theo AH --- */
+    if (tg !== null) { DX.ve(g, { ten: 'Tam giác', ds: [A, B, C], truc: [[A, Hc]], tam: null, to: '#93C5FD' }, { truc: 0 }); return; }
+
+    /* --- Vẽ bằng thước và compa --- */
+    if (tv !== null) { kbVe(P, ts).ve(g, tv); return; }
+
+    /* --- Hình tĩnh --- */
+    var deu = ts.loai === 'deu', vc = ts.loai === 'vc';
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.25, rong: 0 });
+
+    if (g.bat('ah')) {
+      if (deu) [[B, H.trung(A, C)], [C, H.trung(A, B)]].forEach(function (d) { g.doan(d[0], d[1], { mau: M.duongCheo, rong: 1.6, dut: '6 5' }); });
+      g.doan(A, Hc, { sang: 'ah' });
+      g.goc(A, Hc, C, { mau: M.duongCheo, r: 14 });
+      g.kyHieu(B, Hc, 2, M.duongCheo); g.kyHieu(Hc, C, 2, M.duongCheo);
+      g.goc(B, A, Hc, { mau: M.duongCheo, r: 50, doMoTo: 0.2, nhan: false }); g.goc(Hc, A, C, { mau: M.duongCheo, r: 50, doMoTo: 0.2, nhan: false });
+      g.diem(Hc, 'H', { huong: [0, -1], mau: M.duongCheo });
+    }
+
+    // Các cạnh
+    if (deu) {
+      var onB = g.bat('bacanh'), tb = g.tg('bacanh');
+      [[A, B], [B, C], [C, A]].forEach(function (d) { g.doan(d[0], d[1], { sang: 'bacanh', rong: 3, kyHieu: onB ? 1 : 0 }); });
+      if (tb !== null && tb < 3.2) {   // que AB quay quanh B trùng BC, rồi quanh C trùng CA
+        var d1 = H.huong(B, C) - H.huong(B, A); while (d1 > Math.PI) d1 -= 2 * Math.PI; while (d1 < -Math.PI) d1 += 2 * Math.PI;
+        var d2 = H.huong(C, A) - H.huong(C, B); while (d2 > Math.PI) d2 -= 2 * Math.PI; while (d2 < -Math.PI) d2 += 2 * Math.PI;
+        var que = tb < 1.6 ? [B, H.xoay(A, B, d1 * H.em(H.doan(tb, 0.3, 1.4)))] : [C, H.xoay(B, C, d2 * H.em(H.doan(tb, 1.8, 2.9)))];
+        g.doan(que[0], que[1], { mau: '#F59E0B', rong: 10, doMo: 0.7 });
+      }
+    } else {
+      var onBen = g.bat('ben');
+      g.doan(A, B, { sang: 'ben', rong: 3, kyHieu: onBen ? 1 : 0 });
+      g.doan(A, C, { sang: 'ben', rong: 3, kyHieu: onBen ? 1 : 0 });
+      g.doan(B, C, { rong: 3 });
+    }
+
+    // Các góc
+    var onDay = g.bat(deu ? 'bagoc' : 'day'), onDinh = g.bat('dinh'), noi = onDay || onDinh;
+    var oDay = { mau: noi ? MD : '#94A3B8', r: 34, kyHieu: 2, doMoTo: noi ? 0.35 : 0.12, nhan: noi ? true : undefined };
+    g.goc(A, B, C, oDay); g.goc(B, C, A, oDay);
+    if (vc) g.goc(B, A, C, { mau: '#475569', r: 26 });
+    else if (deu) g.goc(B, A, C, oDay);
+    else g.goc(B, A, C, { mau: onDinh ? MA : '#94A3B8', r: 30, doMoTo: onDinh ? 0.4 : 0.12, nhan: onDinh ? true : undefined });
+
+    if (g.hienSo()) {
+      if (deu) g.nhanDo(B, C, so(s.day) + ' cm', { benTrai: false });
+      else { g.nhanDo(B, A, so(s.ben), {}); g.nhanDo(A, C, so(s.ben), {}); g.nhanDo(B, C, so(s.day), { benTrai: false }); }
+    }
+    g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -1] }); g.diem(C, 'C', { huong: [1, -1] });
+  },
+
+  nhanXet: function (P, ts) {
+    var s = soDo(P, ts), r;
+    if (ts.loai === 'can') {
+      r = 'Tam giác $ABC$ cân tại $A$: $AB = AC \\approx ' + soL(s.ben) + '\\text{ cm}$; $\\widehat{B} = \\widehat{C} \\approx ' + soL(s.gB, 1) + '^\\circ$; $\\widehat{A} \\approx ' + soL(s.gA, 1) + '^\\circ$';
+      if (Math.abs(s.gA - 60) < 0.05) r += '<br><span class="dung">Tam giác cân có một góc $60^\\circ$ → tam giác đều!</span>';
+      else if (Math.abs(s.gA - 90) < 0.05) r += '<br><span class="dung">$\\widehat{A}$ vuông → tam giác vuông cân!</span>';
+      r += GACH + '<b>Dấu hiệu nhận biết tam giác cân</b><br>• Tam giác có <b>hai cạnh bằng nhau</b>;<br>• Tam giác có <b>hai góc bằng nhau</b>.';
+    } else if (ts.loai === 'vc') {
+      r = 'Tam giác $ABC$ vuông cân tại $A$: $\\widehat{A} = 90^\\circ$; $AB = AC \\approx ' + soL(s.ben) + '\\text{ cm}$; $\\widehat{B} = \\widehat{C} = 45^\\circ$' + GACH +
+        '<b>Dấu hiệu nhận biết tam giác vuông cân</b><br>• Tam giác vuông có <b>hai cạnh góc vuông bằng nhau</b>;<br>• Tam giác vuông có <b>một góc nhọn bằng $45^\\circ$</b>;<br>• Tam giác cân có <b>góc ở đỉnh bằng $90^\\circ$</b>.';
+    } else {
+      r = 'Tam giác $ABC$ đều: $AB = BC = CA = ' + soL(s.day) + '\\text{ cm}$; $\\widehat{A} = \\widehat{B} = \\widehat{C} = 60^\\circ$' + GACH +
+        '<b>Dấu hiệu nhận biết tam giác đều</b><br>• Tam giác có <b>ba cạnh bằng nhau</b>;<br>• Tam giác có <b>ba góc bằng nhau</b>;<br>• Tam giác cân có <b>một góc bằng $60^\\circ$</b>.';
+    }
+    return r;
+  },
+  congThuc: function (P, ts, C) {
+    if (ts.loai === 'deu') return [{ id: 'bagoc', ten: 'Tam giác đều', bt: '$' + C.m('bacanh', 'AB = BC = CA') + '$ ; $' + C.m('bagoc', '\\widehat{A} = \\widehat{B} = \\widehat{C} = 60^\\circ') + '$' }];
+    if (ts.loai === 'vc') return [{ id: 'day', ten: 'Tam giác vuông cân tại A', bt: '$\\widehat{A} = 90^\\circ$ ; $' + C.m('ben', 'AB = AC') + '$ ; $' + C.m('day', '\\widehat{B} = \\widehat{C} = 45^\\circ') + '$' }];
+    return [{ id: 'dinh', ten: 'Tam giác cân tại A', bt: '$' + C.m('ben', 'AB = AC') + '$ ; $' + C.m('day', '\\widehat{B} = \\widehat{C}') + ' = \\dfrac{180^\\circ - ' + C.m('dinh', '\\widehat{A}') + '}{2}$' }];
+  },
+  khungNhin: function (P, ts) { var q = dinh(P, ts); return [[q.B[0] - 0.8, -0.8], [q.C[0] + 0.8, q.A[1] + 0.8]]; },
+});
+</script>
+</body>
+</html>

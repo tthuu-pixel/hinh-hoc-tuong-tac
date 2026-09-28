@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tam giác đều</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   TAM GIÁC ĐỀU ABC — Toán 6
+   Nhận dạng, chu vi và tính đối xứng (3 trục, không có tâm).
+   Kéo A, B; đỉnh C luôn được dựng để tam giác đều.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinhC(P) { return H.xoay(P.B, P.A, Math.PI / 3); }
+function thongTin(P) {
+  var A = P.A, B = P.B, C = dinhC(P);
+  return { ten: 'Tam giác đều', ds: [A, B, C], tam: null, tamThu: H.trongTam(A, B, C),
+    truc: [[H.trung(A, B), C], [H.trung(B, C), A], [H.trung(C, A), B]] };
+}
+
+KhungPhang.tao({
+  ten: 'Tam giác đều',
+  lop: 6,
+  diem: { A: [0, 0], B: [4, 0] },
+  buocLuoi: 0.5,
+  luaChon: [DX.luaChonTruc(3)],
+  hopChon: [DX.hopChonVet],
+  lamSang: DX.lamSang(thongTin),
+  hoatHinh: DX.hoatHinh(thongTin),
+
+  ve: function (g, P, ts) {
+    var f = thongTin(P), A = P.A, B = P.B, C = dinhC(P), hoat = DX.dangHoat(g);
+    if (!hoat) g.daGiac(f.ds, {});
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.nhanDo(A, B, 'a = ' + so(H.dai(A, B)) + ' cm', { benTrai: false });
+    g.diem(A, 'A', { huong: [-1, -0.6] }); g.diem(B, 'B', { huong: [1, -0.6] }); g.diem(C, 'C', { huong: [0, 1] });
+  },
+
+  congThuc: function (P) {
+    var a = H.dai(P.A, P.B);
+    return [{ id: null, ten: 'Chu vi tam giác đều cạnh a', bt: '$C = 3 \\cdot a = 3 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(3 * a) + '}$ (cm)' }];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)); },
+  khungNhin: function (P) { return [dinhC(P)]; },
+});
+</script>
+</body>
+</html>

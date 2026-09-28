@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Góc nội tiếp</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   GÓC NỘI TIẾP VÀ HỆ QUẢ — Toán 9
+   Đường tròn (O; 3). Kéo A, B, C trên đường tròn. Góc BAC nội tiếp chắn cung BC.
+   ===================================================================== */
+var R = 3, MN = '#F59E0B', MC = '#E0342F', MT = '#1E6FE0', MH = '#16A34A';
+function cungChan(P, A) {   // cung BC không chứa A: [a0, a1] (a1 > a0)
+  var a = gocCua(A || P.A), b = gocCua(P.B), c = gocCua(P.C);
+  var dBC = ccw(b, c), dBA = ccw(b, a);
+  return dBA > dBC ? [b, b + dBC] : [c, c + ccw(c, b)];
+}
+function soDo(P) { var k = cungChan(P); return { cung: (k[1] - k[0]) * 180 / Math.PI, nt: H.gocDo(P.B, P.A, P.C), k: k }; }
+
+KhungPhang.tao({
+  ten: 'Góc nội tiếp',
+  lop: 9,
+  diem: { A: diemDT(O0, R, DO(110)), B: diemDT(O0, R, DO(210)), C: diemDT(O0, R, DO(330)) },
+  buocLuoi: 0.5,
+  rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R), C: lenDT(O0, R) },
+  tieuDeNutPhu: 'Hệ quả',
+  nutPhu: [{ nhan: 'Cho BC là đường kính', bam: function (P, ts, api) { P.C = [-P.B[0], -P.B[1]]; if (H.dai(P.A, P.B) < 0.3 || H.dai(P.A, P.C) < 0.3) P.A = diemDT(O0, R, gocCua(P.B) + Math.PI / 2); api.datSang(['nt', 'nua']); } }],
+  batDau: ['nt', 'cung'],
+
+  lamSang: [
+    { id: 'nt', nhan: 'Góc nội tiếp BAC', mau: MN, ghiChu: 'Góc có <b>đỉnh nằm trên đường tròn</b> và hai cạnh chứa hai dây gọi là <b>góc nội tiếp</b>. Góc $\\widehat{BAC}$ chắn cung $\\overset{\\frown}{BC}$ (cung không chứa $A$).' },
+    { id: 'cung', nhan: 'Cung bị chắn BC', mau: MC, ghiChu: function (P) { var s = soDo(P); return '<b>Số đo góc nội tiếp bằng nửa số đo cung bị chắn</b>: <b>$\\widehat{BAC} = \\dfrac{1}{2}\\,\\text{sđ}\\,\\overset{\\frown}{BC} = \\dfrac{' + soL(s.cung, 0) + '^\\circ}{2} = ' + soL(s.nt, 1) + '^\\circ$</b>.'; } },
+    { id: 'tam', nhan: 'Góc ở tâm BOC', mau: MT, ghiChu: function (P) { var s = soDo(P); return s.cung <= 180.01 ? 'Góc ở tâm $\\widehat{BOC}$ cùng chắn cung $\\overset{\\frown}{BC}$: <b>$\\widehat{BOC} = 2\\,\\widehat{BAC}$</b> $= ' + soL(2 * s.nt, 1) + '^\\circ$ (với cung nhỏ hơn hoặc bằng nửa đường tròn).' : 'Cung bị chắn lớn hơn nửa đường tròn: góc nội tiếp tù, bằng nửa số đo cung lớn $' + soL(s.cung, 0) + '^\\circ$.'; } },
+    { id: 'cungCung', nhan: 'Cùng chắn một cung', mau: MH, ghiChu: 'Các góc nội tiếp <b>cùng chắn một cung thì bằng nhau</b>: $\\widehat{BAC} = \\widehat{BDC} = \\widehat{BEC}$. Bấm “Cho A chạy trên cung” để thấy góc không đổi.' },
+    { id: 'nua', nhan: 'Chắn nửa đường tròn', mau: '#7C3AED', ghiChu: function (P) { var s = soDo(P); return 'Góc nội tiếp chắn nửa đường tròn là <b>góc vuông</b>. ' + (Math.abs(s.cung - 180) < 0.5 ? '<span class="dung">$BC$ đang là đường kính → $\\widehat{BAC} = 90^\\circ$.</span>' : 'Bấm nút “Cho BC là đường kính” để kiểm tra.'); } },
+  ],
+  hoatHinh: [
+    { id: 'chay', nhan: 'Cho A chạy trên cung', thoiGian: 8000,
+      ghiChu: function (P, ts, t) { var s = soDo(P); return 'Điểm $A$ chạy trên cung chứa nó, góc $\\widehat{BAC}$ vẫn luôn bằng <b>$' + soL(s.nt, 1) + '^\\circ$</b> $= \\dfrac{1}{2}\\,\\text{sđ}\\,\\overset{\\frown}{BC}$.'; } },
+  ],
+
+  ve: function (g, P) {
+    var s = soDo(P), B = P.B, C = P.C, A = P.A, tc = g.hoat('chay');
+    if (tc !== null) { var k2 = [s.k[1], s.k[0] + 2 * Math.PI], u = 0.08 + 0.84 * (0.5 - 0.5 * Math.cos(2 * Math.PI * tc)); A = diemDT(O0, R, k2[0] + (k2[1] - k2[0]) * u); }
+    g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.15, rong: 2.5 });
+    veCung(g, O0, R, s.k[0], s.k[1], g.bat('cung') ? { sang: 'cung', rongSang: 6 } : { mau: MC, rong: 3.5, doMo: 0.6 });
+    if (g.bat('tam') && s.cung <= 180.01) {
+      g.doan(O0, B, { mau: MT, rong: 3 }); g.doan(O0, C, { mau: MT, rong: 3 });
+      g.goc(B, O0, C, { mau: MT, r: 30, doMoTo: 0.3, nhan: true, le: 1 });
+    }
+    if (g.bat('cungCung') && tc === null) {
+      var k3 = [s.k[1], s.k[0] + 2 * Math.PI];
+      [0.25, 0.75].forEach(function (f, i) {
+        var D = diemDT(O0, R, k3[0] + (k3[1] - k3[0]) * f);
+        if (H.dai(D, A) < 0.6) return;
+        g.doan(D, B, { mau: MH, rong: 2 }); g.doan(D, C, { mau: MH, rong: 2 });
+        g.goc(B, D, C, { mau: MH, r: 28, doMoTo: 0.25, nhan: true, le: 1 });
+        g.diem(D, i ? 'E' : 'D', { mau: MH, huong: D });
+      });
+    }
+    g.doan(A, B, { rong: 3 }); g.doan(A, C, { rong: 3 });
+    var vuong = Math.abs(s.cung - 180) < 0.5;
+    g.goc(B, A, C, { mau: g.bat('nt') || tc !== null ? MN : '#94A3B8', r: vuong ? 18 : 34, doMoTo: g.bat('nt') ? 0.4 : 0.15, nhan: true, le: 1 });
+    if (vuong && g.bat('nua')) g.doan(B, C, { mau: '#7C3AED', rong: 3, dut: '6 4' });
+    g.diem(O0, 'O', { r: 4, huong: [0.6, -1] });
+    g.diem(A, 'A', { huong: A }); g.diem(B, 'B', { huong: B }); g.diem(C, 'C', { huong: C });
+  },
+  nhanXet: function (P) { var s = soDo(P); return '$\\text{sđ}\\,\\overset{\\frown}{BC} = ' + soL(s.cung, 1) + '^\\circ$ (cung không chứa $A$)<br>Góc nội tiếp $\\widehat{BAC} = ' + soL(s.nt, 1) + '^\\circ = \\dfrac{' + soL(s.cung, 1) + '^\\circ}{2}$'; },
+  congThuc: function (P, ts, C) { return [{ id: 'cung', ten: 'Định lí góc nội tiếp', bt: '$' + C.m('nt', '\\widehat{BAC}') + ' = \\dfrac{1}{2}\\,' + C.m('cung', '\\text{sđ}\\,\\overset{\\frown}{BC}') + '$' }, { id: 'tam', ten: 'Liên hệ với góc ở tâm', bt: '$' + C.m('tam', '\\widehat{BOC}') + ' = 2\\,\\widehat{BAC}$' }]; },
+  khungNhin: function () { return [[-R - 0.6, -R - 0.6], [R + 0.6, R + 0.6]]; },
+});
+</script>
+</body>
+</html>

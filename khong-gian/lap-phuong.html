@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình lập phương</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH LẬP PHƯƠNG  ABCD.A'B'C'D'  — Toán 7
+   Trục: x sang phải, y hướng lên, z hướng về người xem
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+
+KhongGian.tao({
+  ten: 'Hình lập phương',
+  lop: 7,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'a', nhan: 'Độ dài cạnh a', min: 1, max: 8, buoc: 1, gt: 4, donVi: 'cm', mau: M.canh },
+  ],
+
+  daDien: function (ts) {
+    var a = ts.a, h = a / 2;
+    return {
+      dinh: {
+        A: [-h, 0, h],  B: [h, 0, h],  C: [h, 0, -h],  D: [-h, 0, -h],
+        "A'": [-h, a, h], "B'": [h, a, h], "C'": [h, a, -h], "D'": [-h, a, -h],
+      },
+      diemPhu: { O: [0, h, 0] },
+      mat: [
+        { ten: 'ABCD',     dinh: ['A', 'B', 'C', 'D'] },
+        { ten: "ABB'A'",   dinh: ['A', 'B', "B'", "A'"] },
+        { ten: "BCC'B'",   dinh: ['B', 'C', "C'", "B'"] },
+        { ten: "CDD'C'",   dinh: ['C', 'D', "D'", "C'"] },
+        { ten: "DAA'D'",   dinh: ['D', 'A', "A'", "D'"] },
+        { ten: "A'B'C'D'", dinh: ["A'", "B'", "C'", "D'"] },
+      ],
+    };
+  },
+
+  /* Nút làm nổi bật — mỗi nút một màu cố định */
+  lamSang: [
+    {
+      id: 'a', nhan: 'Cạnh a', mau: M.canh, canh: 'tatCa',
+      nhanDo: function (ts) { return [{ doan: ['A', 'B'], chu: '<i>a</i> = ' + so(ts.a) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Hình lập phương có <b>12 cạnh bằng nhau</b>, cùng bằng <b>$a = ' + soL(ts.a) + '$ cm</b>.'; },
+    },
+    {
+      id: 'cheo', nhan: 'Đường chéo', mau: M.duongCheo,
+      doan: [['A', "C'"], ['B', "D'"], ['C', "A'"], ['D', "B'"]], hienDiem: ['O'],
+      ghiChu: 'Hình lập phương có <b>4 đường chéo</b>: $AC\', BD\', CA\', DB\'$. Bốn đường chéo cắt nhau tại một điểm $O$.',
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['ABCD', "A'B'C'D'"],
+      nhanDo: function () { return [{ mat: 'ABCD', chu: 'đáy' }, { mat: "A'B'C'D'", chu: 'đáy' }]; },
+      ghiChu: 'Hai mặt đáy $ABCD$ và $A\'B\'C\'D\'$ là <b>hình vuông</b>.',
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
+      mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
+      ghiChu: function (ts) { return '<b>4 mặt bên</b> là 4 hình vuông cạnh $a$. Mỗi mặt có diện tích $a^2 = ' + soL(ts.a * ts.a) + '$ cm².'; },
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Thể tích là phần không gian bên trong hình. Xếp đầy các khối lập phương 1 cm³ vào hình rồi đếm số khối.',
+    },
+  ],
+
+  /* Công thức (các chữ cùng màu với nút tương ứng) */
+  congThuc: function (ts, C) {
+    var a = ts.a, A = '{' + C.m('a', 'a') + '}';
+    return [
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = 4' + A + '^2 = 4\\cdot ' + C.soL(a) + '^2 = \\mathbf{' + C.soL(4 * a * a) + '}$ (cm²)' },
+      { id: null, ten: 'Diện tích toàn phần',  bt: '$S_{tp} = 6' + A + '^2 = 6\\cdot ' + C.soL(a) + '^2 = \\mathbf{' + C.soL(6 * a * a) + '}$ (cm²)' },
+      { id: 'V',  ten: 'Thể tích',              bt: '$V = ' + A + '^3 = ' + C.soL(a) + '^3 = \\mathbf{' + C.soL(a * a * a) + '}$ (cm³)' },
+    ];
+  },
+
+  /* Trải hình: lấy mặt đáy ABCD làm gốc, mặt trên gắn vào mặt trước */
+  traiHinh: { matGoc: 'ABCD', cay: { "A'B'C'D'": "ABB'A'" } },
+
+  /* Các kiểu mặt cắt */
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.a, 0] }; } },
+    { id: 'dung', nhan: 'Song song với mặt bên',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 0, 1], diem: [0, 0, -ts.a / 2 + t * ts.a] }; } },
+    { id: 'cheo', nhan: 'Mặt chéo', diemDacBiet: [0.5],
+      matPhang: function (ts, t) { var h = ts.a / 2; return { phapTuyen: [1, 0, -1], diem: [-h + t * ts.a, 0, h - t * ts.a] }; } },
+    { id: 'nghieng', nhan: 'Vuông góc đường chéo', diemDacBiet: [1 / 3, 0.5, 2 / 3], batDau: 1 / 3,
+      matPhang: function (ts, t) { var a = ts.a, h = a / 2; return { phapTuyen: [a, a, -a], diem: [-h + t * a, t * a, h - t * a] }; } },
+  ],
+
+  /* Xếp khối lập phương đơn vị 1 cm³ */
+  khoiDonVi: function (ts) { return { n: [ts.a, ts.a, ts.a], goc: [-ts.a / 2, 0, -ts.a / 2] }; },
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hai đường thẳng song song</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HAI ĐƯỜNG THẲNG SONG SONG — Toán 7
+   Đường thẳng c cắt a tại A, cắt b tại B. Kéo A, B; thanh trượt làm
+   lệch đường b để thấy khi nào các cặp góc bằng nhau.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var soL = KhungPhang.soL;
+function hinh(P, ts) {
+  var A = P.A, B = P.B, l = ts.lech * Math.PI / 180;
+  var ua = [1, 0], ub = [Math.cos(l), Math.sin(l)];
+  var len = Math.hypot(A[0] - B[0], A[1] - B[1]) || 1, uc = [(A[0] - B[0]) / len, (A[1] - B[1]) / len];   // c: từ B lên A
+  function di(P0, u, k) { return [P0[0] + u[0] * k, P0[1] + u[1] * k]; }
+  return {
+    A: A, B: B, ua: ua, ub: ub, uc: uc,
+    aPhai: di(A, ua, 3.5), aTrai: di(A, ua, -3.5), bPhai: di(B, ub, 3.5), bTrai: di(B, ub, -3.5),
+    cTren: di(A, uc, 1.6), cDuoi: di(B, uc, -1.6), AxuongB: di(A, uc, -2), BlenA: di(B, uc, 2),
+  };
+}
+function gocs(P, ts) {
+  var h = hinh(P, ts);
+  return {
+    sltA: H.gocDo(h.aPhai, h.A, h.AxuongB), sltB: H.gocDo(h.bTrai, h.B, h.BlenA),
+    dvA: H.gocDo(h.aPhai, h.A, h.cTren), dvB: H.gocDo(h.bPhai, h.B, h.BlenA),
+  };
+}
+
+KhungPhang.tao({
+  ten: 'Hai đường thẳng song song',
+  lop: 7,
+  diem: { A: [0.5, 2], B: [-1, -1.5] },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { return [p[0], 2]; },
+    B: function (p) { return [p[0], Math.min(p[1], 0.5)]; },
+  },
+  thamSo: [{ khoa: 'lech', nhan: 'Độ lệch của đường thẳng b so với a', min: -25, max: 25, buoc: 1, gt: 0, hienThi: function (ts) { return ts.lech === 0 ? '0° (a // b)' : so(ts.lech, 0) + '°'; } }],
+
+  lamSang: [
+    { id: 'slt', nhan: 'Cặp góc so le trong', mau: M.goc1,
+      ghiChu: 'Hai góc nằm <b>so le</b> hai bên đường $c$, <b>trong</b> dải giữa $a$ và $b$. Nếu $a \\parallel b$ thì hai góc so le trong <b>bằng nhau</b>.<br><b>Dấu hiệu:</b> nếu hai góc so le trong bằng nhau thì $a \\parallel b$.' },
+    { id: 'dv', nhan: 'Cặp góc đồng vị', mau: M.goc2,
+      ghiChu: 'Hai góc ở <b>cùng vị trí</b> tại $A$ và $B$. Nếu $a \\parallel b$ thì hai góc đồng vị <b>bằng nhau</b>.<br><b>Dấu hiệu:</b> nếu hai góc đồng vị bằng nhau thì $a \\parallel b$.' },
+  ],
+
+  hoatHinh: [
+    { id: 'truot', nhan: 'Trượt góc từ A xuống B', thoiGian: 4000,
+      ghiChu: function (P, ts, t) {
+        if (t < 1) return 'Trượt góc ở $A$ dọc theo đường $c$ xuống $B$…';
+        return ts.lech === 0 ? 'Góc ở $A$ <b>trùng khít</b> góc đồng vị ở $B$: vì $a \\parallel b$ nên hai góc đồng vị bằng nhau.' : 'Góc ở $A$ <b>không trùng</b> góc ở $B$: vì $a$ không song song $b$.';
+      } },
+  ],
+
+  ve: function (g, P, ts) {
+    var h = hinh(P, ts), t = g.hoat('truot');
+    g.duongThang(h.aTrai, h.aPhai, { rong: 2.8, mau: '#334155', du: 0 });
+    g.duongThang(h.bTrai, h.bPhai, { rong: 2.8, mau: ts.lech === 0 ? '#334155' : '#B91C1C', du: 0 });
+    g.duongThang(h.cDuoi, h.cTren, { rong: 2.2, mau: '#64748B', du: 0 });
+    g.goc(h.aPhai, h.A, h.AxuongB, { sang: 'slt', chiKhiSang: true, r: 36 });
+    g.goc(h.bTrai, h.B, h.BlenA, { sang: 'slt', chiKhiSang: true, r: 36 });
+    g.goc(h.aPhai, h.A, h.cTren, { sang: 'dv', chiKhiSang: true, r: 36, kyHieu: 2 });
+    g.goc(h.bPhai, h.B, h.BlenA, { sang: 'dv', chiKhiSang: true, r: 36, kyHieu: 2 });
+    if (t !== null) {
+      var e = H.em(t), O = H.lerp(h.A, h.B, e), a0 = 0, a1 = H.huong(h.A, h.cTren);
+      g.quat(O, 1.4, a0, a1, { to: M.goc2, doMoTo: 0.5, mau: M.goc2 });
+      g.goc(h.bPhai, h.B, h.BlenA, { mau: '#15803D', r: 62, doMoTo: 0.08 });
+    }
+    g.chu(H.cong(h.aPhai, [0.35, 0.3]), 'a', { nghieng: true }); g.chu(H.cong(h.bPhai, H.cong(H.nhan(h.ub, 0.35), [0, 0.3])), 'b', { nghieng: true, mau: ts.lech === 0 ? undefined : '#B91C1C' });
+    g.chu(H.cong(h.cTren, H.nhan(h.uc, 0.4)), 'c', { nghieng: true });
+    g.diem(h.A, 'A', { huong: [-1, 1] }); g.diem(h.B, 'B', { huong: [-1, -1] });
+  },
+
+  nhanXet: function (P, ts) {
+    var q = gocs(P, ts), ss = ts.lech === 0;
+    return (ss ? '<span class="dung">$a \\parallel b$</span>' : '<span style="color:#B91C1C;font-weight:700">$a$ không song song với $b$</span>') + '<br>' +
+      'So le trong: <b>$' + soL(q.sltA, 0) + '^\\circ$</b> và <b>$' + soL(q.sltB, 0) + '^\\circ$</b> ' + (H.bang(q.sltA, q.sltB) ? '(bằng nhau)' : '(khác nhau)') + '<br>' +
+      'Đồng vị: <b>$' + soL(q.dvA, 0) + '^\\circ$</b> và <b>$' + soL(q.dvB, 0) + '^\\circ$</b> ' + (H.bang(q.dvA, q.dvB) ? '(bằng nhau)' : '(khác nhau)');
+  },
+  khungNhin: function (P) { return [[-5, -3.5], [5, 4]]; },
+  batDau: ['slt'],
+  le: 0.3,
+});
+</script>
+</body>
+</html>

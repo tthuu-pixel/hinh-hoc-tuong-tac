@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vị trí tương đối của hai đường tròn</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   VỊ TRÍ TƯƠNG ĐỐI CỦA HAI ĐƯỜNG TRÒN — Toán 9
+   (O; R) cố định, (O'; r) di chuyển: kéo O' trên đường nối tâm.
+   ===================================================================== */
+var M1 = '#1E6FE0', M2 = '#E0342F', MD = '#C026D3', MG = '#0D9488';
+function xet(ts, x) {
+  var R = ts.R, r = ts.r, d = Math.abs(x), tong = R + r, hieu = Math.abs(R - r), e = 1e-6, loai;
+  if (d > tong + e) loai = 'ngoai'; else if (Math.abs(d - tong) <= e) loai = 'txNgoai';
+  else if (d > hieu + e) loai = 'cat'; else if (Math.abs(d - hieu) <= e && d > e) loai = 'txTrong';
+  else loai = d < e ? 'dongTam' : 'dung';
+  return { R: R, r: r, d: d, tong: tong, hieu: hieu, loai: loai };
+}
+var TEN = {
+  ngoai: ['Ở ngoài nhau', '$d \\gt R + r$', 0], txNgoai: ['Tiếp xúc ngoài', '$d = R + r$', 1], cat: ['Cắt nhau', '$R - r \\lt d \\lt R + r$', 2],
+  txTrong: ['Tiếp xúc trong', '$d = R - r$', 1], dung: ['Đựng nhau', '$d \\lt R - r$', 0], dongTam: ['Đồng tâm (đựng nhau)', '$d = 0$', 0],
+};
+function ghi(x) { var t = TEN[x.loai]; return '<b>' + t[0] + '</b> (' + t[1] + '): <b>' + t[2] + '</b> điểm chung. $d = ' + soL(x.d) + '$, $R + r = ' + soL(x.tong) + '$, $R - r = ' + soL(x.hieu) + '$.'; }
+function dat(f) { return function (P, ts, api) { P.O2 = [f(ts), 0]; api.vuaKhung(); }; }
+
+KhungPhang.tao({
+  ten: 'Vị trí tương đối của hai đường tròn',
+  lop: 9,
+  diem: { O2: [6.5, 0] },
+  buocLuoi: 0.5,
+  rangBuoc: { O2: function (p) { return [Math.max(0, p[0]), 0]; } },
+  thamSo: [
+    { khoa: 'R', nhan: 'Bán kính R của (O)', min: 1.5, max: 4, buoc: 0.5, gt: 3, donVi: 'cm' },
+    { khoa: 'r', nhan: "Bán kính r của (O')", min: 0.5, max: 2.5, buoc: 0.5, gt: 2, donVi: 'cm' },
+  ],
+  tieuDeNutPhu: 'Đưa nhanh về trường hợp',
+  nutPhu: [
+    { nhan: 'Ở ngoài nhau', bam: dat(function (t) { return t.R + t.r + 1.5; }) }, { nhan: 'Tiếp xúc ngoài', bam: dat(function (t) { return t.R + t.r; }) },
+    { nhan: 'Cắt nhau', bam: dat(function (t) { return (t.R + t.r + Math.abs(t.R - t.r)) / 2; }) }, { nhan: 'Tiếp xúc trong', bam: dat(function (t) { return Math.abs(t.R - t.r); }) },
+    { nhan: 'Đựng nhau', bam: dat(function (t) { return Math.abs(t.R - t.r) / 2; }) }, { nhan: 'Đồng tâm', bam: dat(function () { return 0; }) },
+  ],
+  batDau: ['d'],
+
+  lamSang: [
+    { id: 'd', nhan: "Đoạn nối tâm d = OO'", mau: MD, ghiChu: function (P, ts) { return ghi(xet(ts, P.O2[0])); } },
+    { id: 'giao', nhan: 'Điểm chung', mau: MG, ghiChu: function (P, ts) { var x = xet(ts, P.O2[0]); return x.loai === 'cat' ? 'Hai đường tròn cắt nhau tại $A$, $B$: $OO\'$ là <b>đường trung trực</b> của dây chung $AB$.' : x.loai.indexOf('tx') === 0 ? 'Hai đường tròn tiếp xúc tại $T$: <b>tiếp điểm nằm trên đường nối tâm</b>.' : 'Hai đường tròn <b>không có điểm chung</b>.'; } },
+  ],
+  hoatHinh: [
+    { id: 'truot', nhan: "Cho (O') tiến lại gần (O)", thoiGian: 12000,
+      vuaKhung: function (P, ts) { return [[-ts.R - 0.5, -ts.R - 0.8], [ts.R + 2 * ts.r + 3, ts.R + 1.2]]; },
+      ghiChu: function (P, ts, t) { return ghi(xet(ts, xAnim(ts, t))); } },
+  ],
+
+  ve: function (g, P, ts) {
+    var tt = g.hoat('truot'), x = tt !== null ? xAnim(ts, tt) : P.O2[0], q = xet(ts, x), O2 = [x, 0];
+    var mau = { ngoai: '#64748B', txNgoai: '#16A34A', cat: '#1D4ED8', txTrong: '#16A34A', dung: '#B45309', dongTam: '#B45309' }[q.loai];
+    g.duongTron(O0, q.R, { to: M1, doMoTo: 0.12, mau: M1, rong: 3 });
+    g.duongTron(O2, q.r, { to: M2, doMoTo: 0.12, mau: M2, rong: 3 });
+    if (g.bat('d') && q.d > 0.01) { g.doan(O0, O2, { sang: 'd' }); g.nhanDo(O0, O2, 'd = ' + so(q.d), { mau: MD }); }
+    if (q.loai === 'cat') {
+      var a = (q.d * q.d + q.R * q.R - q.r * q.r) / (2 * q.d), h = Math.sqrt(Math.max(0, q.R * q.R - a * a)), A = [a, h], B = [a, -h];
+      if (g.bat('giao')) { g.doan(A, B, { mau: MG, rong: 3 }); g.goc(A, [a, 0], O2, { mau: MG, r: 12, to: false }); g.kyHieu(A, [a, 0], 1, MG); g.kyHieu([a, 0], B, 1, MG); }
+      g.diem(A, 'A', { r: 5.5, mau: MG, huong: [0, 1] }); g.diem(B, 'B', { r: 5.5, mau: MG, huong: [0, -1] });
+    } else if (q.loai === 'txNgoai' || q.loai === 'txTrong') {
+      g.diem([q.R * (x >= 0 ? 1 : -1), 0], 'T', { r: 6, mau: MG, huong: [0.4, 1] });
+    }
+    g.diem(O0, 'O', { r: 4, mau: M1, huong: [-0.6, -1] }); g.diem(O2, "O'", { r: 4, mau: M2, huong: [0.6, -1] });
+    g.chu([0, q.R + 0.45], '(O; R)', { mau: M1, nho: true }); g.chu([x, -q.r - 0.45], "(O'; r)", { mau: M2, nho: true });
+    g.chu([x, q.r + 0.6], TEN[q.loai][0], { mau: mau });
+  },
+  nhanXet: function (P, ts) {
+    var q = xet(ts, P.O2[0]);
+    return '<div style="font-size:17px;color:#1D4ED8"><b>' + TEN[q.loai][0] + '</b></div>' + ghi(q) + GACH +
+      '<table style="width:100%;font-size:13.5px;border-collapse:collapse"><tr><th style="text-align:left">Vị trí</th><th>Điểm chung</th><th>Hệ thức</th></tr>' +
+      ['cat', 'txNgoai', 'txTrong', 'ngoai', 'dung'].map(function (k) { var t = TEN[k], on = k === q.loai || (k === 'dung' && q.loai === 'dongTam'); return '<tr style="' + (on ? 'background:#DBEAFE;font-weight:700' : '') + '"><td>' + t[0] + '</td><td style="text-align:center">' + t[2] + '</td><td style="text-align:center">' + t[1] + '</td></tr>'; }).join('') + '</table>';
+  },
+  khungNhin: function (P, ts) { return [[-ts.R - 0.5, -ts.R - 0.8], [Math.max(ts.R, P.O2[0] + ts.r) + 0.5, ts.R + 1.2]]; },
+});
+function xAnim(ts, t) {   // O' đi từ xa về tâm O, dừng một chút ở các vị trí tiếp xúc
+  var a = ts.R + ts.r + 2.5, b = ts.R + ts.r, c = Math.abs(ts.R - ts.r);
+  var moc = [[0, a], [0.2, b], [0.28, b], [0.55, c], [0.63, c], [0.9, 0], [1, 0]];
+  for (var i = 1; i < moc.length; i++) if (t <= moc[i][0]) { var k = (t - moc[i - 1][0]) / (moc[i][0] - moc[i - 1][0] || 1); return moc[i - 1][1] + (moc[i][1] - moc[i - 1][1]) * k; }
+  return 0;
+}
+</script>
+</body>
+</html>

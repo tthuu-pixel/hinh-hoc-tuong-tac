@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường trung bình của tam giác</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐƯỜNG TRUNG BÌNH CỦA TAM GIÁC — Toán 8
+   M, N là trung điểm AB, AC. MN // BC và MN = BC/2.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
+var MAU_TB = '#7C3AED', MAU_BC = '#0D9488';
+
+KhungPhang.tao({
+  ten: 'Đường trung bình của tam giác',
+  lop: 8,
+  diem: { A: [-0.5, 5], B: [-4, 0], C: [4, 0] },
+  buocLuoi: 0.5,
+
+  lamSang: [
+    { id: 'tb', nhan: 'Đường trung bình MN', mau: MAU_TB, ghiChu: 'Đoạn thẳng $MN$ nối <b>trung điểm hai cạnh</b> $AB$, $AC$ gọi là <b>đường trung bình</b> của tam giác $ABC$.' },
+    { id: 'ss', nhan: 'MN song song BC', mau: M.song, ghiChu: 'Đường trung bình của tam giác thì <b>song song với cạnh thứ ba</b>: ${MN \\parallel BC}$.' },
+    { id: 'nua', nhan: 'MN bằng nửa BC', mau: MAU_BC, ghiChu: function (P) { var Mm = H.trung(P.A, P.B), N = H.trung(P.A, P.C); return 'Đường trung bình <b>bằng nửa cạnh thứ ba</b>: $MN = ' + soL(H.dai(Mm, N)) + ' = \\dfrac{' + soL(H.dai(P.B, P.C)) + '}{2}$.'; } },
+  ],
+
+  hoatHinh: [
+    { id: 'quay', nhan: 'Quay tam giác AMN quanh N', thoiGian: 6000,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.9) return 'Quay tam giác $AMN$ nửa vòng quanh $N$: $A$ đến $C$, $M$ đến $K$…';
+        return '$BMKC$ là hình bình hành ($BM = CK$, ${BM \\parallel CK}$) nên ${MK \\parallel BC}$ và $MK = BC$. Mà $MN = NK$ nên <b>$MN = \\dfrac{BC}{2}$</b>.';
+      } },
+  ],
+
+  ve: function (g, P) {
+    var A = P.A, B = P.B, C = P.C, Mm = H.trung(A, B), N = H.trung(A, C), t = g.hoat('quay');
+    g.daGiac([A, B, C], { rong: 2.6 });
+    g.kyHieu(A, Mm, 1); g.kyHieu(Mm, B, 1); g.kyHieu(A, N, 2); g.kyHieu(N, C, 2);
+    if (t !== null) {
+      var e = H.em(H.doan(t, 0.05, 0.85)), K = H.tru(H.nhan(N, 2), Mm);
+      g.daGiac([Mm, B, C, N], { to: '#93C5FD', doMoTo: 0.45, rong: 0 });
+      g.daGiac([A, Mm, N], { to: '#E2E8F0', doMoTo: 0.6, rong: 1, mauNet: '#CBD5E1' });
+      g.daGiac([A, Mm, N].map(function (p) { return H.xoay(p, N, Math.PI * e); }), { to: '#F59E0B', doMoTo: 0.65, mauNet: '#B45309' });
+      if (t > 0.88) { g.doan(Mm, K, { mau: MAU_TB, rong: 4 }); g.diem(K, 'K', { huong: [1, 0.3] }); g.doan(C, K, { mau: '#B45309', rong: 3 }); }
+      g.diem(N, 'N', { huong: [0.8, 0.8] }); g.diem(Mm, 'M', { huong: [-1, 0.3] });
+      g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+      return;
+    }
+    var on = g.bat('tb') || g.bat('ss') || g.bat('nua');
+    if (g.bat('ss')) { g.duongThang(Mm, N, { mau: M.song, dut: '6 5', rong: 1.5 }); g.goc(N, Mm, B, { mau: M.song, r: 22, nhan: false }); g.goc(C, B, Mm, { mau: M.song, r: 22, nhan: false }); }
+    g.doan(Mm, N, { mau: on ? MAU_TB : '#475569', rong: on ? 5 : 3 });
+    if (g.bat('nua')) {
+      var I = H.trung(B, C);
+      g.doan(B, I, { mau: MAU_BC, rong: 5 }); g.doan(I, C, { mau: '#14B8A6', rong: 5 });
+      g.diem(I, '', { mau: MAU_BC, r: 4 });
+      g.nhanDo(Mm, N, 'MN = ' + so(H.dai(Mm, N)), { mau: MAU_TB, kc: 18 });
+      g.nhanDo(B, C, 'BC = ' + so(H.dai(B, C)), { mau: MAU_BC, benTrai: false });
+    }
+    g.diem(Mm, 'M', { huong: [-1, 0.3] }); g.diem(N, 'N', { huong: [1, 0.3] });
+    g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var Mm = H.trung(P.A, P.B), N = H.trung(P.A, P.C);
+    return [
+      { id: 'ss', ten: 'Tính chất đường trung bình', bt: '$' + C.m('tb', 'MN') + ' \\parallel BC$ &nbsp; và &nbsp; $' + C.m('tb', 'MN') + ' = \\dfrac{' + C.m('nua', 'BC') + '}{2}$' },
+      { id: null, ten: 'Với số đo hiện tại', bt: '$' + soL(H.dai(Mm, N)) + ' = \\dfrac{' + soL(H.dai(P.B, P.C)) + '}{2}$' },
+    ];
+  },
+  nhanXet: function (P) { var Mm = H.trung(P.A, P.B), N = H.trung(P.A, P.C); return '$MN = ' + soL(H.dai(Mm, N)) + '$ cm, $BC = ' + soL(H.dai(P.B, P.C)) + '$ cm<br><span class="dung">Kéo các đỉnh: luôn có $MN = \\dfrac{BC}{2}$.</span>'; },
+});
+</script>
+</body>
+</html>

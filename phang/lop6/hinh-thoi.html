@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình thoi</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH THOI ABCD — Toán 6
+   Nhận dạng, chu vi, diện tích và tính đối xứng (2 trục, có tâm).
+   Hai đường chéo AC (nằm ngang), BD (thẳng đứng) cắt nhau tại O.
+   Kéo A để đổi đường chéo AC, kéo B để đổi đường chéo BD.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinh(P) { var p = -P.A[0], q = P.B[1]; return { A: [-p, 0], B: [0, q], C: [p, 0], D: [0, -q], O: [0, 0], p: p, q: q }; }
+function thongTin(P) {
+  var q = dinh(P), vuong = H.bang(q.p, q.q), truc = [[q.A, q.C], [q.D, q.B]];
+  if (vuong) truc.push([H.trung(q.A, q.B), H.trung(q.C, q.D)], [H.trung(q.B, q.C), H.trung(q.D, q.A)]);
+  return { ten: vuong ? 'Hình thoi này (là hình vuông)' : 'Hình thoi', ds: [q.A, q.B, q.C, q.D], tam: q.O, truc: truc };
+}
+
+KhungPhang.tao({
+  ten: 'Hình thoi',
+  lop: 6,
+  diem: { A: [-3, 0], B: [0, 2] },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { return [Math.min(-0.5, p[0]), 0]; },
+    B: function (p) { return [0, Math.max(0.5, p[1])]; },
+  },
+  luaChon: [DX.luaChonTruc(2)],
+  hopChon: [DX.hopChonVet],
+
+  lamSang: DX.lamSang(thongTin).concat([
+    { id: 'cheo', nhan: 'Hai đường chéo', mau: M.duongCheo,
+      ghiChu: function (P) { var q = dinh(P); return 'Hai đường chéo: $AC = ' + soL(2 * q.p) + '$ cm, $BD = ' + soL(2 * q.q) + '$ cm.'; } },
+    { id: 'dt', nhan: 'Diện tích', mau: M.dienTich,
+      ghiChu: function (P) { var q = dinh(P); return 'Diện tích hình thoi bằng <b>nửa tích hai đường chéo</b>: $' + soL(2 * q.p) + ' \\cdot ' + soL(2 * q.q) + ' : 2 = \\mathbf{' + soL(2 * q.p * q.q) + '}$ <b>cm²</b>.'; } },
+  ]),
+
+  hoatHinh: DX.hoatHinh(thongTin).concat([
+    { id: 'ghep', nhan: 'Cắt ghép thành hình chữ nhật', thoiGian: 6000,
+      ghiChu: function (P, ts, t) {
+        var q = dinh(P);
+        if (t < 0.15) return 'Cắt hình thoi theo hai đường chéo thành <b>4 tam giác vuông</b> bằng nhau.';
+        if (t < 0.95) return 'Chuyển hai tam giác bên trái sang bên phải…';
+        return 'Được <b>hình chữ nhật</b> có hai cạnh là $OC = ' + soL(q.p) + '$ cm và $BD = ' + soL(2 * q.q) + '$ cm, diện tích $= ' + soL(q.p) + ' \\cdot ' + soL(2 * q.q) + ' = \\mathbf{' + soL(2 * q.p * q.q) + '}$ <b>cm²</b> $= AC \\cdot BD : 2$.';
+      } },
+  ]),
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = thongTin(P), t = g.hoat('ghep');
+    if (t !== null) {
+      var e = H.em(H.doan(t, 0.18, 0.9)), p = q.p, h = q.q;
+      g.daGiac([[0, h], [p, h], [p, -h], [0, -h]], { to: 'none', dut: '6 5', mauNet: '#94A3B8', rong: 1.5 });
+      g.daGiac([q.O, q.B, q.C], { to: '#FBBF24', doMoTo: 0.7 }); g.daGiac([q.O, q.C, q.D], { to: '#F59E0B', doMoTo: 0.7 });
+      g.daGiac([q.O, q.A, q.B].map(function (x) { return H.cong(x, [p * e, -h * e]); }), { to: '#60A5FA', doMoTo: 0.7 });
+      g.daGiac([q.O, q.D, q.A].map(function (x) { return H.cong(x, [p * e, h * e]); }), { to: '#93C5FD', doMoTo: 0.7 });
+      return;
+    }
+    var hoat = DX.dangHoat(g);
+    if (!hoat) {
+      g.daGiac(f.ds, { sang: 'dt' });
+      if (g.bat('cheo')) {
+        g.doan(q.A, q.C, { sang: 'cheo', rongSang: 4 }); g.doan(q.B, q.D, { sang: 'cheo', rongSang: 4 });
+        g.nhanDo(q.A, q.C, 'AC = ' + so(2 * q.p), { t: 0.25, kc: 16, sang: 'cheo' });
+        g.nhanDo(q.D, q.B, 'BD = ' + so(2 * q.q), { t: 0.25, kc: 16, benTrai: false, sang: 'cheo' });
+      }
+    }
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.diem(q.A, 'A', { huong: [-1, 0] }); g.diem(q.B, 'B', { huong: [0, 1] }); g.diem(q.C, 'C', { huong: [1, 0] }); g.diem(q.D, 'D', { huong: [0, -1] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var q = dinh(P), a = Math.hypot(q.p, q.q);
+    return [
+      { id: null, ten: 'Chu vi', bt: '$C = 4 \\cdot a \\approx 4 \\cdot ' + soL(a) + ' \\approx \\mathbf{' + soL(4 * a) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích', bt: '$S = ' + C.m('cheo', 'AC') + ' \\cdot ' + C.m('cheo', 'BD') + ' : 2 = ' + soL(2 * q.p) + ' \\cdot ' + soL(2 * q.q) + ' : 2 = \\mathbf{' + soL(2 * q.p * q.q) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo A hoặc B để đổi độ dài hai đường chéo.</span>'; },
+  khungNhin: function (P) { var q = dinh(P); return [q.C, q.D, [q.p, -q.q], [q.p, q.q]]; },
+});
+</script>
+</body>
+</html>

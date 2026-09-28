@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình thoi</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   HÌNH THOI — Toán 8
+   Tâm O cố định. Kéo A (một nửa đường chéo AC), kéo B (nửa đường chéo BD,
+   luôn vuông góc với OA). C, D đối xứng với A, B qua O.
+   ===================================================================== */
+var O0 = [0, 0];
+function phap(P) { var u = H.tru(P.A, O0), L = Math.hypot(u[0], u[1]) || 1; return [-u[1] / L, u[0] / L]; }
+function dinh(P) { return { A: P.A, B: P.B, C: [-P.A[0], -P.A[1]], D: [-P.B[0], -P.B[1]] }; }
+function info(P) { var q = dinh(P); return { ten: 'Hình thoi', ds: [q.A, q.B, q.C, q.D], tam: O0, truc: [[q.A, q.C], [q.B, q.D]] }; }
+
+KhungPhang.tao({
+  ten: 'Hình thoi',
+  lop: 8,
+  diem: { A: [3.5, 0], B: [0, 2] },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { return H.dai(p, O0) < 1 ? null : p; },
+    B: function (p, P) { var n = phap(P), k = Math.max(0.6, p[0] * n[0] + p[1] * n[1]); return H.nhan(n, k); },
+  },
+  sauKeo: function (ten, P) { if (ten === 'A') P.B = H.nhan(phap(P), H.dai(P.B, O0)); },
+  batDau: ['canh'],
+
+  lamSang: [
+    { id: 'canh', nhan: 'Bốn cạnh bằng nhau', mau: M1, ghiChu: function (P) { return 'Hình thoi là tứ giác có <b>bốn cạnh bằng nhau</b>: $AB = BC = CD = DA \\approx ' + soL(H.dai(P.A, P.B)) + '$ cm. Hình thoi cũng là một hình bình hành.'; } },
+    { id: 'cheo', nhan: 'Hai đường chéo vuông góc', mau: M.duongCheo, ghiChu: 'Trong hình thoi, <b>hai đường chéo vuông góc với nhau</b> (và cắt nhau tại trung điểm mỗi đường).' },
+    { id: 'pg', nhan: 'Đường chéo là phân giác', mau: MG1, ghiChu: 'Trong hình thoi, <b>hai đường chéo là các đường phân giác của các góc</b> của hình thoi.' },
+  ],
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp theo đường chéo AC', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp hình thoi theo đường chéo $AC$…' : 'Hai nửa trùng khít: $B$ trùng $D$. Đường chéo là <b>trục đối xứng</b> và là <b>phân giác</b> các góc $A$, $C$.'; } },
+  ],
+
+  ve: function (g, P) {
+    var q = dinh(P), f = info(P);
+    if (g.hoat('gap') !== null) { DX.ve(g, f, { truc: 0 }); return; }
+    g.daGiac(f.ds, { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
+    var opg = g.bat('pg');
+    if (g.bat('cheo') || opg) TG.cheo(g, q, { sang: 'cheo', trung: true, vuong: g.bat('cheo') });
+    var oc = g.bat('canh');
+    TG.canh(q).forEach(function (c) { veCanh(g, c[0], c[1], oc, M1, 1); });
+    if (opg) {
+      [[q.D, q.A, q.C, q.B], [q.A, q.B, q.D, q.C], [q.B, q.C, q.A, q.D], [q.C, q.D, q.B, q.A]].forEach(function (x, i) {
+        var mau = i % 2 ? MG2 : MG1;
+        g.goc(x[0], x[1], x[2], { mau: mau, r: 30, kyHieu: i % 2 + 1, doMoTo: 0.3, nhan: false });
+        g.goc(x[2], x[1], x[3], { mau: mau, r: 30, kyHieu: i % 2 + 1, doMoTo: 0.3, nhan: false });
+      });
+    }
+    TG.nhanDinh(g, q);
+  },
+
+  nhanXet: function (P) {
+    var q = dinh(P), r = 'Hình thoi $ABCD$: cạnh $\\approx ' + soL(H.dai(q.A, q.B)) + '$ ; $AC = ' + soL(H.dai(q.A, q.C)) + '$, $BD = ' + soL(H.dai(q.B, q.D)) + '$';
+    if (H.bang(H.dai(q.A, q.C), H.dai(q.B, q.D))) r += '<br><span class="dung">Hai đường chéo bằng nhau → hình vuông!</span>';
+    return r + TG.dauHieu('Dấu hiệu nhận biết hình thoi', ['Tứ giác có <b>bốn cạnh bằng nhau</b>.', 'Hình bình hành có <b>hai cạnh kề bằng nhau</b>.', 'Hình bình hành có <b>hai đường chéo vuông góc</b>.', 'Hình bình hành có <b>một đường chéo là đường phân giác của một góc</b>.']);
+  },
+  congThuc: function (P, ts, C) { var d1 = 2 * H.dai(P.A, O0), d2 = 2 * H.dai(P.B, O0); return [{ id: 'cheo', ten: 'Tính chất', bt: '${' + C.m('canh', 'AB = BC = CD = DA') + '}$ ; ${' + C.m('cheo', 'AC \\perp BD') + '}$' }, { id: null, ten: 'Diện tích', bt: '$S = \\dfrac{AC\\cdot BD}{2} = \\dfrac{' + soL(d1) + '\\cdot ' + soL(d2) + '}{2} = \\mathbf{' + soL(d1 * d2 / 2) + '}$ (cm²)' }]; },
+  khungNhin: function (P) { var q = dinh(P); return [q.C, q.D]; },
+});
+</script>
+</body>
+</html>

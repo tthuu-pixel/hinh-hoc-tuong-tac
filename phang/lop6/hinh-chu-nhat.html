@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình chữ nhật</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH CHỮ NHẬT ABCD — Toán 6
+   Nhận dạng, chu vi, diện tích và tính đối xứng (2 trục, có tâm).
+   A cố định ở góc dưới trái, kéo C để đổi chiều dài và chiều rộng.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinh(P) { var A = P.A, C = P.C; return { A: A, B: [C[0], A[1]], C: C, D: [A[0], C[1]] }; }
+function thongTin(P) {
+  var q = dinh(P), vuong = H.bang(q.B[0] - q.A[0], q.D[1] - q.A[1]);
+  var truc = [[H.trung(q.A, q.B), H.trung(q.D, q.C)], [H.trung(q.D, q.A), H.trung(q.B, q.C)]];
+  if (vuong) truc.push([q.A, q.C], [q.B, q.D]);
+  return { ten: vuong ? 'Hình chữ nhật này (là hình vuông)' : 'Hình chữ nhật', ds: [q.A, q.B, q.C, q.D], tam: H.trung(q.A, q.C), truc: truc };
+}
+
+KhungPhang.tao({
+  ten: 'Hình chữ nhật',
+  lop: 6,
+  diem: { A: [0, 0], C: [5, 3] },
+  coDinh: ['A'],
+  buocLuoi: 1,
+  rangBuoc: { C: function (p) { return [Math.max(1, p[0]), Math.max(1, p[1])]; } },
+  luaChon: [DX.luaChonTruc(2)],
+  hopChon: [DX.hopChonVet],
+
+  lamSang: DX.lamSang(thongTin).concat([
+    { id: 'dai', nhan: 'Chiều dài a', mau: M.chieuDai, ghiChu: function (P) { return 'Chiều dài $a = AB = DC = ' + soL(P.C[0] - P.A[0]) + '$ cm.'; } },
+    { id: 'rong', nhan: 'Chiều rộng b', mau: M.chieuRong, ghiChu: function (P) { return 'Chiều rộng $b = AD = BC = ' + soL(P.C[1] - P.A[1]) + '$ cm.'; } },
+    { id: 'dt', nhan: 'Diện tích', mau: M.dienTich, ghiChu: function (P) { var a = P.C[0] - P.A[0], b = P.C[1] - P.A[1]; return 'Diện tích = chiều dài × chiều rộng $= ' + soL(a) + ' \\cdot ' + soL(b) + ' = \\mathbf{' + soL(a * b) + '}$ <b>cm²</b>.'; } },
+  ]),
+
+  hoatHinh: DX.hoatHinh(thongTin).concat([
+    { id: 'dem', nhan: 'Đếm ô vuông 1 cm²', thoiGian: 5500,
+      ghiChu: function (P, ts, t) {
+        var a = Math.round(P.C[0] - P.A[0]), b = Math.round(P.C[1] - P.A[1]), n = Math.min(a * b, Math.floor(t * a * b + 1e-9));
+        return 'Đã đếm <b>' + n + '</b> ô vuông 1 cm²' + (n >= a * b ? ' — mỗi hàng ' + a + ' ô, có ' + b + ' hàng: <b>$' + a + ' \\cdot ' + b + ' = ' + a * b + '$ cm²</b>.' : '…');
+      } },
+  ]),
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = thongTin(P), t = g.hoat('dem'), hoat = DX.dangHoat(g);
+    if (!hoat) {
+      g.daGiac(f.ds, { sang: 'dt', to: t !== null ? 'none' : undefined, rong: 0 });
+      if (t !== null) { var a = Math.round(q.B[0] - q.A[0]), b = Math.round(q.D[1] - q.A[1]); g.oVuong(q.A[0], q.A[1], a, b, Math.floor(t * a * b + 1e-9)); }
+      g.doan(q.A, q.B, { sang: 'dai' }); g.doan(q.D, q.C, { sang: 'dai' });
+      g.doan(q.A, q.D, { sang: 'rong' }); g.doan(q.B, q.C, { sang: 'rong' });
+    }
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.nhanDo(q.A, q.B, 'a = ' + so(q.B[0] - q.A[0]) + ' cm', { benTrai: false, sang: 'dai' });
+    g.nhanDo(q.B, q.C, 'b = ' + so(q.C[1] - q.B[1]) + ' cm', { benTrai: false, sang: 'rong' });
+    g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var a = P.C[0] - P.A[0], b = P.C[1] - P.A[1], A = C.m('dai', 'a'), B = C.m('rong', 'b');
+    return [
+      { id: null, ten: 'Chu vi', bt: '$C = 2(' + A + ' + ' + B + ') = 2(' + soL(a) + ' + ' + soL(b) + ') = \\mathbf{' + soL(2 * (a + b)) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích', bt: '$S = ' + A + ' \\cdot ' + B + ' = ' + soL(a) + ' \\cdot ' + soL(b) + ' = \\mathbf{' + soL(a * b) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo điểm C để đổi kích thước.</span>'; },
+});
+</script>
+</body>
+</html>

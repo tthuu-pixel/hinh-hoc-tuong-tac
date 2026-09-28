@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình bình hành</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   HÌNH BÌNH HÀNH — Toán 8
+   A cố định; kéo B, D tự do; C = B + D − A (luôn là hình bình hành).
+   ===================================================================== */
+function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, C: [B[0] + D[0] - A[0], B[1] + D[1] - A[1]], D: D }; }
+function info(P) { var q = dinh(P); return { ten: 'Hình bình hành', ds: [q.A, q.B, q.C, q.D], tam: H.trung(q.A, q.C), truc: [] }; }
+var lech = function (p, P) { return H.dai(p, P.A) < 1 ? null : p; };
+
+KhungPhang.tao({
+  ten: 'Hình bình hành',
+  lop: 8,
+  diem: { A: [-3, -1.5], B: [2.5, -1.5], D: [-1.5, 2] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: { B: lech, D: function (p, P) { if (H.dai(p, P.A) < 1) return null; var u = H.tru(P.B, P.A), v = H.tru(p, P.A); return Math.abs(u[0] * v[1] - u[1] * v[0]) < 0.5 ? null : p; } },
+  batDau: ['canhDoi'],
+
+  lamSang: [
+    { id: 'canhDoi', nhan: 'Các cạnh đối', mau: M1, ghiChu: function (P) { var q = dinh(P); return 'Hình bình hành là tứ giác có <b>các cạnh đối song song</b>. Trong hình bình hành, <b>các cạnh đối bằng nhau</b>: $AB = CD \\approx ' + soL(H.dai(q.A, q.B)) + '$, $AD = BC \\approx ' + soL(H.dai(q.A, q.D)) + '$.'; } },
+    { id: 'gocDoi', nhan: 'Các góc đối', mau: MG1, ghiChu: function (P) { var q = dinh(P); return 'Trong hình bình hành, <b>các góc đối bằng nhau</b>: $\\widehat{A} = \\widehat{C} \\approx ' + soL(H.gocDo(q.D, q.A, q.B), 1) + '^\\circ$, $\\widehat{B} = \\widehat{D} \\approx ' + soL(H.gocDo(q.A, q.B, q.C), 1) + '^\\circ$.'; } },
+    { id: 'cheo', nhan: 'Hai đường chéo', mau: M.duongCheo, ghiChu: 'Trong hình bình hành, <b>hai đường chéo cắt nhau tại trung điểm của mỗi đường</b>: $OA = OC$, $OB = OD$.' },
+  ],
+  hoatHinh: [
+    { id: 'quay', nhan: 'Quay nửa vòng quanh O', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Quay hình bình hành nửa vòng ($180^\\circ$) quanh giao điểm $O$ của hai đường chéo…' : 'Hình trùng khít với chính nó: $A \\leftrightarrow C$, $B \\leftrightarrow D$. Vì vậy các cạnh đối, các góc đối bằng nhau và $O$ là trung điểm hai đường chéo.'; } },
+  ],
+
+  ve: function (g, P) {
+    var q = dinh(P), f = info(P);
+    if (g.hoat('quay') !== null) { DX.ve(g, f, { truc: 0 }); return; }
+    g.daGiac(f.ds, { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
+    if (g.bat('cheo')) TG.cheo(g, q, { sang: 'cheo', trung: true });
+    var oc = g.bat('canhDoi');
+    veCanh(g, q.A, q.B, oc, M1, 1); veCanh(g, q.D, q.C, oc, M1, 1); veCanh(g, q.A, q.D, oc, M2, 2); veCanh(g, q.B, q.C, oc, M2, 2);
+    var og = g.bat('gocDoi');
+    veGoc(g, q, 0, og, MG1, 1); veGoc(g, q, 2, og, MG1, 1); veGoc(g, q, 1, og, MG2, 2); veGoc(g, q, 3, og, MG2, 2);
+    TG.nhanDinh(g, q);
+  },
+
+  nhanXet: function (P) {
+    var d = TG.nhanDang(dinh(P)), r = 'Hình bình hành $ABCD$';
+    if (d.ten !== 'hình bình hành') r += '<br><span class="dung">Đặc biệt: đây còn là <b>' + d.ten + '</b>.</span>';
+    return r + TG.dauHieu('Dấu hiệu nhận biết hình bình hành', ['Tứ giác có <b>các cạnh đối song song</b>.', 'Tứ giác có <b>các cạnh đối bằng nhau</b>.', 'Tứ giác có <b>hai cạnh đối song song và bằng nhau</b>.', 'Tứ giác có <b>các góc đối bằng nhau</b>.', 'Tứ giác có <b>hai đường chéo cắt nhau tại trung điểm mỗi đường</b>.']);
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'canhDoi', ten: 'Tính chất', bt: '${' + C.m('canhDoi', 'AB = CD') + '}$, ${' + C.m('canhDoi', 'AD = BC') + '}$ ; ${' + C.m('gocDoi', '\\widehat{A} = \\widehat{C}') + '}$, ${' + C.m('gocDoi', '\\widehat{B} = \\widehat{D}') + '}$ ; ${' + C.m('cheo', 'OA = OC') + '}$, ${' + C.m('cheo', 'OB = OD') + '}$' }]; },
+  khungNhin: function (P) { return [dinh(P).C]; },
+});
+</script>
+</body>
+</html>

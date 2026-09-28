@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lăng trụ đứng tam giác</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH LĂNG TRỤ ĐỨNG TAM GIÁC  ABC.A'B'C'  — Toán 7
+   Đáy ABC: cạnh BC = a, đường cao AH = d, H nằm trên BC với BH = k·a
+   h = chiều cao lăng trụ (= độ dài cạnh bên)
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+
+function dayTamGiac(ts) {
+  var a = ts.a, d = ts.d, zf = d / 3, xH = -a / 2 + ts.k * a;
+  return { B: [-a / 2, zf], C: [a / 2, zf], A: [xH, zf - d], H: [xH, zf] };
+}
+function doDai(ts) {
+  var a = ts.a, d = ts.d, k = ts.k;
+  var AB = Math.hypot(k * a, d), AC = Math.hypot((1 - k) * a, d);
+  return { AB: AB, AC: AC, BC: a, chuVi: AB + AC + a, sDay: a * d / 2 };
+}
+
+KhongGian.tao({
+  ten: 'Lăng trụ đứng tam giác',
+  lop: 7,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'a', nhan: 'Cạnh đáy BC = a', min: 2, max: 8, buoc: 0.5, gt: 5, donVi: 'cm', mau: M.chuVi },
+    { khoa: 'd', nhan: 'Đường cao đáy AH', min: 1, max: 6, buoc: 0.5, gt: 3, donVi: 'cm', mau: M.duongCaoDay },
+    { khoa: 'k', nhan: 'Vị trí chân đường cao H', min: 0, max: 1, buoc: 0.05, gt: 0.3, mau: M.duongCaoDay,
+      hienThi: function (ts) { return 'BH = ' + so(ts.k * ts.a) + ' cm'; } },
+    { khoa: 'h', nhan: 'Chiều cao lăng trụ h', min: 1, max: 8, buoc: 0.5, gt: 6, donVi: 'cm', mau: M.chieuCao },
+  ],
+
+  daDien: function (ts) {
+    var p = dayTamGiac(ts), h = ts.h;
+    return {
+      dinh: {
+        A: [p.A[0], 0, p.A[1]], B: [p.B[0], 0, p.B[1]], C: [p.C[0], 0, p.C[1]],
+        "A'": [p.A[0], h, p.A[1]], "B'": [p.B[0], h, p.B[1]], "C'": [p.C[0], h, p.C[1]],
+      },
+      diemPhu: { H: [p.H[0], 0, p.H[1]] },
+      huongNhan: { H: [0, -0.4, 1] },
+      mat: [
+        { ten: 'ABC',    dinh: ['A', 'B', 'C'] },
+        { ten: "BCC'B'", dinh: ['B', 'C', "C'", "B'"] },
+        { ten: "CAA'C'", dinh: ['C', 'A', "A'", "C'"] },
+        { ten: "ABB'A'", dinh: ['A', 'B', "B'", "A'"] },
+        { ten: "A'B'C'", dinh: ["A'", "B'", "C'"] },
+      ],
+    };
+  },
+
+  lamSang: [
+    {
+      id: 'chuVi', nhan: 'Chu vi đáy', mau: M.chuVi,
+      canh: [['A', 'B'], ['B', 'C'], ['C', 'A']],
+      nhanDo: function (ts) {
+        var L = doDai(ts);
+        return [
+          { doan: ['B', 'C'], chu: 'BC = ' + so(L.BC) },
+          { doan: ['A', 'B'], chu: 'AB ≈ ' + so(L.AB) },
+          { doan: ['C', 'A'], chu: 'CA ≈ ' + so(L.AC) },
+        ];
+      },
+      ghiChu: function (ts) { var L = doDai(ts); return 'Chu vi đáy $= AB + BC + CA \\approx ' + soL(L.AB) + ' + ' + soL(L.BC) + ' + ' + soL(L.AC) + ' \\approx$ <b>$' + soL(L.chuVi) + '$ cm</b>.'; },
+    },
+    {
+      id: 'dcao', nhan: 'Đường cao của đáy', mau: M.duongCaoDay,
+      doan: [['A', 'H']],
+      nhanDo: function (ts) { return [{ doan: ['A', 'H'], chu: 'AH = ' + so(ts.d) }]; },
+      ghiChu: function (ts) { return '$AH$ là đường cao của tam giác đáy $ABC$: $AH \\perp BC$, $AH = ' + soL(ts.d) + '$ cm.'; },
+    },
+    {
+      id: 'h', nhan: 'Chiều cao h', mau: M.chieuCao,
+      canh: [['A', "A'"], ['B', "B'"], ['C', "C'"]],
+      nhanDo: function (ts) { return [{ doan: ['B', "B'"], chu: '<i>h</i> = ' + so(ts.h) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Ba <b>cạnh bên</b> $AA\', BB\', CC\'$ bằng nhau, vuông góc với đáy và bằng chiều cao $h = ' + soL(ts.h) + '$ cm.'; },
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['ABC', "A'B'C'"],
+      ghiChu: function (ts) { return 'Hai mặt đáy $ABC$ và $A\'B\'C\'$ là hai tam giác bằng nhau, nằm trong hai mặt phẳng song song.'; },
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
+      mat: ["BCC'B'", "CAA'C'", "ABB'A'"],
+      ghiChu: 'Ba <b>mặt bên</b> là ba hình chữ nhật. Trải ra, chúng ghép thành một hình chữ nhật có chiều dài bằng chu vi đáy, chiều rộng bằng $h$.',
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Xếp các lớp dày 1 cm có đáy là tam giác $ABC$: số lớp bằng chiều cao, mỗi lớp có thể tích bằng $S_{\\text{đáy}} \\times 1$.',
+    },
+  ],
+
+  congThuc: function (ts, C) {
+    var L = doDai(ts), h = ts.h, Hh = C.m('h', 'h'), n = C.soL;
+    return [
+      { id: 'dcao', ten: 'Diện tích đáy', bt: '$S_{\\text{đáy}} = \\dfrac{1}{2}\\cdot ' + C.m('chuVi', 'BC') + '\\cdot ' + C.m('dcao', 'AH') + ' = \\dfrac{1}{2}\\cdot ' + n(ts.a) + '\\cdot ' + n(ts.d) + ' = \\mathbf{' + n(L.sDay) + '}$ (cm²)' },
+      { id: 'chuVi', ten: 'Chu vi đáy', bt: '$C_{\\text{đáy}} = ' + C.m('chuVi', 'AB + BC + CA') + ' \\approx \\mathbf{' + n(L.chuVi) + '}$ (cm)' },
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = ' + C.m('chuVi', 'C_{\\text{đáy}}') + '\\cdot ' + Hh + ' \\approx ' + n(L.chuVi) + '\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(L.chuVi * h) + '}$ (cm²)' },
+      { id: 'V', ten: 'Thể tích', bt: '$V = S_{\\text{đáy}}\\cdot ' + Hh + ' = ' + n(L.sDay) + '\\cdot ' + n(h) + ' = \\mathbf{' + n(L.sDay * h) + '}$ (cm³)' },
+    ];
+  },
+
+  traiHinh: { matGoc: 'ABC', cay: { "A'B'C'": "BCC'B'" } },
+
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.h, 0] }; } },
+    { id: 'dung', nhan: 'Song song với mặt bên BCC′B′',
+      matPhang: function (ts, t) { var zf = ts.d / 3; return { phapTuyen: [0, 0, 1], diem: [0, 0, zf - ts.d + t * ts.d] }; } },
+    { id: 'quaAH', nhan: 'Chứa cạnh bên, vuông góc BC',
+      diemDacBiet: function (ts) { return [ts.k]; }, batDau: function (ts) { return Math.min(0.98, Math.max(0.02, ts.k)); },
+      matPhang: function (ts, t) { return { phapTuyen: [1, 0, 0], diem: [-ts.a / 2 + t * ts.a, 0, 0] }; } },
+  ],
+
+  lopDay: function (ts) {
+    var p = dayTamGiac(ts);
+    return { day: [p.B, p.C, p.A], cao: ts.h, dienTichDay: ts.a * ts.d / 2 };
+  },
+});
+</script>
+</body>
+</html>

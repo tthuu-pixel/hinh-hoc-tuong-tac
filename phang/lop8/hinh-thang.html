@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình thang</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   HÌNH THANG — Toán 8
+   AB // CD. A cố định; kéo B (ngang), D; C chạy trên đường thẳng qua D song song AB.
+   ===================================================================== */
+function dinh(P) { return { A: P.A, B: P.B, C: [P.C[0], P.D[1]], D: P.D }; }
+
+KhungPhang.tao({
+  ten: 'Hình thang',
+  lop: 8,
+  diem: { A: [-3, 0], B: [4, 0], C: [2, 3], D: [-1.5, 3] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: {
+    B: function (p, P) { return [Math.max(P.A[0] + 1, p[0]), P.A[1]]; },
+    D: function (p, P) { return [Math.min(p[0], P.C[0] - 0.5), Math.max(P.A[1] + 0.5, p[1])]; },
+    C: function (p, P) { return [Math.max(P.D[0] + 0.5, p[0]), P.D[1]]; },
+  },
+  sauKeo: function (ten, P) { if (ten === 'D') P.C = [P.C[0], P.D[1]]; },
+  batDau: ['day'],
+
+  lamSang: [
+    { id: 'day', nhan: 'Hai đáy AB // CD', mau: M1, ghiChu: 'Hình thang là tứ giác có <b>hai cạnh đối song song</b>. $AB$ và $CD$ gọi là hai <b>cạnh đáy</b> (đáy lớn, đáy nhỏ).' },
+    { id: 'ben', nhan: 'Hai cạnh bên', mau: M2, ghiChu: 'Hai cạnh còn lại $AD$ và $BC$ gọi là hai <b>cạnh bên</b>.' },
+    { id: 'cao', nhan: 'Đường cao DH', mau: MCAO, ghiChu: function (P) { return 'Đoạn $DH$ vuông góc với hai đáy gọi là <b>đường cao</b> của hình thang: $DH = ' + soL(P.D[1] - P.A[1]) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Hai góc kề một cạnh bên', mau: MG1,
+      ghiChu: function (P) { var q = dinh(P), a = H.gocDo(q.D, q.A, q.B), d = H.gocDo(q.C, q.D, q.A); return 'Vì ${AB \\parallel CD}$ nên hai góc kề một cạnh bên <b>bù nhau</b>: $\\widehat{A} + \\widehat{D} = ' + soL(a, 0) + '^\\circ + ' + soL(d, 0) + '^\\circ = \\mathbf{180^\\circ}$, tương tự $\\widehat{B} + \\widehat{C} = 180^\\circ$.'; } },
+  ],
+
+  ve: function (g, P) {
+    var q = dinh(P), onDay = g.bat('day'), onBen = g.bat('ben'), onGoc = g.bat('goc');
+    g.daGiac([q.A, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
+    if (g.bat('cao')) {
+      var Hc = [q.D[0], q.A[1]];
+      if (Hc[0] < q.A[0]) g.doan(q.A, Hc, { mau: MCAO, dut: '5 4', rong: 1.6 });
+      g.doan(q.D, Hc, { sang: 'cao' }); g.goc(q.D, Hc, q.B, { mau: MCAO, r: 12, to: false });
+      g.diem(Hc, 'H', { huong: [0, -1], mau: MCAO });
+      g.nhanDo(Hc, q.D, 'h = ' + so(q.D[1] - q.A[1]), { mau: MCAO, kc: 28 });
+    }
+    veCanh(g, q.A, q.B, onDay, M1); veCanh(g, q.D, q.C, onDay, M1);
+    veCanh(g, q.A, q.D, onBen, M2); veCanh(g, q.B, q.C, onBen, M2);
+    if (onDay) { var u = [0.25, 0]; [H.trung(q.A, q.B), H.trung(q.D, q.C)].forEach(function (m) { g.duong([H.cong(m, [-0.15, 0.15]), H.cong(m, [0.1, 0]), H.cong(m, [-0.15, -0.15])], { mau: M1, rong: 2.5 }); }); }
+    veGoc(g, q, 0, onGoc, MG1, 1); veGoc(g, q, 3, onGoc, MG1, 1, { r: 26 });
+    veGoc(g, q, 1, onGoc, MG2, 2); veGoc(g, q, 2, onGoc, MG2, 2, { r: 26 });
+    if (g.hienSo()) { g.nhanDo(q.A, q.B, so(H.dai(q.A, q.B)), { benTrai: false }); g.nhanDo(q.D, q.C, so(H.dai(q.D, q.C)), {}); }
+    TG.nhanDinh(g, q);
+  },
+
+  nhanXet: function (P) {
+    var q = dinh(P), a = H.dai(q.A, q.B), b = H.dai(q.D, q.C), r = 'Hình thang $ABCD$ (${AB \\parallel CD}$)';
+    if (H.bang(a, b)) r += '<br><span class="dung">Hai đáy bằng nhau → hai cạnh bên song song và bằng nhau (đây là hình bình hành).</span>';
+    else if (Math.abs(H.gocDo(q.D, q.A, q.B) - 90) < 0.05) r += '<br><span class="dung">Có góc $A$ vuông → hình thang vuông.</span>';
+    else if (Math.abs(H.gocDo(q.D, q.A, q.B) - H.gocDo(q.A, q.B, q.C)) < 0.05) r += '<br><span class="dung">$\\widehat{A} = \\widehat{B}$ → hình thang cân.</span>';
+    return r + TG.dauHieu('Định nghĩa – nhận xét', ['Hình thang là tứ giác có <b>hai cạnh đối song song</b>.', 'Hình thang có hai cạnh bên song song thì hai cạnh bên bằng nhau, hai cạnh đáy bằng nhau.', 'Hình thang có hai cạnh đáy bằng nhau thì hai cạnh bên song song và bằng nhau.']);
+  },
+  congThuc: function (P, ts, C) {
+    var q = dinh(P), a = H.dai(q.A, q.B), b = H.dai(q.D, q.C), h = q.D[1] - q.A[1];
+    return [{ id: 'goc', ten: 'Góc', bt: '$' + C.m('goc', '\\widehat{A} + \\widehat{D} = \\widehat{B} + \\widehat{C} = 180^\\circ') + '$' }, { id: 'cao', ten: 'Diện tích', bt: '$S = \\dfrac{(a + b)\\cdot ' + C.m('cao', 'h') + '}{2} = \\dfrac{(' + soL(a) + ' + ' + soL(b) + ')\\cdot ' + soL(h) + '}{2} = \\mathbf{' + soL((a + b) * h / 2) + '}$ (cm²)' }];
+  },
+});
+</script>
+</body>
+</html>

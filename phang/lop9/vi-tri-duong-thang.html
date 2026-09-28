@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vị trí tương đối của đường thẳng và đường tròn</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   VỊ TRÍ TƯƠNG ĐỐI CỦA ĐƯỜNG THẲNG VÀ ĐƯỜNG TRÒN — Toán 9
+   Đường tròn (O; R). Kéo H (chân đường vuông góc từ O) để di chuyển/xoay
+   đường thẳng a (a ⊥ OH tại H). d = OH.
+   ===================================================================== */
+var MD = '#C026D3', MR = '#D97706', MG = '#0D9488';
+function hinh(P, ts, Hc) {
+  var R = ts.R, Hh = Hc || P.H, d = H.dai(Hh, O0), n = d < 1e-6 ? [0, 1] : [Hh[0] / d, Hh[1] / d], u = [-n[1], n[0]];
+  var loai = Math.abs(d - R) < 1e-6 ? 'tx' : d < R ? 'cat' : 'khong';
+  var k = loai === 'cat' ? Math.sqrt(R * R - d * d) : 0;
+  return { R: R, H: Hh, d: d, u: u, n: n, loai: loai, A: H.cong(Hh, H.nhan(u, -k)), B: H.cong(Hh, H.nhan(u, k)), L: Math.max(k + 1.8, 3) };
+}
+var TEN = {
+  cat: '<b style="color:#1D4ED8">Cắt nhau</b> ($d \\lt R$): 2 điểm chung $A$, $B$. Đường thẳng $a$ gọi là <b>cát tuyến</b> của đường tròn.',
+  tx: '<b style="color:#16A34A">Tiếp xúc</b> ($d = R$): 1 điểm chung $H$. Đường thẳng $a$ gọi là <b>tiếp tuyến</b>, $H$ là <b>tiếp điểm</b>, và $a \\perp OH$.',
+  khong: '<b style="color:#B91C1C">Không giao nhau</b> ($d \\gt R$): không có điểm chung.',
+};
+function dat(y) { return function (P, ts, api) { P.H = [0, y === 'R' ? ts.R : y]; api.vuaKhung(); }; }
+
+KhungPhang.tao({
+  ten: 'Vị trí tương đối của đường thẳng và đường tròn',
+  lop: 9,
+  diem: { H: [0, 1.5] },
+  buocLuoi: 0.5,
+  thamSo: [{ khoa: 'R', nhan: 'Bán kính R', min: 1.5, max: 4, buoc: 0.5, gt: 3, donVi: 'cm', vuaKhung: true }],
+  tieuDeNutPhu: 'Đưa nhanh về trường hợp',
+  nutPhu: [{ nhan: 'Cắt nhau', bam: dat(1.5) }, { nhan: 'Tiếp xúc', bam: dat('R') }, { nhan: 'Không giao nhau', bam: function (P, ts, api) { P.H = [0, ts.R + 1.5]; api.vuaKhung(); } }],
+  batDau: ['d'],
+
+  lamSang: [
+    { id: 'd', nhan: 'Khoảng cách d = OH', mau: MD, ghiChu: function (P, ts) { var h = hinh(P, ts); return '$d = OH$ là khoảng cách từ tâm $O$ đến đường thẳng $a$: $d = ' + soL(h.d) + '$ cm, so với $R = ' + soL(h.R) + '$ cm.'; } },
+    { id: 'R', nhan: 'Bán kính R', mau: MR, ghiChu: function (P, ts) { return 'Bán kính $R = ' + soL(ts.R) + '$ cm. So sánh $d$ với $R$ để biết vị trí tương đối.'; } },
+    { id: 'giao', nhan: 'Điểm chung', mau: MG, ghiChu: function (P, ts) { return TEN[hinh(P, ts).loai]; } },
+  ],
+  hoatHinh: [
+    { id: 'truot', nhan: 'Cho đường thẳng tiến lại gần tâm', thoiGian: 9000,
+      ghiChu: function (P, ts, t) { var y = (ts.R + 2) * (1 - H.doan(t, 0.05, 0.95)), h = hinh(P, ts, [0, Math.abs(y - ts.R) < 0.12 ? ts.R : y]); return '$d = ' + soL(h.d, 1) + '$ cm — ' + TEN[h.loai]; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var tt = g.hoat('truot'), Hh = null;
+    if (tt !== null) { var y = (ts.R + 2) * (1 - H.doan(tt, 0.05, 0.95)); Hh = [0, Math.abs(y - ts.R) < 0.12 ? ts.R : y]; }
+    var h = hinh(P, ts, Hh), mau = h.loai === 'cat' ? '#1D4ED8' : h.loai === 'tx' ? '#16A34A' : '#B91C1C';
+    g.duongTron(O0, h.R, { to: '#93C5FD', doMoTo: 0.2, rong: 2.8 });
+    var P1 = H.cong(h.H, H.nhan(h.u, -h.L)), P2 = H.cong(h.H, H.nhan(h.u, h.L));
+    g.doan(P1, P2, { mau: mau, rong: 3.5 });
+    g.chu(H.cong(P2, H.nhan(h.u, 0.4)), 'a', { nghieng: true, mau: mau });
+    if (g.bat('d') || h.loai === 'tx') {
+      g.doan(O0, h.H, g.bat('d') ? { sang: 'd' } : { mau: MD, rong: 2.5 });
+      if (h.d > 0.3) { g.goc(O0, h.H, P2, { mau: MD, r: 12, to: false }); g.nhanDo(O0, h.H, 'd = ' + so(h.d), { mau: MD }); }
+    }
+    if (g.bat('R')) { var Rp = diemDT(O0, h.R, gocCua(h.H) + 2.2); g.doan(O0, Rp, { sang: 'R' }); g.nhanDo(O0, Rp, 'R = ' + so(h.R), { mau: MR }); }
+    if (h.loai === 'cat') { g.diem(h.A, 'A', { r: g.bat('giao') ? 7 : 5, mau: MG, huong: H.cong(H.nhan(h.u, -1), h.n) }); g.diem(h.B, 'B', { r: g.bat('giao') ? 7 : 5, mau: MG, huong: H.cong(h.u, h.n) }); }
+    if (h.loai === 'tx') g.chu(H.cong(h.H, H.nhan(h.n, 0.7)), 'tiếp điểm', { mau: '#16A34A', nho: true });
+    g.diem(h.H, 'H', { r: h.loai === 'tx' ? (g.bat('giao') ? 7 : 5) : 3.5, mau: h.loai === 'tx' ? MG : MD, huong: H.cong(h.n, H.nhan(h.u, -0.8)) });
+    g.diem(O0, 'O', { r: 4, huong: [-0.8, -0.9] });
+  },
+
+  nhanXet: function (P, ts) {
+    var h = hinh(P, ts);
+    return '<div style="font-size:16px">$d = ' + soL(h.d) + '$; $R = ' + soL(h.R) + '$</div>' + TEN[h.loai] + GACH +
+      '<table style="width:100%;font-size:14px;border-collapse:collapse"><tr><th style="text-align:left">Vị trí</th><th>Số điểm chung</th><th>Hệ thức</th></tr>' +
+      [['cat', 'Cắt nhau (cát tuyến)', '2', '$d \\lt R$'], ['tx', 'Tiếp xúc (tiếp tuyến)', '1', '$d = R$'], ['khong', 'Không giao nhau', '0', '$d \\gt R$']].map(function (r) {
+        return '<tr style="' + (r[0] === h.loai ? 'background:#DBEAFE;font-weight:700' : '') + '"><td>' + r[1] + '</td><td style="text-align:center">' + r[2] + '</td><td style="text-align:center">' + r[3] + '</td></tr>';
+      }).join('') + '</table>';
+  },
+  khungNhin: function (P, ts) { var R = ts.R + 2.2; return [[-R, -R], [R, R + 1.2]]; },
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hai góc kề bù</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HAI GÓC KỀ BÙ — Toán 7
+   Ox và Ox' là hai tia đối nhau; kéo y để xoay tia Oy.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var soL = KhungPhang.soL;
+
+// Kéo tia: hướng tia được làm tròn tới số nguyên độ để số đo góc luôn là số nguyên
+function tronGoc(p, O, minD) { var d = H.dai(p, O); if (d < minD) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + d * Math.cos(a), O[1] + d * Math.sin(a)]; }
+
+KhungPhang.tao({
+  ten: 'Hai góc kề bù',
+  lop: 7,
+  diem: { O: [0, 0], y: [1.6059, 3.444] },
+  coDinh: ['O'],
+  buocLuoi: 0.5,
+  rangBuoc: { y: function (p, P) { return p[1] < 0.3 ? null : tronGoc(p, P.O, 1); } },
+
+  lamSang: [
+    { id: 'g1', nhan: 'Góc xOy', mau: M.goc1, ghiChu: function (P) { return '$\\widehat{xOy} = ' + soL(H.gocDo([4, 0], P.O, P.y), 0) + '^\\circ$.'; } },
+    { id: 'g2', nhan: 'Góc yOx′', mau: M.goc2, ghiChu: function (P) { return "$\\widehat{yOx'} = " + soL(H.gocDo(P.y, P.O, [-4, 0]), 0) + '^\\circ$.'; } },
+    { id: 'doi', nhan: 'Hai tia đối nhau Ox, Ox′', mau: M.song, ghiChu: "Hai góc có chung cạnh $Oy$, hai cạnh còn lại $Ox$ và $Ox'$ là <b>hai tia đối nhau</b>: đó là hai góc <b>kề bù</b>." },
+    { id: 'tong', nhan: 'Tổng hai góc', mau: M.goc3, ghiChu: "Hai góc kề bù có tổng số đo bằng <b>$180^\\circ$</b> (bằng góc bẹt $\\widehat{xOx'}$)." },
+  ],
+  hoatHinh: [{ id: 'quet', nhan: 'Xoay tia Oy', thoiGian: 6000, ghiChu: 'Khi tia $Oy$ quay, một góc tăng thì góc kia giảm đúng bằng chừng ấy: tổng luôn bằng <b>$180^\\circ$</b>.' }],
+
+  ve: function (g, P) {
+    var O = P.O, t = g.hoat('quet'), y = P.y;
+    if (t !== null) { var a = (20 + 140 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2))) * Math.PI / 180, L = H.dai(O, P.y); y = [L * Math.cos(a), L * Math.sin(a)]; }
+    var x = [4, 0], x2 = [-4, 0];
+    if (g.bat('tong')) g.goc(x, O, x2, { mau: M.goc3, r: 88, doMoTo: 0.1, nhan: '180°', vuong: false });
+    g.goc(x, O, y, { mau: M.goc1, r: 56, doMoTo: g.bat('g1') || t !== null ? 0.4 : 0.2, sang: 'g1' });
+    g.goc(y, O, x2, { mau: M.goc2, r: 56, kyHieu: 2, doMoTo: g.bat('g2') || t !== null ? 0.4 : 0.2, sang: 'g2' });
+    g.doan(x2, x, { rong: g.bat('doi') ? 5 : 3, mau: g.bat('doi') ? M.song : undefined });
+    g.tia(O, y, { rong: 3 });
+    g.diem(O, 'O', { huong: [0, -1] });
+    g.chu([4.5, -0.1], 'x', { nghieng: true }); g.chu([-4.5, -0.1], 'x′', { nghieng: true });
+    g.chu(H.cong(O, H.nhan(y, 1 + 1.3 / H.dai(O, y))), 'y', { nghieng: true });
+  },
+  nhanXet: function (P) {
+    var a = H.gocDo([4, 0], P.O, P.y), b = 180 - a;
+    return '<b style="color:' + M.goc1 + '">$\\widehat{xOy} = ' + soL(a, 0) + '^\\circ$</b> · <b style="color:' + M.goc2 + '">$\\widehat{yOx\'} = ' + soL(b, 0) + '^\\circ$</b><br>Tổng: $' + soL(a, 0) + '^\\circ + ' + soL(b, 0) + '^\\circ = 180^\\circ$';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'tong', ten: 'Hai góc kề bù', bt: '$' + C.m('g1', '\\widehat{xOy}') + ' + ' + C.m('g2', "\\widehat{yOx'}") + ' = 180^\\circ$' }]; },
+  khungNhin: function () { return [[-5, -1], [5, 4.5]]; },
+  le: 0.4,
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Góc ở tâm – Số đo cung</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   GÓC Ở TÂM – SỐ ĐO CUNG — Toán 9
+   Đường tròn (O; 3). Kéo A, B trên đường tròn.
+   ===================================================================== */
+var R = 3, MG = '#F59E0B', MN = '#E0342F', ML = '#1E6FE0';
+function sd(P) {
+  var a = gocCua(P.A), b = gocCua(P.B), d = ccw(a, b);
+  // cung nhỏ đi từ A đến B theo chiều ngắn
+  var nho = d <= Math.PI ? [a, a + d] : [b, b + (2 * Math.PI - d)];
+  var deg = Math.min(d, 2 * Math.PI - d) * 180 / Math.PI;
+  return { nho: nho, lon: [nho[1], nho[0] + 2 * Math.PI], deg: deg };
+}
+
+KhungPhang.tao({
+  ten: 'Góc ở tâm – Số đo cung',
+  lop: 9,
+  diem: { A: diemDT(O0, R, DO(20)), B: diemDT(O0, R, DO(110)) },
+  buocLuoi: 0.5,
+  rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R) },
+  batDau: ['goc'],
+
+  lamSang: [
+    { id: 'goc', nhan: 'Góc ở tâm AOB', mau: MG, ghiChu: 'Góc có <b>đỉnh trùng với tâm</b> đường tròn gọi là <b>góc ở tâm</b>. Góc $\\widehat{AOB}$ chia đường tròn thành hai cung.' },
+    { id: 'nho', nhan: 'Cung nhỏ AmB', mau: MN, ghiChu: function (P) { return 'Cung nằm bên trong góc ở tâm là <b>cung nhỏ</b> $\\overset{\\frown}{AmB}$ (cung bị chắn). <b>Số đo cung nhỏ bằng số đo góc ở tâm</b> chắn cung đó: <b>$\\text{sđ}\\,\\overset{\\frown}{AmB} = \\widehat{AOB} = ' + soL(sd(P).deg, 0) + '^\\circ$</b>.'; } },
+    { id: 'lon', nhan: 'Cung lớn AnB', mau: ML, ghiChu: function (P) { var d = sd(P).deg; return '<b>Số đo cung lớn</b> bằng $360^\\circ$ trừ số đo cung nhỏ: $\\text{sđ}\\,\\overset{\\frown}{AnB} = 360^\\circ - ' + soL(d, 0) + '^\\circ = ' + soL(360 - d, 0) + '^\\circ$.'; } },
+  ],
+  hoatHinh: [
+    { id: 'quet', nhan: 'Quét góc ở tâm', thoiGian: 4500,
+      ghiChu: function (P, ts, t) { var d = sd(P).deg; return t < 1 ? 'Tia quay quanh $O$ từ $OA$ đến $OB$, đồng thời vạch nên cung $\\overset{\\frown}{AB}$: đã quay $' + soL(d * H.em(H.doan(t, 0.05, 0.9)), 0) + '^\\circ$…' : 'Tia quay $' + soL(d, 0) + '^\\circ$ thì vạch được cung $' + soL(d, 0) + '^\\circ$: <b>sđ cung nhỏ = số đo góc ở tâm</b>.'; } },
+  ],
+
+  ve: function (g, P) {
+    var s = sd(P), A = P.A, B = P.B, t = g.hoat('quet');
+    g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.15, rong: 2.5 });
+    if (t !== null) {
+      var e = H.em(H.doan(t, 0.05, 0.9)), a0 = s.nho[0], a1 = a0 + (s.nho[1] - s.nho[0]) * e, dau = diemDT(O0, R, s.nho[0]);
+      g.quat(O0, R * 0.35, a0, a1, { to: MG, doMoTo: 0.45, mau: MG });
+      veCung(g, O0, R, a0, a1, { mau: MN, rong: 6 });
+      g.doan(O0, dau, { rong: 3 }); g.doan(O0, diemDT(O0, R * 1.12, a1), { mau: MG, rong: 3.5 });
+      g.chu(diemDT(O0, R * 0.55, (a0 + a1) / 2), so(s.deg * e, 0) + '°', { mau: '#B45309' });
+      g.diem(O0, 'O', { r: 4, huong: [-0.8, -0.9] }); g.diem(A, 'A', { huong: A }); g.diem(B, 'B', { huong: B });
+      return;
+    }
+    var onN = g.bat('nho'), onL = g.bat('lon');
+    veCung(g, O0, R, s.nho[0], s.nho[1], onN ? { sang: 'nho', rongSang: 6 } : { mau: '#1B2540', rong: 2.5 });
+    veCung(g, O0, R, s.lon[0], s.lon[1], onL ? { sang: 'lon', rongSang: 6 } : { mau: '#1B2540', rong: 2.5 });
+    var mid = (s.nho[0] + s.nho[1]) / 2;
+    g.chu(diemDT(O0, R + 0.45, mid), 'm', { nghieng: true, mau: onN ? MN : undefined });
+    g.chu(diemDT(O0, R + 0.45, mid + Math.PI), 'n', { nghieng: true, mau: onL ? ML : undefined });
+    if (onN) g.chu(diemDT(O0, R + 1.1, mid), 'sđ = ' + so(s.deg, 0) + '°', { mau: MN });
+    if (onL) g.chu(diemDT(O0, R + 1.1, mid + Math.PI), 'sđ = ' + so(360 - s.deg, 0) + '°', { mau: ML });
+    g.doan(O0, A, { rong: 3 }); g.doan(O0, B, { rong: 3 });
+    g.goc(A, O0, B, { mau: g.bat('goc') ? MG : '#94A3B8', r: 40, doMoTo: g.bat('goc') ? 0.35 : 0.12, nhan: true });
+    g.diem(O0, 'O', { r: 4, huong: H.nhan(diemDT(O0, 1, mid), -1) }); g.diem(A, 'A', { huong: A }); g.diem(B, 'B', { huong: B });
+  },
+  nhanXet: function (P) { var d = sd(P).deg; return 'Góc ở tâm $\\widehat{AOB} = ' + soL(d, 0) + '^\\circ$<br>Cung nhỏ: $\\text{sđ}\\,\\overset{\\frown}{AmB} = ' + soL(d, 0) + '^\\circ$; cung lớn: $\\text{sđ}\\,\\overset{\\frown}{AnB} = ' + soL(360 - d, 0) + '^\\circ$' + (Math.abs(d - 180) < 0.5 ? '<br><span class="dung">$A$, $B$ đối xứng qua $O$: mỗi cung là một nửa đường tròn ($180^\\circ$).</span>' : ''); },
+  congThuc: function (P, ts, C) { return [{ id: 'nho', ten: 'Số đo cung', bt: '$' + C.m('nho', '\\text{sđ}\\,\\overset{\\frown}{AmB}') + ' = ' + C.m('goc', '\\widehat{AOB}') + '$; $' + C.m('lon', '\\text{sđ}\\,\\overset{\\frown}{AnB}') + ' = 360^\\circ - \\text{sđ}\\,\\overset{\\frown}{AmB}$' }]; },
+  khungNhin: function () { return [[-4.3, -4.3], [4.3, 4.3]]; },
+});
+</script>
+</body>
+</html>

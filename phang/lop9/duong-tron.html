@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường tròn – Tâm và trục đối xứng</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var O0 = [0, 0];
+function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
+function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
+function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
+function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
+var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
+var soL = KhungPhang.soL;
+/* =====================================================================
+   ĐƯỜNG TRÒN – TÂM VÀ TRỤC ĐỐI XỨNG — Toán 9
+   Kéo A để đổi bán kính; kéo C, D (trên đường tròn) để đổi dây CD.
+   Hiệu ứng đối xứng như phần Toán 6: điểm chạy, gấp giấy 3D, quay nửa vòng.
+   ===================================================================== */
+var MBK = '#D97706', MDK = '#1E6FE0', MDAY = '#16A34A';
+function R_(P) { return H.dai(P.A, O0); }
+function info(P) {
+  var R = R_(P), ds = [], a0 = gocCua(P.A);
+  for (var i = 0; i < 96; i++) ds.push(diemDT(O0, R, a0 + 2 * Math.PI * i / 96));
+  var truc = [0, 1, 2, 3].map(function (k) { var a = a0 + k * Math.PI / 4; return [diemDT(O0, R, a + Math.PI), diemDT(O0, R, a)]; });
+  return { ten: 'Đường tròn', ds: ds, truc: truc, tam: O0, to: '#93C5FD' };
+}
+var dsSang = DX.lamSang(info).map(function (s) {
+  if (s.id === 'truc') { s.ghiChu = 'Mỗi đường thẳng đi qua tâm $O$ đều là <b>trục đối xứng</b> của đường tròn: đường tròn có <b>vô số trục đối xứng</b> (ở đây vẽ 4 trục).'; }
+  if (s.id === 'tam') { s.ghiChu = 'Tâm $O$ là <b>tâm đối xứng</b> của đường tròn.'; }
+  return s;
+});
+
+KhungPhang.tao({
+  ten: 'Đường tròn – Tâm và trục đối xứng',
+  lop: 9,
+  diem: { A: [3, 0], C: diemDT(O0, 3, 2.6), D: diemDT(O0, 3, 4.4) },
+  buocLuoi: 0.5,
+  rangBuoc: {
+    A: function (p) { var d = H.dai(p, O0); return d < 1 ? null : p; },
+    C: function (p, P) { return lenDT(O0, R_(P))(p); },
+    D: function (p, P) { return lenDT(O0, R_(P))(p); },
+  },
+  sauKeo: function (ten, P) { if (ten === 'A') { var R = R_(P); P.C = lenDT(O0, R)(P.C); P.D = lenDT(O0, R)(P.D); } },
+  luaChon: [DX.luaChonTruc(4)],
+  hopChon: [DX.hopChonVet],
+  batDau: ['bk'],
+
+  lamSang: [
+    { id: 'bk', nhan: 'Bán kính OA', mau: MBK, ghiChu: function (P) { return 'Đường tròn tâm $O$ bán kính $R = OA = ' + soL(R_(P)) + '$ cm, kí hiệu $(O;\\, R)$: gồm các điểm cách $O$ một khoảng bằng $R$.'; } },
+    { id: 'dk', nhan: 'Đường kính AB', mau: MDK, ghiChu: function (P) { return 'Dây đi qua tâm gọi là <b>đường kính</b>: $AB = 2R = ' + soL(2 * R_(P)) + '$ cm.'; } },
+    { id: 'day', nhan: 'Dây CD', mau: MDAY, ghiChu: function (P) { return 'Đoạn nối hai điểm của đường tròn gọi là <b>dây</b>. Trong các dây, <b>đường kính là dây lớn nhất</b>: $CD \\approx ' + soL(H.dai(P.C, P.D)) + ' \\le AB = ' + soL(2 * R_(P)) + '$.'; } },
+  ].concat(dsSang),
+  hoatHinh: DX.hoatHinh(info),
+
+  ve: function (g, P, ts) {
+    var f = info(P), R = R_(P), hoat = DX.dangHoat(g), B = [-P.A[0], -P.A[1]];
+    if (!hoat) {
+      g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.25, rong: 2.8 });
+      if (g.bat('dk')) { g.doan(B, P.A, { sang: 'dk' }); g.diem(B, 'B', { huong: H.nhan(P.A, -1) }); }
+      if (g.bat('bk')) { g.doan(O0, P.A, { sang: 'bk' }); g.nhanDo(O0, P.A, 'R = ' + so(R), { mau: MBK }); }
+      if (g.bat('day')) { g.doan(P.C, P.D, { sang: 'day' }); g.diem(P.C, 'C', { huong: P.C }); g.diem(P.D, 'D', { huong: P.D }); }
+    }
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.diem(O0, 'O', { r: 4, huong: [-0.8, -0.9] });
+    g.diem(P.A, 'A', { huong: P.A });
+  },
+  nhanXet: function (P) {
+    return '<b>Đường tròn</b>: <span class="dung">có vô số trục đối xứng</span> (mọi đường thẳng qua tâm) · <span class="dung">có tâm đối xứng là tâm $O$</span>' +
+      GACH + 'Dây $CD \\approx ' + soL(H.dai(P.C, P.D)) + '$; đường kính $AB = ' + soL(2 * R_(P)) + '$ → đường kính là dây lớn nhất.';
+  },
+  khungNhin: function (P) { var R = R_(P); return [[-R, -R], [R, R]]; },
+});
+</script>
+</body>
+</html>

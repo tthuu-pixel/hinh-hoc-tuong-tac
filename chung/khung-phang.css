@@ -1,0 +1,27 @@
+/* =====================================================================
+   GIAO DIỆN RIÊNG CHO MÔ HÌNH HÌNH PHẲNG (dùng kèm khung-3d.css)
+   ===================================================================== */
+.mh-canh.phang { background: #FBFCFE; }
+.mh-canh svg.phang-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; cursor: grab; }
+.mh-canh svg.phang-svg.dang-keo { cursor: grabbing; }
+.mh-canh svg.phang-svg.tren-diem { cursor: pointer; }
+.phang-svg .ten-diem { font-family: var(--phong-toan); font-style: italic; font-size: 21px; font-weight: 600; fill: #16213A; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.phang-svg .chu { font-family: var(--phong-toan); font-size: 17px; font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.phang-svg .chu-nho { font-family: var(--phong); font-size: 13px; font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.phang-svg .vien-keo { fill: rgba(36, 81, 199, .14); stroke: rgba(36, 81, 199, .55); stroke-width: 1.5; }
+.phang-svg .vien-keo.dang { fill: rgba(36, 81, 199, .28); }
+.goi-y-keo {
+  position: absolute; left: 16px; bottom: 84px; z-index: 5; pointer-events: none;
+  background: rgba(22, 33, 58, .82); color: #fff; font-size: 14px; font-weight: 600;
+  padding: 6px 12px; border-radius: 99px; transition: opacity .4s;
+}
+.goi-y-keo.an-mo { opacity: 0; }
+.nhan-xet { padding: 10px 12px; background: #EEF4FF; border-radius: 10px; font-size: 15px; line-height: 1.5; }
+.nhan-xet b { color: var(--chinh-dam); }
+.nhan-xet .dung { color: var(--tot); font-weight: 700; }
+.nhan-xet .sai { color: #9AA3B5; }
+.hoat-hinh .nut { margin: 0 6px 8px 0; }
+.hoat-hinh .nut.dang-chay { background: var(--chinh); border-color: var(--chinh); color: #fff; }
+@media (max-width: 900px) {
+  .goi-y-keo { bottom: 70px; left: 8px; font-size: 12px; }
+}

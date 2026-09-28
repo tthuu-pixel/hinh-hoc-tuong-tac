@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình chóp tam giác đều</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH CHÓP TAM GIÁC ĐỀU  S.ABC  — Toán 8
+   Đáy ABC là tam giác đều cạnh a, tâm O; chiều cao SO = h
+   M là trung điểm AB, SM là trung đoạn
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+
+function soDo(ts) {
+  var a = ts.a, h = ts.h, r = a / (2 * Math.sqrt(3)), R = a / Math.sqrt(3);
+  var d = Math.hypot(h, r), canhBen = Math.hypot(h, R), cDay = a * Math.sqrt(3) / 2;
+  return { r: r, R: R, d: d, canhBen: canhBen, cDay: cDay, sDay: a * cDay / 2, p: 3 * a / 2 };
+}
+function dayXZ(ts) { var s = soDo(ts); return { A: [-ts.a / 2, s.r], B: [ts.a / 2, s.r], C: [0, -s.R] }; }
+
+KhongGian.tao({
+  ten: 'Hình chóp tam giác đều',
+  lop: 8,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'a', nhan: 'Cạnh đáy a', min: 2, max: 8, buoc: 0.5, gt: 5, donVi: 'cm', mau: M.canh },
+    { khoa: 'h', nhan: 'Chiều cao h', min: 1, max: 8, buoc: 0.5, gt: 5, donVi: 'cm', mau: M.chieuCao },
+  ],
+
+  daDien: function (ts) {
+    var p = dayXZ(ts), s = soDo(ts);
+    return {
+      dinh: { S: [0, ts.h, 0], A: [p.A[0], 0, p.A[1]], B: [p.B[0], 0, p.B[1]], C: [p.C[0], 0, p.C[1]] },
+      diemPhu: { O: [0, 0, 0], M: [0, 0, s.r] },
+      huongNhan: { O: [-1, -0.3, -0.4], M: [0, -0.5, 1] },
+      mat: [
+        { ten: 'ABC', dinh: ['A', 'B', 'C'] },
+        { ten: 'SAB', dinh: ['S', 'A', 'B'] },
+        { ten: 'SBC', dinh: ['S', 'B', 'C'] },
+        { ten: 'SCA', dinh: ['S', 'C', 'A'] },
+      ],
+    };
+  },
+
+  lamSang: [
+    {
+      id: 'a', nhan: 'Cạnh đáy a', mau: M.canh, canh: [['A', 'B'], ['B', 'C'], ['C', 'A']],
+      nhanDo: function (ts) { return [{ doan: ['A', 'B'], chu: '<i>a</i> = ' + so(ts.a) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Đáy $ABC$ là <b>tam giác đều</b>: $AB = BC = CA = a = ' + soL(ts.a) + '$ cm.'; },
+    },
+    {
+      id: 'ben', nhan: 'Cạnh bên', mau: M.canhBen, canh: [['S', 'A'], ['S', 'B'], ['S', 'C']],
+      nhanDo: function (ts) { return [{ doan: ['S', 'A'], chu: 'SA ≈ ' + so(soDo(ts).canhBen), t: 0.4 }]; },
+      ghiChu: function (ts) { return 'Ba <b>cạnh bên</b> bằng nhau: $SA = SB = SC \\approx ' + soL(soDo(ts).canhBen) + '$ cm.'; },
+    },
+    {
+      id: 'h', nhan: 'Đường cao SO', mau: M.chieuCao, doan: [['S', 'O']],
+      nhanDo: function (ts) { return [{ doan: ['S', 'O'], chu: '<i>h</i> = ' + so(ts.h), huong: [-1, 0, 0], t: 0.35 }]; },
+      ghiChu: function (ts) { return '$SO$ là <b>đường cao</b> của hình chóp, $O$ là tâm của tam giác đều $ABC$. $SO = h = ' + soL(ts.h) + '$ cm.'; },
+    },
+    {
+      id: 'd', nhan: 'Trung đoạn SM', mau: M.trungDoan, doan: [['S', 'M']],
+      nhanDo: function (ts) { return [{ doan: ['S', 'M'], chu: '<i>d</i> ≈ ' + so(soDo(ts).d), huong: [1, 0, 0], t: 0.7 }]; },
+      ghiChu: function (ts) { return '$SM$ là <b>trung đoạn</b>: đường cao của mặt bên $SAB$ kẻ từ $S$ ($M$ là trung điểm $AB$). $d \\approx ' + soL(soDo(ts).d) + '$ cm.'; },
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['ABC'],
+      ghiChu: function (ts) { return 'Mặt đáy $ABC$ là tam giác đều cạnh $' + soL(ts.a) + '$ cm, diện tích $\\approx ' + soL(soDo(ts).sDay) + '$ cm².'; },
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh, mat: ['SAB', 'SBC', 'SCA'],
+      ghiChu: 'Ba <b>mặt bên</b> là ba tam giác cân bằng nhau, mỗi tam giác có đáy $a$ và đường cao là trung đoạn $d$.',
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Bấm <b>“Đổ nước 3 lần”</b>: đổ đầy nước vào hình chóp rồi rót sang lăng trụ cùng đáy, cùng chiều cao. Đúng 3 lần thì đầy lăng trụ.',
+    },
+  ],
+
+  congThuc: function (ts, C) {
+    var s = soDo(ts), a = ts.a, h = ts.h, n = C.soL;
+    return [
+      { id: 'day', ten: 'Diện tích đáy (tam giác đều)', bt: '$S_{\\text{đáy}} = \\dfrac{1}{2}\\cdot ' + C.m('a', 'a') + '\\cdot CM \\approx \\dfrac{1}{2}\\cdot ' + n(a) + '\\cdot ' + n(s.cDay) + ' \\approx \\mathbf{' + n(s.sDay) + '}$ (cm²)' },
+      { id: 'd', ten: 'Trung đoạn (định lí Pythagore trong tam giác SOM)', bt: '$' + C.m('d', 'd') + ' = \\sqrt{{' + C.m('h', 'h') + '}^2 + OM^2} \\approx \\sqrt{' + n(h) + '^2 + ' + n(s.r) + '^2} \\approx \\mathbf{' + n(s.d) + '}$ (cm)' },
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = p\\cdot ' + C.m('d', 'd') + ' = ' + n(s.p) + '\\cdot ' + n(s.d) + ' \\approx \\mathbf{' + n(s.p * s.d) + '}$ (cm²)<br><span style="font-size:15px">($p$ là nửa chu vi đáy: $p = \\dfrac{3' + C.m('a', 'a') + '}{2} = ' + n(s.p) + '$)</span>' },
+      { id: 'V', ten: 'Thể tích', bt: '$V = \\dfrac{1}{3}S_{\\text{đáy}}\\cdot ' + C.m('h', 'h') + ' \\approx \\dfrac{1}{3}\\cdot ' + n(s.sDay) + '\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(s.sDay * h / 3) + '}$ (cm³)' },
+    ];
+  },
+
+  traiHinh: { matGoc: 'ABC' },
+
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.h, 0] }; } },
+    { id: 'quaDinh', nhan: 'Qua đỉnh S, vuông góc AB', diemDacBiet: [0.5],
+      matPhang: function (ts, t) { return { phapTuyen: [1, 0, 0], diem: [-ts.a / 2 + t * ts.a, 0, 0] }; } },
+  ],
+
+  doNuoc: function (ts) {
+    var p = dayXZ(ts);
+    return { day: [p.A, p.B, p.C], cao: ts.h, lech: [ts.a * 1.35, 0, 0], ten: 'Lăng trụ cùng đáy, cùng chiều cao' };
+  },
+});
+</script>
+</body>
+</html>

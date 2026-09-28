@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình trụ</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH TRỤ  — Toán 9
+   Bán kính đáy r, chiều cao h; O, O' là tâm hai đáy; AA' là một đường sinh
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so, PI = Math.PI;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+var GOC_A = PI / 12;  // vị trí điểm A trên đường tròn đáy (bên phải, hơi lệch về trước)
+
+KhongGian.tao({
+  ten: 'Hình trụ',
+  lop: 9,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'r', nhan: 'Bán kính đáy r', min: 1, max: 5, buoc: 0.5, gt: 2.5, donVi: 'cm', mau: M.banKinh },
+    { khoa: 'h', nhan: 'Chiều cao h', min: 1, max: 8, buoc: 0.5, gt: 5, donVi: 'cm', mau: M.chieuCao },
+  ],
+
+  matCong: function (ts) {
+    var m = KhongGian.hinh.tru(ts.r, ts.h);
+    var ax = ts.r * Math.cos(GOC_A), az = ts.r * Math.sin(GOC_A);
+    m.dinh = { O: [0, 0, 0], "O'": [0, ts.h, 0], A: [ax, 0, az], "A'": [ax, ts.h, az] };
+    m.huongNhan = { O: [-1, -0.5, 0], "O'": [-1, 0.5, 0], A: [0.4, -0.6, 1], "A'": [0.4, 0.6, 1] };
+    return m;
+  },
+
+  lamSang: [
+    {
+      id: 'r', nhan: 'Bán kính đáy r', mau: M.banKinh, doan: [['O', 'A']],
+      nhanDo: function (ts) { return [{ doan: ['O', 'A'], chu: '<i>r</i> = ' + so(ts.r) + ' cm', huong: [0, -1, 0.3] }]; },
+      ghiChu: function (ts) { return '$OA$ là <b>bán kính đáy</b>: $r = ' + soL(ts.r) + '$ cm. Hai đáy là hai hình tròn bằng nhau.'; },
+    },
+    {
+      id: 'h', nhan: 'Chiều cao h', mau: M.chieuCao, doan: [['O', "O'"]],
+      nhanDo: function (ts) { return [{ doan: ['O', "O'"], chu: '<i>h</i> = ' + so(ts.h) + ' cm', huong: [-1, 0, 0] }]; },
+      ghiChu: function (ts) { return '$OO\'$ nối tâm hai đáy, là <b>chiều cao</b> của hình trụ: $h = ' + soL(ts.h) + '$ cm.'; },
+    },
+    {
+      id: 'l', nhan: 'Đường sinh', mau: M.duongSinh, doan: [['A', "A'"]],
+      nhanDo: function (ts) { return [{ doan: ['A', "A'"], chu: '<i>AA′</i> = ' + so(ts.h) + ' cm', huong: [1, 0, 0.3] }]; },
+      ghiChu: 'Đường sinh $AA\'$ vuông góc với hai đáy và có độ dài bằng chiều cao $h$. Quay hình chữ nhật $OAA\'O\'$ quanh $OO\'$ một vòng thì được hình trụ.',
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['dayDuoi', 'dayTren'], canh: ['dayDuoi', 'dayTren'],
+      ghiChu: function (ts) { return 'Hai <b>mặt đáy</b> là hai hình tròn bằng nhau, bán kính $r = ' + soL(ts.r) + '$ cm, nằm trong hai mặt phẳng song song.'; },
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh, mat: ['xungQuanh'],
+      ghiChu: 'Cắt dọc theo một đường sinh rồi trải phẳng, mặt xung quanh thành <b>hình chữ nhật</b> có chiều dài bằng chu vi đáy $2\\pi r$, chiều rộng bằng $h$.',
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Xếp các lớp hình tròn dày 1 cm: số lớp bằng chiều cao, mỗi lớp có thể tích bằng $S_{\\text{đáy}} \\times 1$.',
+    },
+  ],
+
+  congThuc: function (ts, C) {
+    var r = ts.r, h = ts.h, R = '{' + C.m('r', 'r') + '}', H = C.m('h', 'h'), n = C.soL;
+    return [
+      { id: 'day', ten: 'Diện tích đáy', bt: '$S_{\\text{đáy}} = \\pi ' + R + '^2 = \\pi\\cdot ' + n(r) + '^2 \\approx \\mathbf{' + n(PI * r * r) + '}$ (cm²)' },
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = 2\\pi ' + R + H + ' = 2\\pi\\cdot ' + n(r) + '\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(2 * PI * r * h) + '}$ (cm²)' },
+      { id: null, ten: 'Diện tích toàn phần', bt: '$S_{tp} = 2\\pi ' + R + H + ' + 2\\pi ' + R + '^2 \\approx \\mathbf{' + n(2 * PI * r * h + 2 * PI * r * r) + '}$ (cm²)' },
+      { id: 'V', ten: 'Thể tích', bt: '$V = \\pi ' + R + '^2' + H + ' = \\pi\\cdot ' + n(r) + '^2\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(PI * r * r * h) + '}$ (cm³)' },
+    ];
+  },
+
+  traiHinh: { kieu: 'tru' },
+
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.h, 0] }; },
+      thietDien: function (ts, t) {
+        return { diem: KhongGian.vongTron(t * ts.h, ts.r, 96).slice(0, 96),
+                 moTa: 'Mặt cắt là <b>hình tròn</b> bằng đáy, bán kính <i>r</i> = ' + so(ts.r) + ' cm.<br>Diện tích = π<i>r</i>² ≈ <b>' + so(PI * ts.r * ts.r) + ' cm²</b>' };
+      } },
+    { id: 'doc', nhan: 'Song song với trục OO′', diemDacBiet: [0.5],
+      matPhang: function (ts, t) { return { phapTuyen: [1, 0, 0], diem: [-ts.r + t * 2 * ts.r, 0, 0] }; },
+      thietDien: function (ts, t) {
+        var x = -ts.r + t * 2 * ts.r, w = Math.sqrt(Math.max(0, ts.r * ts.r - x * x)), h = ts.h;
+        var quaTruc = Math.abs(x) < 1e-6;
+        return { diem: [[x, 0, -w], [x, 0, w], [x, h, w], [x, h, -w]],
+                 moTa: 'Mặt cắt là <b>hình chữ nhật</b> ' + so(2 * w) + ' × ' + so(h) + ' (cm)' +
+                       (quaTruc ? ' — mặt phẳng đi qua trục nên cạnh đáy bằng đường kính 2<i>r</i>.' : '.') +
+                       '<br>Diện tích ≈ <b>' + so(2 * w * h) + ' cm²</b>' };
+      } },
+  ],
+
+  lopDay: function (ts) {
+    var day = KhongGian.vongTron(0, ts.r, 64).slice(0, 64).map(function (p) { return [p[0], p[2]]; });
+    return { day: day, cao: ts.h, dienTichDay: PI * ts.r * ts.r };
+  },
+});
+</script>
+</body>
+</html>

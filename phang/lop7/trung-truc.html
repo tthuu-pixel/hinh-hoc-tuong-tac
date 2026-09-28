@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường trung trực</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐƯỜNG TRUNG TRỰC — Toán 7
+   Chế độ "Đoạn thẳng": trung trực d của AB, điểm M chạy trên d có MA = MB.
+   Chế độ "Tam giác": ba đường trung trực đồng quy tại O, OA = OB = OC,
+   đường tròn ngoại tiếp tam giác.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var MD = '#C026D3', MM = '#0D9488', MO = '#D97706';
+var MAU_T = { dBC: '#E0342F', dCA: '#1E6FE0', dAB: '#16A34A' };
+function tt(X, Y) {   // trung điểm I và vectơ pháp tuyến đơn vị n của đoạn XY
+  var I = H.trung(X, Y), d = H.tru(Y, X), L = Math.hypot(d[0], d[1]) || 1;
+  return { I: I, n: [-d[1] / L, d[0] / L], u: [d[0] / L, d[1] / L], L: L };
+}
+function chieuM(p, P) { var q = tt(P.A, P.B), k = (p[0] - q.I[0]) * q.n[0] + (p[1] - q.I[1]) * q.n[1]; return H.cong(q.I, H.nhan(q.n, k)); }
+function laDoan(P, ts) { return ts.che === 'doan'; }
+function laTG(P, ts) { return ts.che === 'tg'; }
+function veTT(g, X, Y, O, o, nVach) {   // vẽ trung trực của XY dạng đoạn ngắn đi qua trung điểm (và O nếu có)
+  var q = tt(X, Y), t0 = -1.5, t1 = 1.5;
+  if (O) { var tO = (O[0] - q.I[0]) * q.n[0] + (O[1] - q.I[1]) * q.n[1]; t0 = Math.min(t0, tO - 1); t1 = Math.max(t1, tO + 1); }
+  g.doan(H.cong(q.I, H.nhan(q.n, t0)), H.cong(q.I, H.nhan(q.n, t1)), o);
+  g.goc(H.cong(q.I, H.nhan(q.n, 1)), q.I, Y, { mau: o.mauGoc || o.mau, r: 11, to: false });
+  g.kyHieu(X, q.I, nVach || 1, o.mauGoc || o.mau); g.kyHieu(q.I, Y, nVach || 1, o.mauGoc || o.mau);
+  return q;
+}
+function cung(g, O, r, a0, a1, mau) { var ds = []; for (var i = 0; i <= 24; i++) { var a = a0 + (a1 - a0) * i / 24; ds.push([O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]); } g.duong(ds, { mau: mau || MM, rong: 2 }); }
+
+function diemTron(O, r, a) { return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
+// Vẽ đường trung trực bằng thước và compa — từng thao tác
+function kbCompa(P) {
+  var A = P.A, B = P.B, q = tt(A, B), D = KhungPhang.dung;
+  var R = q.L * 0.72, h = Math.sqrt(R * R - q.L * q.L / 4), Pp = H.cong(q.I, H.nhan(q.n, h)), Qq = H.cong(q.I, H.nhan(q.n, -h));
+  var aP = H.huong(A, Pp), aQ = H.huong(A, Qq), bP = H.huong(B, Pp), bQ = H.huong(B, Qq), w = 0.25;
+  var tren = H.cong(Pp, H.nhan(q.n, 1)), duoi = H.cong(Qq, H.nhan(q.n, -1));
+  return KhungPhang.kichBan([
+    D.hien(function (g) { g.doan(A, B, { rong: 3 }); }, { tg: 0.4, ghi: '<b>Bước 1.</b> Cho đoạn thẳng $AB$.' }),
+    D.doCompa(A, diemTron(A, R, aP - w), { ghi: '<b>Bước 2.</b> Mở compa một khoảng lớn hơn $\\dfrac{AB}{2}$, đặt mũi kim tại $A$.' }),
+    D.cung(A, R, aP - w, aP + w, { ghi: 'Vẽ cung tròn tâm $A$ phía trên $AB$.' }),
+    D.xoayCompa(A, R, aP + w, aQ - w, { tg: 0.8, ghi: 'Giữ nguyên mũi kim tại $A$, xoay compa xuống phía dưới.' }),
+    D.cung(A, R, aQ - w, aQ + w, { ghi: 'Vẽ cung tròn tâm $A$ phía dưới $AB$.' }),
+    D.chuyenCompa(A, diemTron(A, R, aQ + w), B, diemTron(B, R, bQ + w), { ghi: '<b>Bước 3.</b> Giữ nguyên độ mở của compa, đặt mũi kim tại $B$.' }),
+    D.cung(B, R, bQ + w, bQ - w, { ghi: 'Vẽ cung tròn tâm $B$, cắt cung dưới tại $Q$.', sau: function (g) { g.diem(Qq, 'Q', { mau: MM, huong: H.nhan(q.n, -1) }); } }),
+    D.xoayCompa(B, R, bQ - w, bP + w, { tg: 0.8, ghi: 'Giữ nguyên mũi kim tại $B$, xoay compa lên phía trên.' }),
+    D.cung(B, R, bP + w, bP - w, { ghi: 'Vẽ cung tròn tâm $B$, cắt cung trên tại $P$: $PA = PB$, $QA = QB$.',
+      sau: function (g) { g.diem(Pp, 'P', { mau: MM, huong: q.n }); [A, B].forEach(function (O) { g.doan(O, Pp, { mau: MM, rong: 1.4, dut: '5 4', kyHieu: 2 }); g.doan(O, Qq, { mau: MM, rong: 1.4, dut: '5 4', kyHieu: 3 }); }); } }),
+    D.doan(tren, duoi, { tg: 1.3, ben: 1, ghi: '<b>Bước 4.</b> Dùng thước kẻ đường thẳng $PQ$: đó là đường trung trực của đoạn $AB$.', net: { mau: MD, rong: 3.5 },
+      sau: function (g) { g.goc(Pp, q.I, B, { mau: MD, r: 11, to: false }); g.kyHieu(A, q.I, 1, MD); g.kyHieu(q.I, B, 1, MD); g.diem(q.I, 'I', { r: 3.5, mau: MD, huong: [-0.7, -1] }); } }),
+  ]);
+}
+
+KhungPhang.tao({
+  ten: 'Đường trung trực',
+  lop: 7,
+  diem: { A: [-3, 0], B: [3, 0], C: [0.5, 4], M: [0, 3] },
+  buocLuoi: 0.5,
+  rangBuoc: { M: function (p, P) { return chieuM(p, P); } },
+  anTayCam: function (k, P, ts) { return ts.che === 'doan' ? k === 'C' : k === 'M'; },
+  luaChon: [{ khoa: 'che', gt: 'doan', nhan: 'Trung trực của', vuaKhung: true,
+    ds: [{ gt: 'doan', nhan: 'Đoạn thẳng AB' }, { gt: 'tg', nhan: 'Tam giác ABC' }] }],
+  batDau: ['d'],
+
+  lamSang: [
+    { id: 'd', nhan: 'Đường trung trực d', mau: MD, hien: laDoan,
+      ghiChu: 'Đường thẳng $d$ <b>vuông góc với $AB$ tại trung điểm $I$</b> của $AB$ gọi là <b>đường trung trực</b> của đoạn thẳng $AB$.' },
+    { id: 'MA', nhan: 'M ∈ d ⇒ MA = MB', mau: MM, hien: laDoan,
+      ghiChu: function (P) { var Mm = chieuM(P.M, P); return 'Điểm $M$ nằm trên đường trung trực của $AB$ thì <b>cách đều hai đầu mút</b>: $MA = MB \\approx ' + soL(H.dai(Mm, P.A)) + '$ cm. Ngược lại, điểm cách đều $A$ và $B$ thì nằm trên đường trung trực của $AB$.'; } },
+    { id: 'dBC', nhan: 'Trung trực của BC', mau: MAU_T.dBC, hien: laTG, ghiChu: 'Đường trung trực của cạnh $BC$: vuông góc với $BC$ tại trung điểm của $BC$.' },
+    { id: 'dCA', nhan: 'Trung trực của CA', mau: MAU_T.dCA, hien: laTG, ghiChu: 'Đường trung trực của cạnh $CA$.' },
+    { id: 'dAB', nhan: 'Trung trực của AB', mau: MAU_T.dAB, hien: laTG, ghiChu: 'Đường trung trực của cạnh $AB$.' },
+    { id: 'O', nhan: 'Giao điểm O', mau: MO, hien: laTG, ghiChu: 'Ba đường trung trực của một tam giác <b>cùng đi qua một điểm</b> $O$.' },
+    { id: 'OA', nhan: 'OA = OB = OC', mau: MM, hien: laTG,
+      ghiChu: function (P) { var O = H.ngoaiTiep(P.A, P.B, P.C); return O ? 'Giao điểm $O$ <b>cách đều ba đỉnh</b> của tam giác: $OA = OB = OC \\approx ' + soL(H.dai(O, P.A)) + '$ cm.' : ''; } },
+    { id: 'dt', nhan: 'Đường tròn ngoại tiếp', mau: '#7C3AED', hien: laTG,
+      ghiChu: 'Đường tròn tâm $O$ bán kính $OA$ đi qua cả ba đỉnh: đó là <b>đường tròn ngoại tiếp</b> tam giác. Tam giác tù thì $O$ nằm ngoài tam giác; tam giác vuông thì $O$ là trung điểm cạnh huyền.' },
+  ],
+
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp giấy cho A trùng B', thoiGian: 4200, hien: laDoan,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp tờ giấy sao cho điểm $A$ trùng với điểm $B$…' : 'Nếp gấp chính là <b>đường trung trực</b> của đoạn $AB$: nó vuông góc với $AB$ tại trung điểm $I$.'; } },
+    { id: 'chay', nhan: 'Cho M chạy trên d', thoiGian: 7000, hien: laDoan,
+      ghiChu: function (P, ts, t) { return 'Dù $M$ ở vị trí nào trên $d$, luôn có <b>$MA = MB$</b>.'; } },
+    { id: 'compa', nhan: 'Vẽ bằng thước và compa', hien: laDoan, anDiem: true,
+      thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
+    { id: 'no', nhan: 'Đường tròn nở ra từ O', thoiGian: 5000, hien: laTG,
+      ghiChu: function (P, ts, t) { return t < 0.85 ? 'Vẽ đường tròn tâm $O$ với bán kính tăng dần…' : 'Đường tròn đi qua <b>cả ba đỉnh cùng lúc</b> (vì $OA = OB = OC$): đó là đường tròn ngoại tiếp.'; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var A = P.A, B = P.B;
+    if (ts.che === 'doan') {
+      var q = tt(A, B), Mm = chieuM(P.M, P);
+      var tg = g.hoat('gap'), tc = g.hoat('chay'), tp = g.hoat('compa');
+      if (tg !== null) {
+        var w = 1.4, ds = [H.cong(H.cong(A, H.nhan(q.u, -1)), H.nhan(q.n, -w)), H.cong(H.cong(B, H.nhan(q.u, 1)), H.nhan(q.n, -w)), H.cong(H.cong(B, H.nhan(q.u, 1)), H.nhan(q.n, w)), H.cong(H.cong(A, H.nhan(q.u, -1)), H.nhan(q.n, w))];
+        DX.ve(g, { ten: 'Tờ giấy', ds: ds, truc: [[q.I, H.cong(q.I, q.n)]], tam: null, to: '#93C5FD' }, { truc: 0 });
+        return;
+      }
+      if (tp !== null) { kbCompa(P).ve(g, tp); g.diem(A, 'A', { huong: H.nhan(q.u, -1) }); g.diem(B, 'B', { huong: q.u }); return; }
+      if (tc !== null) Mm = H.cong(q.I, H.nhan(q.n, 3.2 * Math.sin(2 * Math.PI * tc)));
+      var onD = g.bat('d') || tc !== null, onM = g.bat('MA') || tc !== null;
+      g.doan(A, B, { rong: 3 });
+      if (onD) {
+        var tM = (Mm[0] - q.I[0]) * q.n[0] + (Mm[1] - q.I[1]) * q.n[1], t0 = Math.min(-3, tM - 1), t1 = Math.max(3, tM + 1);
+        g.doan(H.cong(q.I, H.nhan(q.n, t0)), H.cong(q.I, H.nhan(q.n, t1)), g.bat('d') ? { sang: 'd' } : { mau: MD, rong: 3 });
+        g.goc(H.cong(q.I, H.nhan(q.n, 1)), q.I, B, { mau: MD, r: 12, to: false });
+        g.kyHieu(A, q.I, 1, MD); g.kyHieu(q.I, B, 1, MD);
+        g.diem(q.I, 'I', { r: 3.5, mau: MD, huong: [-0.7, -1] });
+        g.chu(H.cong(q.I, H.nhan(q.n, t1 + 0.4)), 'd', { nghieng: true, mau: MD });
+      }
+      if (onM) {
+        g.doan(Mm, A, { mau: MM, rong: 3, kyHieu: 2 }); g.doan(Mm, B, { mau: MM, rong: 3, kyHieu: 2 });
+        if (g.hienSo()) { g.nhanDo(A, Mm, so(H.dai(A, Mm)), { mau: MM }); g.nhanDo(Mm, B, so(H.dai(B, Mm)), { mau: MM }); }
+        g.diem(Mm, 'M', { r: 5, mau: MM, huong: [0.9, 0.3] });
+      }
+      g.diem(A, 'A', { huong: H.nhan(q.u, -1) }); g.diem(B, 'B', { huong: q.u });
+      return;
+    }
+
+    /* ---------- Tam giác ---------- */
+    var C = P.C, O = H.ngoaiTiep(A, B, C), tn = g.hoat('no'), G = H.trongTam(A, B, C);
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
+    function nhan() { g.diem(A, 'A', { huong: H.tru(A, G) }); g.diem(B, 'B', { huong: H.tru(B, G) }); g.diem(C, 'C', { huong: H.tru(C, G) }); }
+    if (tn !== null && O) {
+      var e = H.em(H.doan(tn, 0.05, 0.85));
+      g.duongTron(O, H.dai(O, A) * e, { mau: '#7C3AED', rong: 2.5, to: '#DDD6FE', doMoTo: 0.25 });
+      if (tn > 0.85) [A, B, C].forEach(function (V) { g.diem(V, '', { r: 6, mau: '#7C3AED' }); });
+      g.diem(O, 'O', { r: 5, mau: MO, huong: [0.8, 0.8] }); nhan(); return;
+    }
+    var onO = g.bat('O') || g.bat('OA') || g.bat('dt');
+    [['dBC', B, C, 1], ['dCA', C, A, 2], ['dAB', A, B, 3]].forEach(function (x) {
+      var on = g.bat(x[0]);
+      if (!on && !onO) return;
+      veTT(g, x[1], x[2], O, on ? { sang: x[0], mauGoc: MAU_T[x[0]] } : { mau: MAU_T[x[0]], rong: 2, doMo: 0.75 }, x[3]);
+    });
+    if (g.bat('dt') && O) g.duongTron(O, H.dai(O, A), { sang: 'dt', to: '#DDD6FE', doMoTo: 0.2 });
+    if ((g.bat('OA') || g.bat('dt')) && O) [A, B, C].forEach(function (V) { g.doan(O, V, { mau: MM, rong: g.bat('OA') ? 3 : 2, dut: g.bat('OA') ? false : '5 4' }); });
+    if (onO && O) g.diem(O, 'O', { r: 6, mau: MO, huong: [0.8, 0.8] });
+    nhan();
+  },
+
+  nhanXet: function (P, ts) {
+    if (ts.che === 'doan') {
+      var Mm = chieuM(P.M, P);
+      return '$MA = ' + soL(H.dai(Mm, P.A)) + '$ ; $MB = ' + soL(H.dai(Mm, P.B)) + '$ → <b>$MA = MB$</b><br><span class="dung">Kéo $M$ dọc theo $d$, hoặc kéo $A$, $B$.</span>';
+    }
+    var O = H.ngoaiTiep(P.A, P.B, P.C); if (!O) return '';
+    var mx = Math.max(H.gocDo(P.B, P.A, P.C), H.gocDo(P.A, P.B, P.C), H.gocDo(P.A, P.C, P.B));
+    return '$OA = OB = OC = \\mathbf{' + [P.A, P.B, P.C].map(function (V) { return soL(H.dai(O, V)); }).join(' = ') + '}$<br>' +
+      (Math.abs(mx - 90) < 0.05 ? 'Tam giác vuông: $O$ là <b>trung điểm cạnh huyền</b>.' : mx > 90 ? 'Tam giác tù: $O$ nằm <b>ngoài</b> tam giác.' : 'Tam giác nhọn: $O$ nằm <b>trong</b> tam giác.');
+  },
+  congThuc: function (P, ts, C) {
+    if (ts.che === 'doan') return [{ id: 'MA', ten: 'Tính chất đường trung trực', bt: '$M \\in d \\Leftrightarrow ' + C.m('MA', 'MA = MB') + '$' }];
+    return [{ id: 'OA', ten: 'Giao điểm ba đường trung trực', bt: '$' + C.m('OA', 'OA = OB = OC') + '$' }];
+  },
+  khungNhin: function (P, ts) {
+    if (ts.che === 'doan') { var q = tt(P.A, P.B); return [H.cong(q.I, H.nhan(q.n, 3.5)), H.cong(q.I, H.nhan(q.n, -3.5))]; }
+    var O = H.ngoaiTiep(P.A, P.B, P.C); return O && H.dai(O, P.A) < 12 ? [O] : [];
+  },
+});
+</script>
+</body>
+</html>

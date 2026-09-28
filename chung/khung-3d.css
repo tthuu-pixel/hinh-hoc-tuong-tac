@@ -1,0 +1,162 @@
+/* =====================================================================
+   GIAO DIỆN TRANG MÔ HÌNH (dùng chung cho mọi hình không gian)
+   ===================================================================== */
+body.trang-mo-hinh { overflow: hidden; }
+.mh {
+  display: grid; grid-template-columns: minmax(0, 1fr) 372px;
+  height: calc(100vh - 60px); height: calc(100dvh - 60px);
+}
+.mh-canh {
+  position: relative; overflow: hidden; min-height: 0;
+  background: radial-gradient(ellipse at 50% 35%, #FFFFFF 0%, #EEF3FB 60%, #E3EAF6 100%);
+  touch-action: none;
+}
+.mh-canh canvas { display: block; width: 100%; height: 100%; outline: none; }
+.mh-nhan-lop { position: absolute; inset: 0; pointer-events: none; }
+
+/* Tiêu đề nổi góc trái */
+.mh-tieu-de {
+  position: absolute; left: 16px; top: 14px; z-index: 5; pointer-events: none;
+  font-weight: 800; font-size: 22px; letter-spacing: .01em;
+}
+.mh-tieu-de span {
+  display: inline-block; margin-left: 8px; vertical-align: 3px;
+  font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; color: #fff;
+}
+/* Ghi chú khi bấm nút làm sáng */
+.mh-ghi-chu {
+  position: absolute; left: 16px; top: 54px; z-index: 5; max-width: min(460px, calc(100% - 32px));
+  background: rgba(255,255,255,.95); border: 1px solid var(--vien); border-left: 5px solid var(--chinh);
+  border-radius: 10px; padding: 10px 14px; font-size: 16px; box-shadow: var(--bong);
+  transition: opacity .2s, transform .2s;
+}
+.mh-ghi-chu.an-mo { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+
+/* Thanh công cụ dưới đáy khung hình */
+.mh-cong-cu {
+  position: absolute; left: 0; right: 0; margin: 0 auto; width: fit-content; bottom: 16px; z-index: 6;
+  display: flex; align-items: center; gap: 4px; padding: 6px;
+  background: rgba(255,255,255,.96); border: 1px solid var(--vien); border-radius: 14px; box-shadow: var(--bong);
+  max-width: calc(100% - 24px); overflow-x: auto; scrollbar-width: none;
+}
+.mh-cong-cu::-webkit-scrollbar { display: none; }
+.mh-cong-cu .ngan { width: 1px; align-self: stretch; background: var(--vien); margin: 4px 4px; flex: none; }
+.cc {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 52px; height: 52px; padding: 4px 8px; border: 0; border-radius: 10px; background: transparent;
+  cursor: pointer; color: var(--chu); font-size: 11px; font-weight: 600; flex: none;
+}
+.cc svg { width: 22px; height: 22px; }
+.cc:hover { background: var(--nen-2); }
+.cc.bat { background: var(--chinh-nhat); color: var(--chinh); }
+
+/* Bảng điều khiển bên phải */
+.mh-bang {
+  overflow-y: auto; background: var(--the); border-left: 1px solid var(--vien);
+  padding: 14px 16px 90px;
+}
+.muc { border-bottom: 1px solid var(--vien); padding: 14px 0 16px; }
+.muc:last-child { border-bottom: 0; }
+.muc h3 {
+  margin: 0 0 12px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--chu-phu);
+  display: flex; align-items: center; gap: 8px;
+}
+.muc h3 .so { width: 22px; height: 22px; border-radius: 6px; background: var(--nen-2); color: var(--chu); display: grid; place-items: center; font-size: 12px; letter-spacing: 0; }
+
+/* Thanh trượt kích thước */
+.tham-so { margin-bottom: 12px; }
+.tham-so .dong { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; font-weight: 600; }
+.tham-so .gia-tri { font-family: var(--phong-toan); font-size: 20px; font-weight: 700; }
+.tham-so .hang { display: flex; align-items: center; gap: 8px; }
+.tham-so input[type=range] { flex: 1; accent-color: var(--mau, var(--chinh)); height: 30px; }
+.buoc {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--vien); background: #fff; cursor: pointer;
+  font-size: 20px; font-weight: 700; line-height: 1; color: var(--chu); flex: none;
+}
+.buoc:hover { background: var(--nen); }
+
+/* Nút làm sáng */
+.luoi-sang { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.nut-sang {
+  --mau: var(--chinh);
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px;
+  border: 2px solid color-mix(in srgb, var(--mau) 35%, #fff); border-radius: 12px; background: #fff;
+  cursor: pointer; font-weight: 700; font-size: 15px; text-align: left; line-height: 1.25;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.nut-sang .cham { width: 14px; height: 14px; border-radius: 50%; background: var(--mau); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--mau) 22%, transparent); }
+.nut-sang:hover { background: color-mix(in srgb, var(--mau) 8%, #fff); }
+.nut-sang.bat { background: var(--mau); border-color: var(--mau); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--mau) 40%, transparent); }
+.nut-sang.bat .cham { background: #fff; box-shadow: none; }
+.hanh-dong-phu { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Công thức */
+.cong-thuc { display: grid; gap: 8px; }
+.ct {
+  padding: 10px 12px; border-radius: 10px; background: var(--nen); border-left: 4px solid transparent;
+  transition: background .2s, border-color .2s;
+}
+.ct .ten { font-size: 13px; font-weight: 700; color: var(--chu-phu); }
+.ct .bt { font-family: var(--phong-toan); font-size: 21px; line-height: 1.45; }
+.ct.bat { background: color-mix(in srgb, var(--mau) 10%, #fff); border-left-color: var(--mau); }
+.bien { font-style: italic; font-weight: 700; }
+.toan { font-family: var(--phong-toan); }
+
+/* Thanh tiến độ (trải hình, mặt cắt) */
+.dong-dieu-khien { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dong-dieu-khien input[type=range] { flex: 1; min-width: 140px; accent-color: var(--chinh); height: 30px; }
+.lua-chon { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.lua-chon button {
+  padding: 6px 12px; min-height: 38px; border-radius: 99px; border: 1px solid var(--vien); background: #fff;
+  cursor: pointer; font-weight: 600; font-size: 14px;
+}
+.lua-chon button.bat { background: var(--chu); color: #fff; border-color: var(--chu); }
+.mo-ta-cat { margin-top: 10px; padding: 10px 12px; background: #FFF6E8; border-radius: 10px; font-size: 15px; }
+.mo-ta-cat b { color: #9A4A00; }
+
+/* Công tắc hiển thị */
+.cong-tac { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; cursor: pointer; font-weight: 500; }
+.cong-tac input { appearance: none; width: 42px; height: 24px; border-radius: 99px; background: #CBD3E1; position: relative; cursor: pointer; transition: background .15s; flex: none; margin: 0; }
+.cong-tac input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.cong-tac input:checked { background: var(--chinh); }
+.cong-tac input:checked::after { left: 21px; }
+
+/* Nhãn trên hình (CSS2D) */
+.nhan-dinh {
+  font-family: var(--phong-toan); font-style: italic; font-size: 21px; font-weight: 600; color: #16213A;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff; user-select: none; pointer-events: none;
+}
+.nhan-do {
+  font-family: var(--phong-toan); font-size: 17px; font-weight: 700; color: #fff; padding: 2px 10px; border-radius: 99px;
+  white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.18); user-select: none; pointer-events: none;
+}
+.nhan-do i { font-style: italic; }
+.nhan-dem {
+  position: absolute; right: 16px; top: 14px; z-index: 5; font-weight: 800; font-size: 18px;
+  background: #fff; border: 2px solid var(--mau, #0EA5A4); color: var(--chu); border-radius: 12px; padding: 6px 12px; box-shadow: var(--bong);
+}
+
+/* Toàn màn hình */
+.mh:fullscreen { height: 100vh; background: var(--nen); }
+
+@media (max-width: 900px) {
+  html:has(body.trang-mo-hinh), body.trang-mo-hinh { height: auto; overflow: visible; }
+  .mh { display: block; height: auto; }
+  .mh-canh { position: sticky; top: 52px; z-index: 20; height: 50vh; height: 50dvh; min-height: 300px; box-shadow: 0 6px 16px rgba(22,33,58,.12); }
+  .mh-tieu-de { display: none; }
+  .mh-cong-cu { bottom: 8px; padding: 4px; }
+  .mh-bang { border-left: 0; border-top: 1px solid var(--vien); padding-bottom: 40px; }
+  .mh-tieu-de { font-size: 18px; }
+  .mh-ghi-chu { font-size: 13px; line-height: 1.4; top: 8px; left: 8px; right: 8px; max-width: none; padding: 6px 10px; }
+  .nhan-dem { top: auto; bottom: 70px; right: 8px; font-size: 14px; padding: 4px 10px; }
+  .cc { min-width: 46px; height: 48px; font-size: 10px; }
+}
+@media (max-width: 420px) {
+  .luoi-sang { grid-template-columns: 1fr; }
+}
+
+/* ---------- Công thức LaTeX (KaTeX) ---------- */
+.ct .bt .katex { font-size: 0.92em; }
+.ct .bt { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+.mh-ghi-chu .katex, .nhan-xet .katex { font-size: 1.08em; }
+.ct .ten .katex { font-size: 1em; }

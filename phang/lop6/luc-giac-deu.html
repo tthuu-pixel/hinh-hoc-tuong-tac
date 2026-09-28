@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lục giác đều</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   LỤC GIÁC ĐỀU ABCDEF — Toán 6
+   Nhận dạng, chu vi và tính đối xứng (6 trục, có tâm).
+   Kéo tâm O để dời hình, kéo A để đổi độ dài cạnh và xoay hình.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+var TEN = ['A', 'B', 'C', 'D', 'E', 'F'];
+function dinh(P) { return TEN.map(function (_, k) { return H.xoay(P.A, P.O, k * Math.PI / 3); }); }
+function thongTin(P) {
+  var d = dinh(P), O = P.O, truc = [];
+  for (var i = 0; i < 3; i++) truc.push([d[i], d[i + 3]]);                         // qua hai đỉnh đối diện
+  for (var j = 0; j < 3; j++) truc.push([H.trung(d[j], d[j + 1]), H.trung(d[j + 3], d[(j + 4) % 6])]);   // qua trung điểm hai cạnh đối
+  return { ten: 'Lục giác đều', ds: d, tam: O, truc: truc };
+}
+
+KhungPhang.tao({
+  ten: 'Lục giác đều',
+  lop: 6,
+  diem: { O: [0, 0], A: [3, 0] },
+  buocLuoi: 0.5,
+  luaChon: [DX.luaChonTruc(6)],
+  hopChon: [DX.hopChonVet],
+  lamSang: DX.lamSang(thongTin),
+  hoatHinh: DX.hoatHinh(thongTin),
+
+  ve: function (g, P, ts) {
+    var f = thongTin(P), d = f.ds, hoat = DX.dangHoat(g);
+    if (!hoat) g.daGiac(d, {});
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.nhanDo(d[0], d[1], 'a = ' + so(H.dai(d[0], d[1])) + ' cm', { benTrai: false });
+    d.forEach(function (p, k) { g.diem(p, TEN[k], { huong: H.tru(p, P.O) }); });
+    if (!g.bat('tam') && !g.bat('diemTam')) g.diem(P.O, 'O', { r: 3, huong: [0.8, -0.8], mau: '#94A3B8' });
+  },
+
+  congThuc: function (P) {
+    var a = H.dai(P.O, P.A);
+    return [{ id: null, ten: 'Chu vi lục giác đều cạnh a', bt: '$C = 6 \\cdot a = 6 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(6 * a) + '}$ (cm)' }];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo O để dời hình, kéo A để đổi cỡ và xoay.</span>'; },
+  khungNhin: function (P) { return dinh(P); },
+});
+</script>
+</body>
+</html>

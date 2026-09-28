@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hai góc kề nhau</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HAI GÓC KỀ NHAU — Toán 7
+   Ba tia chung gốc O: Ox, Oy, Oz. Kéo x, y, z để thay đổi.
+   Hai góc xOy và yOz kề nhau khi có chung cạnh Oy và hai cạnh Ox, Oz
+   nằm về hai phía của đường thẳng chứa Oy.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var soL = KhungPhang.soL;
+function keNhau(P) {
+  var O = P.O, c1 = (P.y[0] - O[0]) * (P.x[1] - O[1]) - (P.y[1] - O[1]) * (P.x[0] - O[0]);
+  var c2 = (P.y[0] - O[0]) * (P.z[1] - O[1]) - (P.y[1] - O[1]) * (P.z[0] - O[0]);
+  return c1 * c2 < 0;
+}
+// Kéo tia: hướng tia được làm tròn tới số nguyên độ để số đo góc luôn là số nguyên
+function tronGoc(p, O, minD) { var d = H.dai(p, O); if (d < minD) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + d * Math.cos(a), O[1] + d * Math.sin(a)]; }
+var xa = function (p, P) { return tronGoc(p, P.O, 1); };
+
+KhungPhang.tao({
+  ten: 'Hai góc kề nhau',
+  lop: 7,
+  diem: { O: [0, 0], x: [4, 0], y: [2.5712, 3.0642], z: [-1.6905, 3.6252] },
+  coDinh: ['O'],
+  buocLuoi: 0.5,
+  rangBuoc: { x: xa, y: xa, z: xa },
+
+  lamSang: [
+    { id: 'g1', nhan: 'Góc xOy', mau: M.goc1, ghiChu: function (P) { return '$\\widehat{xOy} = ' + soL(H.gocDo(P.x, P.O, P.y), 0) + '^\\circ$.'; } },
+    { id: 'g2', nhan: 'Góc yOz', mau: M.goc2, ghiChu: function (P) { return '$\\widehat{yOz} = ' + soL(H.gocDo(P.y, P.O, P.z), 0) + '^\\circ$.'; } },
+    { id: 'chung', nhan: 'Cạnh chung Oy', mau: M.song,
+      ghiChu: 'Hai góc có <b>chung đỉnh $O$</b> và <b>chung cạnh $Oy$</b>. Đường thẳng chứa $Oy$ (nét đứt) chia mặt phẳng làm hai phía.' },
+    { id: 'tong', nhan: 'Tổng hai góc', mau: M.goc3,
+      ghiChu: function (P) { return keNhau(P) ? 'Hai góc kề nhau: $\\widehat{xOy} + \\widehat{yOz} = \\widehat{xOz} = ' + soL(H.gocDo(P.x, P.O, P.y) + H.gocDo(P.y, P.O, P.z), 0) + '^\\circ$.' : 'Hai góc không kề nhau nên không cộng lại thành $\\widehat{xOz}$.'; } },
+  ],
+
+  ve: function (g, P) {
+    var O = P.O, ke = keNhau(P);
+    if (g.bat('chung')) { g.duongThang(H.tru(H.nhan(O, 2), P.y), P.y, { mau: M.song, dut: '6 5', rong: 1.8, du: 0.6 }); }
+    if (g.bat('tong') && ke) g.goc(P.x, O, P.z, { mau: M.goc3, r: 86, doMoTo: 0.12 });
+    g.goc(P.x, O, P.y, { mau: M.goc1, r: 54, doMoTo: g.bat('g1') ? 0.4 : 0.18, sang: 'g1' });
+    g.goc(P.y, O, P.z, { mau: M.goc2, r: 54, kyHieu: 2, doMoTo: g.bat('g2') ? 0.4 : 0.18, sang: 'g2' });
+    g.tia(O, P.x, { rong: 3 }); g.tia(O, P.y, { rong: g.bat('chung') ? 5 : 3, mau: g.bat('chung') ? M.song : undefined }); g.tia(O, P.z, { rong: 3 });
+    g.diem(O, 'O', { huong: [0, -1] });
+    ['x', 'y', 'z'].forEach(function (k) { g.chu(H.cong(O, H.nhan(H.tru(P[k], O), 1 + 1.4 / H.dai(O, P[k]))), k, { nghieng: true }); });
+  },
+
+  nhanXet: function (P) {
+    var a = H.gocDo(P.x, P.O, P.y), b = H.gocDo(P.y, P.O, P.z);
+    return (keNhau(P) ? '<span class="dung">✓ $\\widehat{xOy}$ và $\\widehat{yOz}$ là hai góc kề nhau</span>' : '<span style="color:#B91C1C;font-weight:700">✗ Không kề nhau: $Ox$ và $Oz$ nằm cùng phía với đường thẳng chứa $Oy$</span>') +
+      '<br><b style="color:' + M.goc1 + '">$\\widehat{xOy} = ' + soL(a, 0) + '^\\circ$</b> · <b style="color:' + M.goc2 + '">$\\widehat{yOz} = ' + soL(b, 0) + '^\\circ$</b>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'tong', ten: 'Hai góc kề nhau', bt: '$' + C.m('g1', '\\widehat{xOy}') + ' + ' + C.m('g2', '\\widehat{yOz}') + ' = ' + C.m('tong', '\\widehat{xOz}') + '$' }]; },
+  khungNhin: function () { return [[-4.5, -1], [5, 4.5]]; },
+  le: 0.5,
+});
+</script>
+</body>
+</html>

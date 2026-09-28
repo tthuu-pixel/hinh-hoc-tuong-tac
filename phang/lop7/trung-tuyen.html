@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường trung tuyến – Trọng tâm</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐƯỜNG TRUNG TUYẾN – TRỌNG TÂM — Toán 7
+   Kéo A, B, C. AM, BN, CP là ba đường trung tuyến, G là trọng tâm.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
+var MAU_T = { AM: '#E0342F', BN: '#1E6FE0', CP: '#16A34A' }, MG = '#D97706';
+function tt(P) {
+  var A = P.A, B = P.B, C = P.C;
+  return { A: A, B: B, C: C, G: H.trongTam(A, B, C),
+    ds: [{ id: 'AM', dinh: A, chan: H.trung(B, C), ten: 'M', hai: [B, C], vach: 1 },
+         { id: 'BN', dinh: B, chan: H.trung(C, A), ten: 'N', hai: [C, A], vach: 2 },
+         { id: 'CP', dinh: C, chan: H.trung(A, B), ten: 'P', hai: [A, B], vach: 3 }] };
+}
+function ghiTT(ten, dinh, canh, chan) { return '$' + ten + '$ nối đỉnh $' + dinh + '$ với trung điểm $' + chan + '$ của cạnh đối diện $' + canh + '$: $' + ten + '$ là một <b>đường trung tuyến</b> của tam giác.'; }
+
+KhungPhang.tao({
+  ten: 'Đường trung tuyến – Trọng tâm',
+  lop: 7,
+  diem: { A: [-1, 5], B: [-4, 0], C: [4.5, 0] },
+  buocLuoi: 0.5,
+  batDau: ['AM'],
+
+  lamSang: [
+    { id: 'AM', nhan: 'Trung tuyến AM', mau: MAU_T.AM, ghiChu: ghiTT('AM', 'A', 'BC', 'M') + ' <span style="white-space:nowrap">($MB = MC$)</span>' },
+    { id: 'BN', nhan: 'Trung tuyến BN', mau: MAU_T.BN, ghiChu: ghiTT('BN', 'B', 'CA', 'N') + ' <span style="white-space:nowrap">($NC = NA$)</span>' },
+    { id: 'CP', nhan: 'Trung tuyến CP', mau: MAU_T.CP, ghiChu: ghiTT('CP', 'C', 'AB', 'P') + ' <span style="white-space:nowrap">($PA = PB$)</span>' },
+    { id: 'G', nhan: 'Trọng tâm G', mau: MG, ghiChu: 'Ba đường trung tuyến của một tam giác <b>cùng đi qua một điểm</b> $G$. Điểm $G$ gọi là <b>trọng tâm</b> của tam giác.' },
+    { id: 'tile', nhan: 'Tính chất AG = ⅔ AM', mau: '#0D9488',
+      ghiChu: function (P) { var q = tt(P), AM = H.dai(q.A, q.ds[0].chan), AG = H.dai(q.A, q.G); return 'Trọng tâm cách mỗi đỉnh bằng <b>$\\dfrac{2}{3}$</b> độ dài đường trung tuyến đi qua đỉnh đó: $AG \\approx ' + soL(AG) + ' = \\dfrac{2}{3} \\cdot ' + soL(AM) + '$. Chia $AM$ thành 3 phần bằng nhau: $AG$ chiếm 2 phần, $GM$ chiếm 1 phần ($AG = 2GM$).'; } },
+  ],
+
+  hoatHinh: [
+    { id: 'dongQuy', nhan: 'Vẽ lần lượt ba trung tuyến', thoiGian: 7500,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.33) return 'Lấy trung điểm $M$ của $BC$, vẽ trung tuyến $AM$.';
+        if (t < 0.66) return 'Lấy trung điểm $N$ của $CA$, vẽ trung tuyến $BN$: cắt $AM$ tại $G$.';
+        return 'Vẽ trung tuyến $CP$: nó cũng đi qua $G$. Ba đường trung tuyến <b>đồng quy</b> tại trọng tâm $G$.';
+      } },
+    { id: 'chia3', nhan: 'Chia AM thành 3 phần', thoiGian: 5000,
+      ghiChu: function (P, ts, t) { return t < 0.6 ? 'Chia đoạn $AM$ thành ba phần bằng nhau…' : 'Trọng tâm $G$ nằm ở điểm chia thứ hai tính từ $A$: <b>$AG = \\dfrac{2}{3}AM$</b>, <b>$GM = \\dfrac{1}{3}AM$</b>.'; } },
+  ],
+
+  ve: function (g, P) {
+    var q = tt(P), A = q.A, B = q.B, C = q.C, G = q.G;
+    var td = g.hoat('dongQuy'), tc = g.hoat('chia3');
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
+
+    if (td !== null) {
+      var dungCu = null;
+      q.ds.forEach(function (d, i) {
+        var e = H.em(H.doan(td, i * 0.33 + 0.05, i * 0.33 + 0.28));
+        if (td < i * 0.33) return;
+        g.kyHieu(d.hai[0], d.chan, d.vach, MAU_T[d.id]); g.kyHieu(d.chan, d.hai[1], d.vach, MAU_T[d.id]);
+        g.diem(d.chan, d.ten, { r: 4, mau: MAU_T[d.id], huong: H.tru(d.chan, G) });
+        if (e > 0) g.doan(d.dinh, H.lerp(d.dinh, d.chan, e), { mau: MAU_T[d.id], rong: 3.5 });
+        if (e > 0 && e < 1) dungCu = [d.dinh, d.chan, H.lerp(d.dinh, d.chan, e)];
+      });
+      if (dungCu) { g.thuoc(dungCu[0], dungCu[1], { ben: -1 }); g.but(dungCu[2]); }
+      if (td > 0.6) g.diem(G, 'G', { r: 6, mau: MG, huong: [0.9, 0.5] });
+      g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+      return;
+    }
+    if (tc !== null) {
+      var Mm = q.ds[0].chan, e3 = H.em(H.doan(tc, 0.05, 0.55));
+      g.doan(A, Mm, { mau: '#94A3B8', rong: 3 });
+      for (var k = 1; k <= 2; k++) if (e3 * 3 >= k - 0.01) g.diem(H.lerp(A, Mm, k / 3), '', { r: 4, mau: '#0D9488' });
+      if (tc > 0.6) {
+        var e4 = H.em(H.doan(tc, 0.6, 0.9));
+        g.doan(A, H.lerp(A, G, e4), { mau: MG, rong: 6 }); g.doan(G, H.lerp(G, Mm, e4), { mau: '#0D9488', rong: 6 });
+        if (e4 >= 1) { g.nhanDo(A, G, '2 phần', { kc: 22 }); g.nhanDo(G, Mm, '1 phần', { kc: 22 }); g.diem(G, 'G', { r: 6, mau: MG, huong: [1, 0.3] }); }
+      }
+      g.diem(Mm, 'M', { huong: [0, -1] });
+      g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+      return;
+    }
+
+    var onG = g.bat('G'), onT = g.bat('tile');
+    q.ds.forEach(function (d) {
+      var on = g.bat(d.id);
+      if (!on && !onG) return;
+      if (on) g.doan(d.dinh, d.chan, { sang: d.id });
+      else g.doan(d.dinh, d.chan, { mau: MAU_T[d.id], rong: 2, doMo: 0.7 });
+      g.kyHieu(d.hai[0], d.chan, d.vach, MAU_T[d.id]); g.kyHieu(d.chan, d.hai[1], d.vach, MAU_T[d.id]);
+      g.diem(d.chan, d.ten, { r: 3.5, mau: MAU_T[d.id], huong: H.tru(d.chan, G) });
+    });
+    if (onT) {
+      var M0 = q.ds[0].chan;
+      g.doan(A, G, { mau: MG, rong: 6, doMo: 0.8 }); g.doan(G, M0, { mau: '#0D9488', rong: 6, doMo: 0.8 });
+      g.diem(H.lerp(A, M0, 1 / 3), '', { r: 3.5, mau: '#0D9488' });
+      g.nhanDo(A, G, 'AG ≈ ' + so(H.dai(A, G)), { kc: 22 }); g.nhanDo(G, M0, 'GM ≈ ' + so(H.dai(G, M0)), { kc: 22 });
+      if (!g.bat('AM') && !onG) g.diem(M0, 'M', { r: 3.5, huong: H.tru(M0, G) });
+    }
+    if (onG || onT) g.diem(G, 'G', { r: 6, mau: MG, huong: [0.9, 0.5] });
+    g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+  },
+
+  nhanXet: function (P) {
+    var q = tt(P);
+    return q.ds.map(function (d) {
+      var a = H.dai(d.dinh, q.G), b = H.dai(d.dinh, d.chan), n = d.id[0];
+      return '$\\dfrac{' + n + 'G}{' + d.id + '} = \\dfrac{' + soL(a) + '}{' + soL(b) + '} = \\mathbf{' + soL(a / b) + '}$';
+    }).join('<div style="height:6px"></div>') + '<div style="height:4px"></div><span class="dung">Kéo các đỉnh: tỉ số luôn bằng $\\dfrac{2}{3} \\approx 0{,}67.$</span>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'tile', ten: 'Tính chất trọng tâm', bt: '$' + C.m('tile', '\\dfrac{AG}{AM} = \\dfrac{BG}{BN} = \\dfrac{CG}{CP} = \\dfrac{2}{3}') + '$' }]; },
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Định lí Thalès</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐỊNH LÍ THALÈS TRONG TAM GIÁC — Toán 8
+   Kéo A, B, C; thanh trượt đổi vị trí M trên AB. MN // BC.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
+var MAU_AB = '#E0342F', MAU_AC = '#1E6FE0', MAU_SS = '#7C3AED', MAU_HQ = '#0D9488';
+function mn(P, k) { return { M: H.lerp(P.A, P.B, k), N: H.lerp(P.A, P.C, k) }; }
+
+KhungPhang.tao({
+  ten: 'Định lí Thalès',
+  lop: 8,
+  diem: { A: [-0.5, 5], B: [-4, 0], C: [4, 0] },
+  buocLuoi: 0.5,
+  thamSo: [{ khoa: 'k', nhan: 'Vị trí điểm M trên AB', min: 0.1, max: 0.9, buoc: 0.05, gt: 0.4, hienThi: function (ts) { return 'AM : AB = ' + so(ts.k); } }],
+
+  lamSang: [
+    { id: 'ab', nhan: 'Tỉ số trên cạnh AB', mau: MAU_AB, ghiChu: 'Đoạn $AM$ và cạnh $AB$.' },
+    { id: 'ac', nhan: 'Tỉ số trên cạnh AC', mau: MAU_AC, ghiChu: 'Đoạn $AN$ và cạnh $AC$.' },
+    { id: 'ss', nhan: 'MN song song BC', mau: MAU_SS, ghiChu: '<b>Định lí Thalès:</b> nếu một đường thẳng song song với một cạnh của tam giác và cắt hai cạnh còn lại thì nó định ra trên hai cạnh đó những đoạn thẳng tương ứng tỉ lệ.' },
+    { id: 'hq', nhan: 'Hệ quả: MN và BC', mau: MAU_HQ, ghiChu: '<b>Hệ quả:</b> $\\triangle AMN$ có ba cạnh tương ứng tỉ lệ với ba cạnh của $\\triangle ABC$: $\\dfrac{AM}{AB} = \\dfrac{AN}{AC} = \\dfrac{MN}{BC}$.' },
+  ],
+
+  hoatHinh: [
+    { id: 'truot', nhan: 'Trượt MN song song BC', thoiGian: 6000,
+      ghiChu: 'Khi $MN$ trượt song song với $BC$, hai tỉ số $\\dfrac{AM}{AB}$ và $\\dfrac{AN}{AC}$ luôn bằng nhau.' },
+  ],
+
+  ve: function (g, P, ts) {
+    var t = g.hoat('truot'), k = t !== null ? 0.12 + 0.76 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2)) : ts.k;
+    var A = P.A, B = P.B, C = P.C, q = mn(P, k);
+    g.daGiac([A, B, C], { rong: 2.6 });
+    g.daGiac([A, q.M, q.N], { to: '#FDE68A', doMoTo: 0.35, rong: 0 });
+    if (g.bat('ab')) { g.doan(A, B, { mau: MAU_AB, rong: 3, doMo: 0.5 }); g.doan(A, q.M, { mau: MAU_AB, rong: 6 }); g.nhanDo(A, q.M, 'AM ≈ ' + so(H.dai(A, q.M)), { mau: MAU_AB, kc: 26, t: 0.85 }); g.nhanDo(A, B, 'AB ≈ ' + so(H.dai(A, B)), { mau: MAU_AB, kc: 24, t: 0.8 }); }
+    if (g.bat('ac')) { g.doan(A, C, { mau: MAU_AC, rong: 3, doMo: 0.5 }); g.doan(A, q.N, { mau: MAU_AC, rong: 6 }); g.nhanDo(A, q.N, 'AN ≈ ' + so(H.dai(A, q.N)), { mau: MAU_AC, kc: 26, t: 0.85, benTrai: false }); g.nhanDo(A, C, 'AC ≈ ' + so(H.dai(A, C)), { mau: MAU_AC, kc: 24, t: 0.8, benTrai: false }); }
+    var ssOn = g.bat('ss') || g.bat('hq');
+    g.duongThang(q.M, q.N, { mau: ssOn ? MAU_SS : '#94A3B8', rong: 1.5, dut: '6 5' });
+    g.doan(q.M, q.N, { mau: g.bat('hq') ? MAU_HQ : MAU_SS, rong: ssOn ? 5 : 3 });
+    if (g.bat('hq')) { g.doan(B, C, { mau: MAU_HQ, rong: 5 }); g.nhanDo(q.M, q.N, 'MN ≈ ' + so(H.dai(q.M, q.N)), { mau: MAU_HQ, kc: 18 }); g.nhanDo(B, C, 'BC = ' + so(H.dai(B, C)), { mau: MAU_HQ, benTrai: false }); }
+    if (ssOn) { g.goc(q.N, q.M, B, { mau: MAU_SS, r: 22, nhan: false }); g.goc(C, B, q.M, { mau: MAU_SS, r: 22, nhan: false }); }
+    g.diem(q.M, 'M', { huong: H.tru(q.M, H.trung(q.M, q.N)).map(function (x) { return x; }) });
+    g.diem(q.N, 'N', { huong: H.tru(q.N, H.trung(q.M, q.N)) });
+    g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var q = mn(P, ts.k), A = P.A;
+    var r1 = H.dai(A, q.M) / H.dai(A, P.B), r2 = H.dai(A, q.N) / H.dai(A, P.C), r3 = H.dai(q.M, q.N) / H.dai(P.B, P.C);
+    return [
+      { id: 'ss', ten: 'Định lí Thalès (${MN \\parallel BC}$)', bt: '$\\dfrac{' + C.m('ab', 'AM') + '}{' + C.m('ab', 'AB') + '} = \\dfrac{' + C.m('ac', 'AN') + '}{' + C.m('ac', 'AC') + '}$ &nbsp;;&nbsp; $\\dfrac{' + C.m('ab', 'AM') + '}{MB} = \\dfrac{' + C.m('ac', 'AN') + '}{NC}$' },
+      { id: null, ten: 'Với số đo hiện tại', bt: '$' + soL(r1) + ' = ' + soL(r2) + '$ &nbsp;;&nbsp; $' + soL(H.dai(A, q.M) / H.dai(q.M, P.B)) + ' = ' + soL(H.dai(A, q.N) / H.dai(q.N, P.C)) + '$' },
+      { id: 'hq', ten: 'Hệ quả', bt: '$\\dfrac{AM}{AB} = \\dfrac{AN}{AC} = ' + C.m('hq', '\\dfrac{MN}{BC}') + ' = ' + soL(r3) + '$' },
+    ];
+  },
+  nhanXet: function (P, ts) {
+    var q = mn(P, ts.k);
+    return '$\\dfrac{AM}{AB} = ' + soL(H.dai(P.A, q.M) / H.dai(P.A, P.B)) + '$ &nbsp; $\\dfrac{AN}{AC} = ' + soL(H.dai(P.A, q.N) / H.dai(P.A, P.C)) + '$<br><span class="dung">Hai tỉ số luôn bằng nhau khi ${MN \\parallel BC}$.</span>';
+  },
+});
+</script>
+</body>
+</html>

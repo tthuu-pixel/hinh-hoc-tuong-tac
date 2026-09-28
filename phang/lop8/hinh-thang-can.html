@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình thang cân</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, TG = KhungPhang.tuGiac, DX = KhungPhang.doiXung;
+var M1 = '#E0342F', M2 = '#1E6FE0', MG1 = '#F59E0B', MG2 = '#7C3AED', MCAO = '#92400E';
+function veCanh(g, P1, P2, on, mau, vach) { g.doan(P1, P2, on ? { mau: mau, rong: 5, kyHieu: vach || 0 } : { rong: 2.8 }); }
+function veGoc(g, q, i, on, mau, vach, o) { o = o || {}; return TG.goc(g, q, i, { mau: on ? mau : '#94A3B8', r: o.r || 30, kyHieu: on ? (vach || 1) : 1, doMoTo: on ? 0.35 : 0.1, nhan: on ? true : undefined, le: 0 }); }
+var soL = KhungPhang.soL;
+/* =====================================================================
+   HÌNH THANG CÂN — Toán 8
+   AB // CD, C đối xứng với D qua trục của AB. A cố định; kéo B (ngang), D.
+   ===================================================================== */
+function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, C: [A[0] + B[0] - D[0], D[1]], D: D }; }
+function info(P) { var q = dinh(P); return { ten: 'Hình thang cân', ds: [q.A, q.B, q.C, q.D], tam: null, truc: [[H.trung(q.A, q.B), H.trung(q.D, q.C)]] }; }
+
+KhungPhang.tao({
+  ten: 'Hình thang cân',
+  lop: 8,
+  diem: { A: [-3.5, 0], B: [3.5, 0], D: [-2, 3] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: {
+    B: function (p, P) { return [Math.max(P.A[0] + 2, Math.max(p[0], 2 * P.D[0] - P.A[0] + 0.5)), P.A[1]]; },
+    D: function (p, P) { var gi = (P.A[0] + P.B[0]) / 2; return [Math.min(Math.max(p[0], P.A[0] - 3), gi - 0.25), Math.max(P.A[1] + 0.5, p[1])]; },
+  },
+  batDau: ['ben'],
+
+  lamSang: [
+    { id: 'ben', nhan: 'Hai cạnh bên bằng nhau', mau: M2, ghiChu: function (P) { var q = dinh(P); return 'Trong hình thang cân, <b>hai cạnh bên bằng nhau</b>: $AD = BC \\approx ' + soL(H.dai(q.A, q.D)) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Hai góc kề một đáy', mau: MG1, ghiChu: function (P) { var q = dinh(P); return 'Hình thang cân là hình thang có <b>hai góc kề một đáy bằng nhau</b>: $\\widehat{A} = \\widehat{B} \\approx ' + soL(H.gocDo(q.D, q.A, q.B), 1) + '^\\circ$, $\\widehat{C} = \\widehat{D} \\approx ' + soL(H.gocDo(q.B, q.C, q.D), 1) + '^\\circ$.'; } },
+    { id: 'cheo', nhan: 'Hai đường chéo bằng nhau', mau: M.duongCheo, ghiChu: function (P) { var q = dinh(P); return 'Trong hình thang cân, <b>hai đường chéo bằng nhau</b>: $AC = BD \\approx ' + soL(H.dai(q.A, q.C)) + '$ cm.'; } },
+    { id: 'truc', nhan: 'Trục đối xứng', mau: M.trucDX, ghiChu: 'Đường thẳng đi qua trung điểm hai đáy là <b>trục đối xứng</b> của hình thang cân.' },
+  ],
+  hoatHinh: [
+    { id: 'gap', nhan: 'Gấp giấy theo trục', thoiGian: 4200,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp hình thang theo đường thẳng đi qua trung điểm hai đáy…' : 'Hai nửa <b>trùng khít</b>: $AD$ trùng $BC$, góc $A$ trùng góc $B$, góc $D$ trùng góc $C$.'; } },
+  ],
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = info(P);
+    if (g.hoat('gap') !== null) { DX.ve(g, f, { truc: 0 }); return; }
+    g.daGiac(f.ds, { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
+    if (g.bat('truc')) { var t = f.truc[0]; g.doan(H.cong(t[0], [0, -0.8]), H.cong(t[1], [0, 0.8]), { mau: M.trucDX, rong: 2.5, dut: '10 6' }); }
+    if (g.bat('cheo')) { g.doan(q.A, q.C, { sang: 'cheo', kyHieu: 3 }); g.doan(q.B, q.D, { sang: 'cheo', kyHieu: 3 }); }
+    veCanh(g, q.A, q.B, false); veCanh(g, q.D, q.C, false);
+    veCanh(g, q.A, q.D, g.bat('ben'), M2, 1); veCanh(g, q.B, q.C, g.bat('ben'), M2, 1);
+    var on = g.bat('goc');
+    veGoc(g, q, 0, on, MG1, 1); veGoc(g, q, 1, on, MG1, 1); veGoc(g, q, 2, on, MG2, 2); veGoc(g, q, 3, on, MG2, 2);
+    TG.nhanDinh(g, q);
+  },
+
+  nhanXet: function (P) {
+    var q = dinh(P);
+    return '$AD = BC \\approx ' + soL(H.dai(q.A, q.D)) + '$ ; $AC = BD \\approx ' + soL(H.dai(q.A, q.C)) + '$' +
+      TG.dauHieu('Dấu hiệu nhận biết hình thang cân', ['Hình thang có <b>hai góc kề một đáy bằng nhau</b>.', 'Hình thang có <b>hai đường chéo bằng nhau</b>.']);
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'goc', ten: 'Tính chất', bt: '${' + C.m('ben', 'AD = BC') + '}$ ; ${' + C.m('cheo', 'AC = BD') + '}$ ; ${' + C.m('goc', '\\widehat{A} = \\widehat{B}') + '}$, ${' + C.m('goc', '\\widehat{C} = \\widehat{D}') + '}$' }]; },
+  khungNhin: function (P) { return [dinh(P).C]; },
+});
+</script>
+</body>
+</html>

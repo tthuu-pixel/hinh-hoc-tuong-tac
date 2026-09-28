@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đường cao – Trực tâm</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐƯỜNG CAO – TRỰC TÂM — Toán 7
+   Kéo A, B, C hoặc chọn nhanh tam giác nhọn / vuông / tù.
+   AD, BE, CF là ba đường cao; H là trực tâm.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var MAU_T = { AD: '#E0342F', BE: '#1E6FE0', CF: '#16A34A' }, MH = '#C026D3';
+function dc(P) {
+  var A = P.A, B = P.B, C = P.C;
+  function mot(id, V, X, Y, ten) {
+    var K = H.chan(V, X, Y), L2 = Math.pow(H.dai(X, Y), 2);
+    var t = ((K[0] - X[0]) * (Y[0] - X[0]) + (K[1] - X[1]) * (Y[1] - X[1])) / L2;
+    return { id: id, dinh: V, chan: K, ten: ten, X: X, Y: Y, t: t };
+  }
+  return { A: A, B: B, C: C, Ht: H.trucTam(A, B, C), ds: [mot('AD', A, B, C, 'D'), mot('BE', B, C, A, 'E'), mot('CF', C, A, B, 'F')] };
+}
+function loai(P) {
+  var mx = Math.max(H.gocDo(P.B, P.A, P.C), H.gocDo(P.A, P.B, P.C), H.gocDo(P.A, P.C, P.B));
+  return Math.abs(mx - 90) < 0.05 ? 'vuong' : mx > 90 ? 'tu' : 'nhon';
+}
+function veMot(g, d, o) {   // vẽ đường cao d: đoạn đỉnh–chân, kéo dài cạnh nếu chân nằm ngoài, ký hiệu góc vuông
+  if (H.dai(d.dinh, d.chan) < 1e-6) return;
+  if (d.t < 0) g.doan(d.chan, d.X, { mau: '#94A3B8', dut: '5 4', rong: 1.6 });
+  if (d.t > 1) g.doan(d.chan, d.Y, { mau: '#94A3B8', dut: '5 4', rong: 1.6 });
+  g.doan(d.dinh, d.chan, o);
+  var ref = H.dai(d.chan, d.Y) > 1e-6 ? d.Y : d.X;
+  g.goc(d.dinh, d.chan, ref, { mau: o.mauGoc, r: 12, to: false });
+}
+function datHinh(A, B, C) { return function (P, ts, api) { P.A = A; P.B = B; P.C = C; api.vuaKhung(); }; }
+
+KhungPhang.tao({
+  ten: 'Đường cao – Trực tâm',
+  lop: 7,
+  diem: { A: [-1, 5], B: [-4, 0], C: [4.5, 0] },
+  buocLuoi: 0.5,
+  batDau: ['AD'],
+  tieuDeNutPhu: 'Chọn nhanh loại tam giác',
+  nutPhu: [
+    { nhan: 'Tam giác nhọn', bam: datHinh([-1, 5], [-4, 0], [4.5, 0]) },
+    { nhan: 'Tam giác vuông', bam: datHinh([-4, 4], [-4, 0], [4, 0]) },
+    { nhan: 'Tam giác tù', bam: datHinh([-6, 3.5], [-4, 0], [4, 0]) },
+  ],
+
+  lamSang: [
+    { id: 'AD', nhan: 'Đường cao AD', mau: MAU_T.AD, ghiChu: '$AD$ vuông góc với đường thẳng $BC$ tại $D$: $AD$ là <b>đường cao</b> xuất phát từ đỉnh $A$.' },
+    { id: 'BE', nhan: 'Đường cao BE', mau: MAU_T.BE, ghiChu: '$BE$ vuông góc với đường thẳng $CA$ tại $E$: $BE$ là đường cao xuất phát từ đỉnh $B$.' },
+    { id: 'CF', nhan: 'Đường cao CF', mau: MAU_T.CF, ghiChu: '$CF$ vuông góc với đường thẳng $AB$ tại $F$: $CF$ là đường cao xuất phát từ đỉnh $C$.' },
+    { id: 'Ht', nhan: 'Trực tâm H', mau: MH,
+      ghiChu: function (P) {
+        var l = loai(P);
+        return 'Ba đường cao của một tam giác <b>cùng đi qua một điểm</b> $H$, gọi là <b>trực tâm</b>. ' +
+          (l === 'nhon' ? 'Tam giác nhọn: $H$ nằm <b>bên trong</b> tam giác.' : l === 'vuong' ? 'Tam giác vuông: $H$ <b>trùng với đỉnh góc vuông</b>.' : 'Tam giác tù: $H$ nằm <b>bên ngoài</b> tam giác (các đường cao phải kéo dài – nét đứt).');
+      } },
+  ],
+
+  hoatHinh: [
+    { id: 'eke', nhan: 'Vẽ đường cao AD bằng ê ke', thoiGian: 6000, anDiem: true,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.65) return '<b>Bước 1.</b> Đặt một cạnh góc vuông của ê ke trùng với đường thẳng $BC$, trượt ê ke cho đến khi cạnh góc vuông còn lại đi qua $A$.';
+        return '<b>Bước 2.</b> Kẻ đoạn thẳng theo cạnh ê ke từ $A$ đến $D$ trên $BC$: $AD$ là đường cao.';
+      } },
+  ],
+
+  ve: function (g, P) {
+    var q = dc(P), A = q.A, B = q.B, C = q.C, Ht = q.Ht, te = g.hoat('eke');
+    g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
+    function nhan() { g.diem(A, 'A', { huong: H.tru(A, H.trongTam(A, B, C)) }); g.diem(B, 'B', { huong: H.tru(B, H.trongTam(A, B, C)) }); g.diem(C, 'C', { huong: H.tru(C, H.trongTam(A, B, C)) }); }
+
+    if (te !== null) {
+      var d = q.ds[0], u = H.tru(C, B), L = Math.hypot(u[0], u[1]); u = [u[0] / L, u[1] / L];
+      var n = H.tru(A, d.chan), hA = Math.hypot(n[0], n[1]); n = [n[0] / hA, n[1] / hA];
+      var e = H.em(H.doan(te, 0.05, 0.6)), K = H.cong(d.chan, H.nhan(u, -3 * (1 - e)));
+      var dai1 = 2.4, dai2 = Math.max(2.5, hA + 0.8);
+      if (d.t < 0 || d.t > 1) g.doan(d.chan, d.t < 0 ? B : C, { mau: '#94A3B8', dut: '5 4', rong: 1.6 });
+      if (te < 0.95) g.daGiac([K, H.cong(K, H.nhan(u, dai1)), H.cong(K, H.nhan(n, dai2))], { to: '#FDE68A', doMoTo: 0.65, mauNet: '#B45309', rong: 2 });
+      var e2 = H.em(H.doan(te, 0.66, 0.92));
+      if (e2 > 0) { g.doan(A, H.lerp(A, d.chan, e2), { mau: MAU_T.AD, rong: 4 }); if (e2 < 1) g.but(H.lerp(A, d.chan, e2)); }
+      if (te > 0.92) { g.goc(A, d.chan, H.dai(d.chan, C) > 1e-6 ? C : B, { mau: MAU_T.AD, r: 12, to: false }); g.diem(d.chan, 'D', { huong: [0, -1], mau: MAU_T.AD }); }
+      nhan(); return;
+    }
+
+    var onH = g.bat('Ht');
+    q.ds.forEach(function (d) {
+      var on = g.bat(d.id);
+      if (!on && !onH) return;
+      veMot(g, d, on ? { sang: d.id, mauGoc: MAU_T[d.id] } : { mau: MAU_T[d.id], rong: 2, mauGoc: MAU_T[d.id] });
+      if (H.dai(d.dinh, d.chan) > 1e-6) g.diem(d.chan, d.ten, { r: 3.5, mau: MAU_T[d.id], huong: H.tru(d.chan, d.dinh) });
+      if (onH && Ht) {   // kéo dài đường cao tới trực tâm nếu cần
+        var v = H.tru(d.chan, d.dinh), L2 = v[0] * v[0] + v[1] * v[1];
+        if (L2 > 1e-9) {
+          var tH = ((Ht[0] - d.dinh[0]) * v[0] + (Ht[1] - d.dinh[1]) * v[1]) / L2;
+          if (tH > 1.001) g.doan(d.chan, Ht, { mau: MAU_T[d.id], dut: '4 4', rong: 1.8 });
+          if (tH < -0.001) g.doan(d.dinh, Ht, { mau: MAU_T[d.id], dut: '4 4', rong: 1.8 });
+        }
+      }
+    });
+    if (onH && Ht) g.diem(Ht, 'H', { r: 6, mau: MH, huong: [0.9, 0.6] });
+    nhan();
+  },
+
+  nhanXet: function (P) {
+    var l = loai(P);
+    return 'Đây là <b>tam giác ' + (l === 'nhon' ? 'nhọn' : l === 'vuong' ? 'vuông' : 'tù') + '</b>.<br>' +
+      (l === 'nhon' ? 'Trực tâm $H$ nằm <b>trong</b> tam giác.' : l === 'vuong' ? 'Trực tâm $H$ <b>trùng đỉnh góc vuông</b>; hai cạnh góc vuông cũng là hai đường cao.' : 'Trực tâm $H$ nằm <b>ngoài</b> tam giác.') +
+      '<br><span class="dung">Kéo các đỉnh hoặc chọn nhanh loại tam giác để so sánh.</span>';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'AD', ten: 'Đường cao', bt: '$' + C.m('AD', 'AD \\perp BC') + '$ ; $' + C.m('BE', 'BE \\perp CA') + '$ ; $' + C.m('CF', 'CF \\perp AB') + '$' }]; },
+  khungNhin: function (P) { var Ht = H.trucTam(P.A, P.B, P.C), top = Math.max(P.A[1], P.B[1], P.C[1]), ds = [[P.A[0], top + 1.5]]; if (Ht && H.dai(Ht, H.trongTam(P.A, P.B, P.C)) < 15) ds.push(Ht); return ds; },
+});
+</script>
+</body>
+</html>

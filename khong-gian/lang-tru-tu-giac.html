@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lăng trụ đứng tứ giác</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/khung-3d.js"></script>
+<script>
+/* =====================================================================
+   HÌNH LĂNG TRỤ ĐỨNG TỨ GIÁC  ABCD.A'B'C'D'  — Toán 7
+   Đáy là hình thang cân ABCD: đáy lớn AB = a, đáy nhỏ CD = b,
+   chiều cao hình thang DK = d; h = chiều cao lăng trụ
+   ===================================================================== */
+var M = KhongGian.MAU, so = KhongGian.so;
+function soL(x, l) { return so(x, l).replace(',', '{,}'); }
+
+function dayThang(ts) {
+  var a = ts.a, b = ts.b, d = ts.d, zf = d / 2;
+  return { A: [-a / 2, zf], B: [a / 2, zf], C: [b / 2, zf - d], D: [-b / 2, zf - d], K: [-b / 2, zf] };
+}
+function doDai(ts) {
+  var ben = Math.hypot((ts.a - ts.b) / 2, ts.d);
+  return { ben: ben, chuVi: ts.a + ts.b + 2 * ben, sDay: (ts.a + ts.b) * ts.d / 2 };
+}
+function trenDuoi(p, y) { return [p[0], y, p[1]]; }
+
+KhongGian.tao({
+  ten: 'Lăng trụ đứng tứ giác',
+  lop: 7,
+  donVi: 'cm',
+
+  thamSo: [
+    { khoa: 'a', nhan: 'Đáy lớn AB = a', min: 2, max: 8, buoc: 0.5, gt: 6, donVi: 'cm', mau: M.chuVi },
+    { khoa: 'b', nhan: 'Đáy nhỏ CD = b', min: 1, max: 8, buoc: 0.5, gt: 3, donVi: 'cm', mau: M.chuVi },
+    { khoa: 'd', nhan: 'Chiều cao hình thang DK', min: 1, max: 5, buoc: 0.5, gt: 3, donVi: 'cm', mau: M.duongCaoDay },
+    { khoa: 'h', nhan: 'Chiều cao lăng trụ h', min: 1, max: 8, buoc: 0.5, gt: 5, donVi: 'cm', mau: M.chieuCao },
+  ],
+
+  daDien: function (ts) {
+    var p = dayThang(ts), h = ts.h;
+    return {
+      dinh: {
+        A: trenDuoi(p.A, 0), B: trenDuoi(p.B, 0), C: trenDuoi(p.C, 0), D: trenDuoi(p.D, 0),
+        "A'": trenDuoi(p.A, h), "B'": trenDuoi(p.B, h), "C'": trenDuoi(p.C, h), "D'": trenDuoi(p.D, h),
+      },
+      diemPhu: { K: trenDuoi(p.K, 0) },
+      huongNhan: { K: [0, -0.4, 1] },
+      mat: [
+        { ten: 'ABCD',     dinh: ['A', 'B', 'C', 'D'] },
+        { ten: "ABB'A'",   dinh: ['A', 'B', "B'", "A'"] },
+        { ten: "BCC'B'",   dinh: ['B', 'C', "C'", "B'"] },
+        { ten: "CDD'C'",   dinh: ['C', 'D', "D'", "C'"] },
+        { ten: "DAA'D'",   dinh: ['D', 'A', "A'", "D'"] },
+        { ten: "A'B'C'D'", dinh: ["A'", "B'", "C'", "D'"] },
+      ],
+    };
+  },
+
+  lamSang: [
+    {
+      id: 'chuVi', nhan: 'Chu vi đáy', mau: M.chuVi,
+      canh: [['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'A']],
+      nhanDo: function (ts) {
+        var L = doDai(ts);
+        return [
+          { doan: ['A', 'B'], chu: 'AB = ' + so(ts.a) },
+          { doan: ['C', 'D'], chu: 'CD = ' + so(ts.b) },
+          { doan: ['B', 'C'], chu: 'BC ≈ ' + so(L.ben) },
+        ];
+      },
+      ghiChu: function (ts) { var L = doDai(ts); return 'Đáy là <b>hình thang cân</b>: $AD = BC \\approx ' + soL(L.ben) + '$ cm. Chu vi đáy $\\approx$ <b>$' + soL(L.chuVi) + '$ cm</b>.'; },
+    },
+    {
+      id: 'dcao', nhan: 'Chiều cao của đáy', mau: M.duongCaoDay,
+      doan: [['D', 'K']],
+      nhanDo: function (ts) { return [{ doan: ['D', 'K'], chu: 'DK = ' + so(ts.d), huong: [-1, 0.3, 0] }]; },
+      ghiChu: function (ts) { return '$DK$ là chiều cao của hình thang đáy: $DK \\perp AB$, $DK = ' + soL(ts.d) + '$ cm.'; },
+    },
+    {
+      id: 'h', nhan: 'Chiều cao h', mau: M.chieuCao,
+      canh: [['A', "A'"], ['B', "B'"], ['C', "C'"], ['D', "D'"]],
+      nhanDo: function (ts) { return [{ doan: ['B', "B'"], chu: '<i>h</i> = ' + so(ts.h) + ' cm' }]; },
+      ghiChu: function (ts) { return 'Bốn <b>cạnh bên</b> bằng nhau, vuông góc với đáy và bằng chiều cao $h = ' + soL(ts.h) + '$ cm.'; },
+    },
+    {
+      id: 'day', nhan: 'Mặt đáy', mau: M.matDay, mat: ['ABCD', "A'B'C'D'"],
+      ghiChu: 'Hai mặt đáy $ABCD$ và $A\'B\'C\'D\'$ là hai hình thang cân bằng nhau.',
+    },
+    {
+      id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
+      mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
+      ghiChu: 'Bốn <b>mặt bên</b> là bốn hình chữ nhật. Trải ra, chúng ghép thành một hình chữ nhật dài bằng chu vi đáy, rộng bằng $h$.',
+    },
+    {
+      id: 'V', nhan: 'Thể tích', mau: M.theTich, khoi: true,
+      ghiChu: 'Xếp các lớp dày 1 cm có đáy là hình thang $ABCD$: số lớp bằng chiều cao, mỗi lớp có thể tích bằng $S_{\\text{đáy}} \\times 1$.',
+    },
+  ],
+
+  congThuc: function (ts, C) {
+    var L = doDai(ts), h = ts.h, Hh = C.m('h', 'h'), n = C.soL;
+    return [
+      { id: 'dcao', ten: 'Diện tích đáy (hình thang)', bt: '$S_{\\text{đáy}} = \\dfrac{(' + C.m('chuVi', 'AB') + ' + ' + C.m('chuVi', 'CD') + ')\\cdot ' + C.m('dcao', 'DK') + '}{2} = \\dfrac{(' + n(ts.a) + ' + ' + n(ts.b) + ')\\cdot ' + n(ts.d) + '}{2} = \\mathbf{' + n(L.sDay) + '}$ (cm²)' },
+      { id: 'chuVi', ten: 'Chu vi đáy', bt: '$C_{\\text{đáy}} = ' + C.m('chuVi', 'AB + BC + CD + DA') + ' \\approx \\mathbf{' + n(L.chuVi) + '}$ (cm)' },
+      { id: 'xq', ten: 'Diện tích xung quanh', bt: '$S_{xq} = ' + C.m('chuVi', 'C_{\\text{đáy}}') + '\\cdot ' + Hh + ' \\approx ' + n(L.chuVi) + '\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(L.chuVi * h) + '}$ (cm²)' },
+      { id: 'V', ten: 'Thể tích', bt: '$V = S_{\\text{đáy}}\\cdot ' + Hh + ' = ' + n(L.sDay) + '\\cdot ' + n(h) + ' = \\mathbf{' + n(L.sDay * h) + '}$ (cm³)' },
+    ];
+  },
+
+  traiHinh: { matGoc: 'ABCD', cay: { "A'B'C'D'": "ABB'A'" } },
+
+  matCat: [
+    { id: 'ngang', nhan: 'Song song với đáy',
+      matPhang: function (ts, t) { return { phapTuyen: [0, 1, 0], diem: [0, t * ts.h, 0] }; } },
+    { id: 'dung', nhan: 'Song song với mặt bên ABB′A′',
+      matPhang: function (ts, t) { var zf = ts.d / 2; return { phapTuyen: [0, 0, 1], diem: [0, 0, zf - ts.d + t * ts.d] }; } },
+    { id: 'cheo', nhan: 'Mặt chéo ACC′A′',
+      diemDacBiet: function (ts) { return [tCheo(ts)]; }, batDau: function (ts) { return tCheo(ts); },
+      matPhang: function (ts, t) {
+        var p = dayThang(ts), n = [ts.d, 0, (ts.a + ts.b) / 2];
+        return { phapTuyen: n, diem: [p.D[0] + t * (p.B[0] - p.D[0]), 0, p.D[1] + t * (p.B[1] - p.D[1])] };
+      } },
+  ],
+
+  lopDay: function (ts) {
+    var p = dayThang(ts);
+    return { day: [p.A, p.B, p.C, p.D], cao: ts.h, dienTichDay: (ts.a + ts.b) * ts.d / 2 };
+  },
+});
+
+// Vị trí (0..1) để mặt phẳng chéo đi qua đúng hai cạnh bên AA' và CC'
+function tCheo(ts) {
+  var p = dayThang(ts), n = [ts.d, (ts.a + ts.b) / 2];
+  var AD = n[0] * (p.A[0] - p.D[0]) + n[1] * (p.A[1] - p.D[1]);
+  var BD = n[0] * (p.B[0] - p.D[0]) + n[1] * (p.B[1] - p.D[1]);
+  return AD / BD;
+}
+</script>
+</body>
+</html>

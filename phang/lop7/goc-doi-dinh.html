@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hai góc đối đỉnh</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HAI GÓC ĐỐI ĐỈNH — Toán 7
+   Hai đường thẳng xx' và yy' cắt nhau tại O. Kéo x hoặc y để xoay.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var soL = KhungPhang.soL;
+function tia(P) { var O = P.O; return { O: O, x: P.x, y: P.y, x2: H.tru(H.nhan(O, 2), P.x), y2: H.tru(H.nhan(O, 2), P.y) }; }
+// Kéo tia: hướng tia được làm tròn tới số nguyên độ để số đo góc luôn là số nguyên
+function tronGoc(p, O, minD) { var d = H.dai(p, O); if (d < minD) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + d * Math.cos(a), O[1] + d * Math.sin(a)]; }
+var xa = function (p, P) { return tronGoc(p, P.O, 1); };
+
+KhungPhang.tao({
+  ten: 'Hai góc đối đỉnh',
+  lop: 7,
+  diem: { O: [0, 0], x: [3.4468, 0.6078], y: [1.6059, 3.444] },
+  coDinh: ['O'],
+  buocLuoi: 0.5,
+  rangBuoc: { x: xa, y: xa },
+
+  lamSang: [
+    { id: 'cap1', nhan: 'Cặp xOy và x′Oy′', mau: M.goc1,
+      ghiChu: "$\\widehat{xOy}$ và $\\widehat{x'Oy'}$ là hai <b>góc đối đỉnh</b>: mỗi cạnh của góc này là tia đối của một cạnh của góc kia. <b>Hai góc đối đỉnh thì bằng nhau.</b>" },
+    { id: 'cap2', nhan: 'Cặp yOx′ và y′Ox', mau: M.goc2, ghiChu: "$\\widehat{yOx'}$ và $\\widehat{y'Ox}$ cũng là hai góc đối đỉnh nên <b>bằng nhau</b>." },
+  ],
+  hoatHinh: [
+    { id: 'quay', nhan: 'Quay góc xOy nửa vòng', thoiGian: 4000,
+      ghiChu: function (P, ts, t) { return t < 1 ? 'Quay $\\widehat{xOy}$ quanh $O$ nửa vòng ($180^\\circ$)…' : "$\\widehat{xOy}$ trùng khít với $\\widehat{x'Oy'}$: <b>hai góc đối đỉnh bằng nhau</b>."; } },
+  ],
+
+  ve: function (g, P) {
+    var q = tia(P), O = q.O, t = g.hoat('quay');
+    g.goc(q.x, O, q.y, { sang: 'cap1', r: 54, mau: '#94A3B8', doMoTo: 0.12 });
+    g.goc(q.x2, O, q.y2, { sang: 'cap1', r: 54, mau: '#94A3B8', doMoTo: 0.12 });
+    g.goc(q.y, O, q.x2, { sang: 'cap2', r: 54, kyHieu: 2, mau: '#94A3B8', doMoTo: 0.12 });
+    g.goc(q.y2, O, q.x, { sang: 'cap2', r: 54, kyHieu: 2, mau: '#94A3B8', doMoTo: 0.12 });
+    g.doan(q.x2, q.x, { rong: 3 }); g.doan(q.y2, q.y, { rong: 3 });
+    if (t !== null) {
+      var e = H.em(t), a0 = H.huong(O, q.x) + Math.PI * e, da = H.huong(O, q.y) - H.huong(O, q.x);
+      while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+      g.quat(O, Math.min(H.dai(O, q.x), H.dai(O, q.y)) * 0.8, a0, a0 + da, { to: M.goc1, doMoTo: 0.45, mau: M.goc1 });
+    }
+    g.diem(O, 'O', { huong: [-0.7, -1] });
+    [['x', q.x], ['x′', q.x2], ['y', q.y], ['y′', q.y2]].forEach(function (d) { g.chu(H.cong(O, H.nhan(H.tru(d[1], O), 1 + 0.6 / H.dai(O, d[1]))), d[0], { nghieng: true }); });
+  },
+  nhanXet: function (P) {
+    var q = tia(P), a = H.gocDo(q.x, q.O, q.y);
+    return '$\\widehat{xOy} = \\widehat{x\'Oy\'} = \\textcolor{' + M.goc1 + '}{\\mathbf{' + soL(a, 0) + '}^\\circ}$<br>$\\widehat{yOx\'} = \\widehat{y\'Ox} = \\textcolor{' + M.goc2 + '}{\\mathbf{' + soL(180 - a, 0) + '}^\\circ}$';
+  },
+  congThuc: function (P, ts, C) { return [{ id: 'cap1', ten: 'Hai góc đối đỉnh thì bằng nhau', bt: '$' + C.m('cap1', "\\widehat{xOy} = \\widehat{x'Oy'}") + '$ ; $' + C.m('cap2', "\\widehat{yOx'} = \\widehat{y'Ox}") + '$' }]; },
+  khungNhin: function () { return [[-5, -5], [5, 5]]; },
+  le: 0.5,
+});
+</script>
+</body>
+</html>

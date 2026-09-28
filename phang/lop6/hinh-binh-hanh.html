@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình bình hành</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH BÌNH HÀNH ABCD — Toán 6
+   Nhận dạng, chu vi, diện tích và tính đối xứng (không có trục, có tâm).
+   A cố định; kéo B (trên đường nằm ngang) và D; C = B + D − A.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var soL = KhungPhang.soL;
+function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, C: [B[0] + D[0] - A[0], B[1] + D[1] - A[1]], D: D, Hc: [D[0], A[1]] }; }
+function thongTin(P) {
+  var q = dinh(P), O = H.trung(q.A, q.C), vuong = Math.abs(q.D[0] - q.A[0]) < 1e-9, bang = H.bang(H.dai(q.A, q.B), H.dai(q.A, q.D)), truc = [];
+  if (vuong) truc.push([H.trung(q.A, q.B), H.trung(q.D, q.C)], [H.trung(q.A, q.D), H.trung(q.B, q.C)]);
+  if (bang) truc.push([q.A, q.C], [q.B, q.D]);
+  var ten = vuong && bang ? 'Hình bình hành này (là hình vuông)' : vuong ? 'Hình bình hành này (là hình chữ nhật)' : bang ? 'Hình bình hành này (là hình thoi)' : 'Hình bình hành';
+  return { ten: ten, ds: [q.A, q.B, q.C, q.D], tam: O, truc: truc };
+}
+
+KhungPhang.tao({
+  ten: 'Hình bình hành',
+  lop: 6,
+  diem: { A: [0, 0], B: [5, 0], D: [2, 3] },
+  coDinh: ['A'],
+  buocLuoi: 0.5,
+  rangBuoc: {
+    B: function (p, P) { return [Math.max(P.A[0] + 1, p[0]), P.A[1]]; },
+    D: function (p, P) { return [p[0], Math.max(P.A[1] + 0.5, p[1])]; },
+  },
+  hopChon: [DX.hopChonVet],
+
+  lamSang: DX.lamSang(thongTin).concat([
+    { id: 'cao', nhan: 'Chiều cao DH', mau: M.chieuCao,
+      ghiChu: function (P) { return '$DH$ vuông góc với $AB$, là <b>chiều cao</b> ứng với cạnh đáy $AB$: $h = ' + soL(P.D[1] - P.A[1]) + '$ cm.'; } },
+  ]),
+
+  hoatHinh: DX.hoatHinh(thongTin).concat([
+    { id: 'cat', nhan: 'Cắt ghép thành hình chữ nhật', thoiGian: 5500,
+      ghiChu: function (P, ts, t) {
+        var a = H.dai(P.A, P.B), h = P.D[1] - P.A[1];
+        if (t < 0.2) return 'Cắt hình bình hành theo đường cao $DH$.';
+        if (t < 0.95) return 'Chuyển tam giác $ADH$ sang bên phải, ghép vào cạnh $BC$…';
+        return 'Được <b>hình chữ nhật</b> có chiều dài $a = ' + soL(a) + '$ cm, chiều rộng $h = ' + soL(h) + '$ cm: $S = a \\cdot h = \\mathbf{' + soL(a * h) + '}$ <b>cm²</b>.';
+      } },
+  ]),
+
+  ve: function (g, P, ts) {
+    var q = dinh(P), f = thongTin(P), t = g.hoat('cat');
+    if (t !== null) {
+      var e = H.em(H.doan(t, 0.22, 0.9)), dx = q.B[0] - q.A[0];
+      g.daGiac([q.Hc, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.6 });
+      g.daGiac([q.A, q.Hc, q.D].map(function (x) { return [x[0] + dx * e, x[1]]; }), { to: '#F59E0B', doMoTo: 0.7 });
+      g.doan(q.D, q.Hc, { mau: M.chieuCao, dut: '6 4' });
+      g.diem(q.D, 'D', { huong: [-1, 1] }); g.diem(q.Hc, 'H', { huong: [0, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] });
+      return;
+    }
+    var hoat = DX.dangHoat(g);
+    if (!hoat) {
+      g.daGiac(f.ds, {});
+      if (g.bat('cao')) {
+        g.doan(q.A, [Math.min(q.A[0], q.Hc[0]), q.A[1]], { mau: M.chieuCao, dut: '4 4', rong: 1.5 });
+        g.doan(q.B, [Math.max(q.B[0], q.Hc[0]), q.A[1]], { mau: M.chieuCao, dut: '4 4', rong: 1.5 });
+        g.doan(q.D, q.Hc, { sang: 'cao' }); g.goc(q.D, q.Hc, q.B[0] > q.Hc[0] ? q.B : q.A, { mau: M.chieuCao, nhan: false, r: 12 });
+        g.nhanDo(q.Hc, q.D, 'h = ' + so(q.D[1] - q.A[1]), { sang: 'cao', kc: 30 }); g.diem(q.Hc, 'H', { huong: [0, -1], mau: M.chieuCao });
+      }
+    }
+    DX.ve(g, f, ts);
+    if (hoat) return;
+    g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)) + ' cm', { benTrai: false });
+    g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+  },
+
+  congThuc: function (P, ts, C) {
+    var a = H.dai(P.A, P.B), b = H.dai(P.A, P.D), h = P.D[1] - P.A[1];
+    return [
+      { id: null, ten: 'Chu vi', bt: '$C = 2(a + b) \\approx 2(' + soL(a) + ' + ' + soL(b) + ') \\approx \\mathbf{' + soL(2 * (a + b)) + '}$ (cm)' },
+      { id: 'cao', ten: 'Diện tích', bt: '$S = a \\cdot ' + C.m('cao', 'h') + ' = ' + soL(a) + ' \\cdot ' + soL(h) + ' = \\mathbf{' + soL(a * h) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo B, D để thay đổi hình.</span>'; },
+  khungNhin: function (P) { return [dinh(P).C]; },
+});
+</script>
+</body>
+</html>

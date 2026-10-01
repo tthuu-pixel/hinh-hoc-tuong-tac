@@ -20,7 +20,9 @@ var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.do
 var O0 = [0, 0];
 function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
 function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
-function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
 function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
 function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
 var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
@@ -50,7 +52,7 @@ KhungPhang.tao({
 
   lamSang: [
     { id: 'cung', nhan: 'Cung n°', mau: MC, hien: laChe('cung'), ghiChu: function (P, ts) { return 'Độ dài cung $n^\\circ$ của đường tròn bán kính $R$: <b>$l = \\dfrac{\\pi R n}{180}$</b> $= \\dfrac{\\pi \\cdot ' + soL(ts.R) + ' \\cdot ' + soL(ts.n, 0) + '}{180} \\approx ' + soL(Math.PI * ts.R * ts.n / 180) + '$ <b>cm</b>.'; } },
-    { id: 'chuVi', nhan: 'Cả đường tròn', mau: '#475569', hien: laChe('cung'), ghiChu: function (P, ts) { return 'Độ dài đường tròn (chu vi): <b>$C = 2\\pi R$</b> $\\approx ' + soL(2 * Math.PI * ts.R) + '$ cm ứng với $360^\\circ$; mỗi $1^\\circ$ ứng với $\\dfrac{2\\pi R}{360} = \\dfrac{\\pi R}{180}$.'; } },
+    { id: 'chuVi', nhan: 'Cả đường tròn', mau: '#1D4ED8', hien: laChe('cung'), ghiChu: function (P, ts) { return 'Độ dài đường tròn (chu vi): <b>$C = 2\\pi R$</b> $\\approx ' + soL(2 * Math.PI * ts.R) + '$ cm ứng với $360^\\circ$; mỗi $1^\\circ$ ứng với $\\dfrac{2\\pi R}{360} = \\dfrac{\\pi R}{180}$.'; } },
     { id: 'quat', nhan: 'Hình quạt n°', mau: MQ, hien: laChe('quat'), ghiChu: function (P, ts) { return 'Diện tích hình quạt tròn bán kính $R$, cung $n^\\circ$: <b>$S = \\dfrac{\\pi R^2 n}{360} \\approx ' + soL(Math.PI * ts.R * ts.R * ts.n / 360) + '\\text{ cm}^2$</b> (hay $S = \\dfrac{l \\cdot R}{2}$).'; } },
     { id: 'hinhTron', nhan: 'Cả hình tròn', mau: '#475569', hien: laChe('quat'), ghiChu: function (P, ts) { return 'Diện tích hình tròn <b>$S = \\pi R^2$</b> $\\approx ' + soL(Math.PI * ts.R * ts.R) + '\\text{ cm}^2$ ứng với $360^\\circ$. Hình quạt $' + soL(ts.n, 0) + '^\\circ$ chiếm $\\dfrac{' + soL(ts.n, 0) + '}{360}$ hình tròn.'; } },
     { id: 'vanh', nhan: 'Hình vành khuyên', mau: MV, hien: laChe('vanh'), ghiChu: function (P, ts) { var r = Math.min(ts.r, ts.R - 0.5); return 'Hình vành khuyên là phần nằm giữa hai đường tròn đồng tâm: <b>$S = \\pi(R^2 - r^2)$</b> $= \\pi(' + soL(ts.R) + '^2 - ' + soL(r) + '^2) \\approx ' + soL(Math.PI * (ts.R * ts.R - r * r)) + '\\text{ cm}^2$.'; } },
@@ -68,7 +70,8 @@ KhungPhang.tao({
     var R = ts.R, n = ts.n * Math.PI / 180, A = diemDT(O0, R, 0);
     if (ts.che === 'cung') {
       var td = g.hoat('duoi');
-      g.duongTron(O0, R, { rong: g.bat('chuVi') ? 4 : 2, mau: g.bat('chuVi') ? '#475569' : '#94A3B8', to: '#93C5FD', doMoTo: 0.12 });
+      g.duongTron(O0, R, { rong: 2, mau: '#94A3B8', to: '#93C5FD', doMoTo: 0.12 });
+      if (g.bat('chuVi')) { g.duongTron(O0, R, { sang: 'chuVi', rongSang: 7, to: false }); g.chu(diemDT(O0, R + 0.55, -2.4), 'C = 2πR ≈ ' + so(2 * Math.PI * R) + ' cm', { mau: '#1D4ED8' }); }
       g.doan(O0, A, { rong: 2 }); g.doan(O0, diemDT(O0, R, n), { rong: 2 });
       g.goc(A, O0, diemDT(O0, R, n), { mau: MQ, r: 30, nhan: so(ts.n, 0) + '°', lon: ts.n > 180, vuong: false });
       if (td !== null) {

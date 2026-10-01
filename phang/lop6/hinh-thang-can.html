@@ -21,14 +21,31 @@
    Nhận dạng, chu vi, diện tích và tính đối xứng (1 trục, không có tâm).
    Đáy lớn AB nằm ngang (A cố định, kéo B), kéo D; C đối xứng với D.
    ===================================================================== */
-var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung, CV = KhungPhang.chuVi;
 var soL = KhungPhang.soL;
+var MAU_BEN = '#2563EB', MAU_CHEO = M.duongCheo, MAU_G1 = '#16A34A', MAU_G2 = '#EA580C';
 function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, D: D, C: [A[0] + B[0] - D[0], D[1]], Hc: [D[0], A[1]] }; }
 function soDo(P) { var q = dinh(P); return { a: H.dai(q.A, q.B), b: H.dai(q.D, q.C), h: q.D[1] - q.A[1], ben: H.dai(q.A, q.D) }; }
 function thongTin(P) {
   var q = dinh(P);
   return { ten: 'Hình thang cân', ds: [q.A, q.B, q.C, q.D], tam: null, tamThu: [(q.A[0] + q.B[0]) / 2, (q.A[1] + q.D[1]) / 2],
     truc: [[H.trung(q.A, q.B), H.trung(q.D, q.C)]] };
+}
+
+function goc(P) { var q = dinh(P), A = H.gocDo(q.B, q.A, q.D); return { A: A, D: 180 - A }; }
+function tenDinh(g, q) { g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] }); }
+// Tình huống SGK: gấp đôi tờ giấy hình chữ nhật, cắt chéo một nhát, mở ra được hình thang cân
+function cfgGapCat(P) {
+  var q = dinh(P), xm = (q.A[0] + q.B[0]) / 2, x0 = Math.min(q.A[0], q.D[0]), x1 = 2 * xm - x0, y0 = q.A[1], y1 = q.D[1];
+  var bo = q.D[0] >= q.A[0] ? [q.A, q.D, [x0, y1]] : [q.A, [x0, y0], q.D];
+  return {
+    giay: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]],
+    gap: [{ A: [xm, y0 - 1], B: [xm, y1 + 1], dau: -1 }],
+    cat: [q.A, q.D], giu: [q.A, [xm, y0], [xm, y1], q.D], bo: bo,
+    nep: [[[xm, y0], [xm, y1]]],
+    ghi: ['Lấy một tờ giấy hình chữ nhật.', 'Gấp đôi tờ giấy theo chiều dọc…', 'Cắt chéo một nhát từ mép dưới lên mép trên (đường nét đứt màu đỏ).', 'Bỏ phần giấy thừa.', 'Mở tờ giấy ra…',
+      'Ta được <b>hình thang cân $ABCD$</b>: hai cạnh bên $AD$, $BC$ trùng khít nhau khi gấp nên <b>bằng nhau</b>; nếp gấp là <b>trục đối xứng</b>.'],
+  };
 }
 
 KhungPhang.tao({
@@ -42,13 +59,23 @@ KhungPhang.tao({
     D: function (p, P) { var gi = (P.A[0] + P.B[0]) / 2; return [Math.min(Math.max(p[0], P.A[0] - 3), gi - 0.25), Math.max(P.A[1] + 0.5, p[1])]; },
   },
   hopChon: [DX.hopChonVet],
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
 
-  lamSang: DX.lamSang(thongTin).concat([
-    { id: 'day', nhan: 'Hai đáy a, b', mau: M.chieuDai, ghiChu: function (P) { var s = soDo(P); return 'Đáy lớn $a = ' + soL(s.a) + '$ cm, đáy nhỏ $b = ' + soL(s.b) + '$ cm.'; } },
+  lamSang: [
+    { id: 'day', nhan: 'Hai đáy a, b', mau: M.chieuDai, ghiChu: function (P) { var s = soDo(P); return '<b>Hai đáy song song</b>: $AB \\parallel CD$; đáy lớn $a = ' + soL(s.a) + '$ cm, đáy nhỏ $b = ' + soL(s.b) + '$ cm.'; } },
+    { id: 'ben', nhan: 'Hai cạnh bên', mau: MAU_BEN, ghiChu: function (P) { return '<b>Hai cạnh bên bằng nhau</b>: $AD = BC \\approx ' + soL(soDo(P).ben) + '$ cm.'; } },
+    { id: 'cheo', nhan: 'Đường chéo', mau: MAU_CHEO, ghiChu: function (P) { var q = dinh(P); return '<b>Hai đường chéo bằng nhau</b>: $AC = BD \\approx ' + soL(H.dai(q.A, q.C)) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Góc kề một đáy', mau: MAU_G1, ghiChu: function (P) { var gg = goc(P); return '<b>Hai góc kề một đáy bằng nhau</b>: $\\widehat{A} = \\widehat{B} \\approx ' + soL(gg.A, 0) + '^\\circ$; $\\widehat{C} = \\widehat{D} \\approx ' + soL(gg.D, 0) + '^\\circ$.'; } },
     { id: 'cao', nhan: 'Chiều cao DH', mau: M.chieuCao, ghiChu: function (P) { return '$DH$ vuông góc với hai đáy, là <b>chiều cao</b>: $h = ' + soL(soDo(P).h) + '$ cm.'; } },
-  ]),
+  ].concat(CV.lamSang({
+    cv: function (P) { var s = soDo(P); return 'Chu vi = tổng độ dài bốn cạnh $= a + b + 2 \\cdot c \\approx \\mathbf{' + soL(s.a + s.b + 2 * s.ben) + '}$ <b>cm</b> (hai cạnh bên bằng nhau: $AD = BC = c$).'; },
+    dt: function (P) { var s = soDo(P); return 'Diện tích = (đáy lớn + đáy nhỏ) × chiều cao : 2 $= (' + soL(s.a) + ' + ' + soL(s.b) + ') \\cdot ' + soL(s.h) + ' : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ <b>cm²</b>.'; },
+  })).concat(DX.lamSang(thongTin)),
 
-  hoatHinh: DX.hoatHinh(thongTin).concat([
+  hoatHinh: [
+    { id: 'gapCat', nhan: 'Gấp, cắt giấy thành hình thang cân', thoiGian: 8000, anDiem: true,
+      vuaKhung: function (P) { var c = cfgGapCat(P); return c.giay.concat([[c.giay[0][0] - 2, c.giay[0][1]]]); },
+      ghiChu: function (P, ts, t) { return DX.gapCatGhi(t, cfgGapCat(P)); } },
     { id: 'ghep', nhan: 'Ghép hai hình thang', thoiGian: 6000,
       vuaKhung: function (P) { var q = dinh(P), s = soDo(P); return [[q.B[0] + s.b, q.A[1]], [q.C[0] + s.a, q.C[1]]]; },
       ghiChu: function (P, ts, t) {
@@ -57,10 +84,15 @@ KhungPhang.tao({
         if (t < 0.95) return 'Quay hình thang thứ hai nửa vòng quanh trung điểm của $BC$…';
         return 'Hai hình thang ghép thành <b>hình bình hành</b> có đáy $a + b = ' + soL(s.a + s.b) + '$ cm, chiều cao $h = ' + soL(s.h) + '$ cm.<br>Vậy $S_{\\text{thang}} = (a + b) \\cdot h : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ <b>cm²</b>.';
       } },
-  ]),
+  ].concat(DX.hoatHinh(thongTin)),
 
   ve: function (g, P, ts) {
-    var q = dinh(P), f = thongTin(P), t = g.hoat('ghep'), ds = f.ds;
+    var q = dinh(P), f = thongTin(P), t = g.hoat('ghep'), ds = f.ds, tg = g.hoat('gapCat');
+    if (tg !== null) {
+      DX.gapCat(g, tg, cfgGapCat(P));
+      if (tg >= 0.999) { g.doan(q.A, q.D, { mau: MAU_BEN, rong: 3.5, kyHieu: 1 }); g.doan(q.B, q.C, { mau: MAU_BEN, rong: 3.5, kyHieu: 1 }); tenDinh(g, q); }
+      return;
+    }
     if (t !== null) {
       var N = H.trung(q.B, q.C), e = H.em(H.doan(t, 0.18, 0.9));
       g.daGiac(ds, { to: '#93C5FD', doMoTo: 0.65 });
@@ -80,20 +112,54 @@ KhungPhang.tao({
     }
     DX.ve(g, f, ts);
     if (hoat) return;
-    g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)), { benTrai: false, sang: 'day', t: 0.7 });
-    g.nhanDo(q.D, q.C, 'b = ' + so(H.dai(q.D, q.C)), { sang: 'day' });
+    var gg = goc(P);
+    if (g.bat('day')) { g.songSong(q.A, q.B, 1, M.chieuDai, 0.3); g.songSong(q.D, q.C, 1, M.chieuDai, 0.3); }
+    if (g.bat('ben')) { g.doan(q.A, q.D, { sang: 'ben', kyHieu: 1 }); g.doan(q.B, q.C, { sang: 'ben', kyHieu: 1 }); }
+    if (g.bat('cheo')) {
+      g.doan(q.A, q.C, { sang: 'cheo', rongSang: 4 }); g.doan(q.B, q.D, { sang: 'cheo', rongSang: 4 });
+      g.nhanDo(q.A, q.B, 'AC = BD ≈ ' + so(H.dai(q.A, q.C)) + ' cm', { sang: 'cheo', benTrai: false, kc: 62 });
+    }
+    if (g.bat('goc')) {
+      g.goc(q.B, q.A, q.D, { mau: MAU_G1, r: 26, nhan: so(gg.A, 0) + '°', kyHieu: 1, xaNhan: 18 });
+      g.goc(q.C, q.B, q.A, { mau: MAU_G1, r: 26, nhan: so(gg.A, 0) + '°', kyHieu: 1, xaNhan: 18 });
+      g.goc(q.D, q.C, q.B, { mau: MAU_G2, r: 22, nhan: so(gg.D, 0) + '°', kyHieu: 2, xaNhan: 18 });
+      g.goc(q.A, q.D, q.C, { mau: MAU_G2, r: 22, nhan: so(gg.D, 0) + '°', kyHieu: 2, xaNhan: 18 });
+    }
+    var s = soDo(P), tA = '\\textcolor{' + M.chieuDai + '}{a}', tB = '\\textcolor{' + M.chieuDai + '}{b}', tH = '\\textcolor{' + M.chieuCao + '}{h}';
+    CV.ve(g, { ds: ds,
+      canh: [{ A: q.A, B: q.B, nhan: 'a = ' + so(s.a) }, { A: q.B, B: q.C, nhan: 'c ≈ ' + so(s.ben) }, { A: q.C, B: q.D, nhan: 'b = ' + so(s.b) }, { A: q.D, B: q.A, nhan: 'c ≈ ' + so(s.ben) }],
+      cv: ['C = a + b + 2 \\cdot c', '\\phantom{C} \\approx ' + soL(s.a) + ' + ' + soL(s.b) + ' + 2 \\cdot ' + soL(s.ben), '\\phantom{C} \\approx \\mathbf{' + soL(s.a + s.b + 2 * s.ben) + '}\\ \\text{cm}'],
+      dt: ['S = (' + tA + ' + ' + tB + ') \\cdot ' + tH + ' : 2', '\\phantom{S} = (' + soL(s.a) + ' + ' + soL(s.b) + ') \\cdot ' + soL(s.h) + ' : 2', '\\phantom{S} = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}\\ \\text{cm}^2'],
+      phuDt: function (g, e) {
+        if (e <= 0) return;
+        g.doan(q.A, q.B, { mau: M.chieuDai, rong: 5 }); g.doan(q.D, q.C, { mau: M.chieuDai, rong: 5 });
+        if (!g.bat('cao')) { g.doan(q.D, H.lerp(q.D, q.Hc, e), { mau: M.chieuCao, rong: 4 }); if (e >= 1) { g.goc(q.D, q.Hc, q.B, { mau: M.chieuCao, nhan: false, r: 12 }); g.nhanDo(q.Hc, q.D, 'h = ' + so(s.h), { mau: M.chieuCao, kc: 30 }); } }
+      } });
+    if (!g.bat('cv')) {
+      g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)), { benTrai: false, sang: 'day', t: 0.7 });
+      g.nhanDo(q.D, q.C, 'b = ' + so(H.dai(q.D, q.C)), { sang: 'day' });
+    }
     g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
   },
 
   congThuc: function (P, ts, C) {
     var s = soDo(P);
     return [
-      { id: null, ten: 'Chu vi', bt: '$C = ' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ' + 2 \\cdot AD \\approx \\mathbf{' + soL(s.a + s.b + 2 * s.ben) + '}$ (cm)' },
-      { id: 'cao', ten: 'Diện tích', bt: '$S = (' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ') \\cdot ' + C.m('cao', 'h') + ' : 2 = (' + soL(s.a) + ' + ' + soL(s.b) + ') \\cdot ' + soL(s.h) + ' : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ (cm²)' },
+      { id: 'cv', ten: 'Chu vi', bt: '$C = ' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ' + 2 \\cdot AD \\approx \\mathbf{' + soL(s.a + s.b + 2 * s.ben) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích', bt: '$S = (' + C.m('day', 'a') + ' + ' + C.m('day', 'b') + ') \\cdot ' + C.m('cao', 'h') + ' : 2 = (' + soL(s.a) + ' + ' + soL(s.b) + ') \\cdot ' + soL(s.h) + ' : 2 = \\mathbf{' + soL((s.a + s.b) * s.h / 2) + '}$ (cm²)' },
     ];
   },
-  nhanXet: function (P) { return DX.nhanXet(thongTin(P)); },
-  khungNhin: function (P) { return [dinh(P).C]; },
+  nhanXet: function (P) {
+    var q = dinh(P), s = soDo(P), gg = goc(P);
+    function dong(mau, td, ct) { return '<div style="margin:3px 0 2px">• <b style="color:' + mau + '">' + td + '</b>:<br><span style="padding-left:14px">' + ct + '</span></div>'; }
+    return '<b>Hình thang cân $ABCD$</b> có:' +
+      dong(MAU_BEN, 'Hai cạnh bên bằng nhau', '$AD = BC \\approx ' + soL(s.ben) + '$ cm') +
+      dong(MAU_CHEO, 'Hai đường chéo bằng nhau', '$AC = BD \\approx ' + soL(H.dai(q.A, q.C)) + '$ cm') +
+      dong(M.chieuDai, 'Hai cạnh đáy song song', '$AB \\parallel CD$') +
+      dong(MAU_G1, 'Hai góc kề một đáy bằng nhau', '$\\widehat{A} = \\widehat{B} \\approx ' + soL(gg.A, 0) + '^\\circ$; $\\widehat{C} = \\widehat{D} \\approx ' + soL(gg.D, 0) + '^\\circ$') +
+      '<div style="height:4px"></div>' + DX.nhanXet(thongTin(P));
+  },
+  khungNhin: function (P, ts, bat) { var q = dinh(P), ds = [q.A, q.B, q.C, q.D]; return [q.C].concat(CV.khungNhin(ds, bat)); },
 });
 </script>
 </body>

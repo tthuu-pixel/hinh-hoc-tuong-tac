@@ -18,6 +18,11 @@
   .gioi-thieu .thuong-hieu { color: #fff; }
   .gioi-thieu .thuong-hieu small { color: rgba(255,255,255,.8); }
   .gioi-thieu h1 { font-size: clamp(26px, 2.6vw, 40px); line-height: 1.18; margin: 0 0 14px; font-weight: 800; letter-spacing: .01em; max-width: 17em; position: relative; }
+  .gioi-thieu h1 .thuong-hieu { display: block; font-size: clamp(48px, 5.4vw, 80px); line-height: 1; letter-spacing: -.02em; margin-bottom: 8px; }
+  .gioi-thieu h1 .thuong-hieu b { color: #FDE68A; font-weight: 800; }
+  .gioi-thieu h1 .phu-de { display: block; font-size: clamp(24px, 2.4vw, 36px); font-weight: 700; }
+  .gioi-thieu .khau-hieu { display: flex; align-items: center; gap: 12px; font-size: clamp(17px, 1.5vw, 21px); font-weight: 600; font-style: italic; color: #FDE68A; margin: 0 0 14px; }
+  .gioi-thieu .khau-hieu::before { content: ''; width: 36px; height: 2px; background: #FDE68A; border-radius: 2px; }
   .gioi-thieu p, .diem-noi, .tac-gia { position: relative; }
   .thuong-hieu { position: relative; }
   /* Tranh minh hoạ các mô hình (giữa phần giới thiệu) */
@@ -106,6 +111,7 @@
       </svg>
     </div>
     <h1 id="ten-lon"></h1>
+    <p class="khau-hieu" id="khau-hieu"></p>
     <p>Xoay, phóng to, trải phẳng và dựng hình bằng thước, compa để thấy rõ từng cạnh, từng góc, từng công thức.</p>
     <div class="diem-noi">
       <span>Xoay 360°</span><span>Làm sáng từng yếu tố</span><span>Trải hình</span><span>Dựng hình từng bước</span><span>Lớp 6 – 9</span>
@@ -153,7 +159,15 @@
   document.title = 'Đăng nhập · ' + (CH.TEN_NGAN || CH.TEN_SAN_PHAM);
   document.getElementById('logo').outerHTML = GiaoDien.LOGO;
   document.getElementById('ten-sp').innerHTML = GiaoDien.thoat(CH.KHAU_HIEU || '') + '<small>' + GiaoDien.thoat(CH.NAM_HOC ? 'Năm học ' + CH.NAM_HOC : '') + '</small>';
-  document.getElementById('ten-lon').textContent = CH.TEN_SAN_PHAM;
+  var th = CH.THUONG_HIEU || '', tl = document.getElementById('ten-lon');
+  if (th) {
+    // "GeoLab": tô màu phần sau chữ hoa thứ hai (Geo|Lab)
+    var m = th.match(/^([A-ZÀ-Ỹ][^A-ZÀ-Ỹ]*)(.*)$/);
+    tl.innerHTML = '<span class="thuong-hieu">' + (m && m[2] ? GiaoDien.thoat(m[1]) + '<b>' + GiaoDien.thoat(m[2]) + '</b>' : GiaoDien.thoat(th)) + '</span>' +
+      '<span class="phu-de">' + GiaoDien.thoat(CH.PHU_DE || '') + '</span>';
+  } else tl.textContent = CH.TEN_SAN_PHAM;
+  var kh = document.getElementById('khau-hieu');
+  if (CH.SLOGAN) kh.textContent = CH.SLOGAN; else kh.remove();
   var nhom = {}, thuTu = [];
   (CH.TAC_GIA || []).forEach(function (t) { if (!nhom[t.vaiTro]) { nhom[t.vaiTro] = []; thuTu.push(t.vaiTro); } nhom[t.vaiTro].push(t.ten); });
   var tg = thuTu.map(function (k) { return GiaoDien.thoat(k) + ': <b>' + nhom[k].map(GiaoDien.thoat).join('</b> và <b>') + '</b>'; });

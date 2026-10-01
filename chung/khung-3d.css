@@ -160,3 +160,17 @@ body.trang-mo-hinh { overflow: hidden; }
 .ct .bt { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
 .mh-ghi-chu .katex, .nhan-xet .katex { font-size: 1.08em; }
 .ct .ten .katex { font-size: 1em; }
+
+/* Nút lựa chọn có màu riêng (ví dụ: mỗi trục đối xứng một màu) */
+.lua-chon button.co-mau { display: inline-flex; align-items: center; gap: 6px; }
+.lua-chon button.co-mau::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--mau-lc); flex: none; }
+.lua-chon button.co-mau.bat { background: var(--mau-lc); border-color: var(--mau-lc); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--mau-lc) 25%, transparent); }
+.lua-chon button.co-mau.bat::before { background: #fff; }
+/* Dòng công thức bấm được để nhấn mạnh trên hình */
+.ct.bam-duoc { cursor: pointer; transition: background .15s, transform .1s; }
+.ct.bam-duoc:hover { background: color-mix(in srgb, var(--mau) 7%, #fff); }
+.ct.bam-duoc:active { transform: scale(.99); }
+.ct.bam-duoc .ten::after { content: ' · bấm để xem trên hình'; font-weight: 500; opacity: .7; }
+.ct.bam-duoc.bat .ten::after { content: ' · đang hiện trên hình'; }
+/* Nút hoạt hình có tên dài: xuống dòng, không tràn khung */
+.hoat-hinh .nut { white-space: normal; text-align: left; max-width: 100%; height: auto; min-height: 42px; line-height: 1.3; }

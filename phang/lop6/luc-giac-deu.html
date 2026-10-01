@@ -21,15 +21,38 @@
    Nhận dạng, chu vi và tính đối xứng (6 trục, có tâm).
    Kéo tâm O để dời hình, kéo A để đổi độ dài cạnh và xoay hình.
    ===================================================================== */
-var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung, CV = KhungPhang.chuVi;
 var soL = KhungPhang.soL;
 var TEN = ['A', 'B', 'C', 'D', 'E', 'F'];
+var MAU_CANH = '#2563EB', MAU_GOC = '#16A34A', MAU_CHEO = '#C026D3', MAU_MANH = ['#60A5FA', '#F59E0B', '#34D399', '#F472B6', '#A78BFA', '#FB923C'];
 function dinh(P) { return TEN.map(function (_, k) { return H.xoay(P.A, P.O, k * Math.PI / 3); }); }
 function thongTin(P) {
   var d = dinh(P), O = P.O, truc = [];
   for (var i = 0; i < 3; i++) truc.push([d[i], d[i + 3]]);                         // qua hai đỉnh đối diện
   for (var j = 0; j < 3; j++) truc.push([H.trung(d[j], d[j + 1]), H.trung(d[j + 3], d[(j + 4) % 6])]);   // qua trung điểm hai cạnh đối
   return { ten: 'Lục giác đều', ds: d, tam: O, truc: truc };
+}
+
+// Cắt theo ba đường chéo chính được 6 tam giác đều, tách ra, đổi chỗ rồi ghép lại
+function veCat(g, P, t) {
+  var d = dinh(P), O = P.O, a = H.dai(O, P.A);
+  var eCat = H.doan(t, 0.03, 0.2), eTach = H.em(H.doan(t, 0.22, 0.4)), eXoay = H.em(H.doan(t, 0.44, 0.7)), eGhep = H.em(H.doan(t, 0.74, 0.94));
+  var xa = 0.4 * a * (eTach - eGhep), goc = Math.PI / 3 * eXoay;
+  g.daGiac(d, { to: 'none', mauNet: '#CBD5E1', rong: 1.5, dut: '5 5' });
+  d.forEach(function (p, k) {
+    var q = d[(k + 1) % 6], giua = H.trung(p, q), huong = H.nhan(H.tru(giua, O), 1 / H.dai(giua, O));
+    var ds = [O, p, q].map(function (x) { return H.xoay(H.cong(x, H.nhan(huong, xa)), O, goc); });
+    g.daGiac(ds, { to: t < 0.2 ? '#FEF3C7' : MAU_MANH[k], doMoTo: t < 0.2 ? 0.95 : 0.75, mauNet: '#B45309', rong: 2 });
+  });
+  if (t < 0.22) [[0, 3], [1, 4], [2, 5]].forEach(function (c, i) {
+    var e = Math.max(0, Math.min(1, eCat * 3 - i));
+    if (e > 0) g.doan(d[c[0]], H.lerp(d[c[0]], d[c[1]], e), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+  });
+  if (t >= 0.97) {
+    d.forEach(function (p, k) { g.kyHieu(p, d[(k + 1) % 6], 1, MAU_CANH); g.kyHieu(O, p, 1, MAU_CANH); });
+    g.diem(O, 'O', { huong: [0.7, -0.9], mau: MAU_CHEO });
+  }
+  if (t < 0.22 || t >= 0.97) d.forEach(function (p, k) { g.diem(p, TEN[k], { huong: H.tru(p, O) }); });
 }
 
 KhungPhang.tao({
@@ -39,25 +62,73 @@ KhungPhang.tao({
   buocLuoi: 0.5,
   luaChon: [DX.luaChonTruc(6)],
   hopChon: [DX.hopChonVet],
-  lamSang: DX.lamSang(thongTin),
-  hoatHinh: DX.hoatHinh(thongTin),
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
+  lamSang: [
+    { id: 'canh', nhan: 'Cạnh', mau: MAU_CANH,
+      ghiChu: function (P) { return 'Lục giác đều có <b>sáu cạnh bằng nhau</b>: $AB = BC = CD = DE = EF = FA = ' + soL(H.dai(P.O, P.A)) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Góc', mau: MAU_GOC,
+      ghiChu: 'Lục giác đều có <b>sáu góc bằng nhau</b>, mỗi góc bằng $120^\\circ$.' },
+    { id: 'cheo', nhan: 'Đường chéo', mau: MAU_CHEO,
+      ghiChu: function (P) { return '<b>Ba đường chéo chính</b> (nét liền) $AD$, $BE$, $CF$ bằng nhau và bằng $2a = ' + soL(2 * H.dai(P.O, P.A)) + '$ cm; chúng cắt nhau tại tâm $O$. Các đường chéo phụ vẽ nét đứt.'; } },
+  ].concat(CV.lamSang({
+    cv: function (P) { var a = H.dai(P.O, P.A); return 'Lục giác đều có sáu cạnh bằng nhau: $C = 6 \\cdot a = 6 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(6 * a) + '}$ <b>cm</b>.'; },
+    dt: function (P) { var a = H.dai(P.O, P.A), h = a * Math.sqrt(3) / 2; return 'Ba đường chéo chính chia lục giác đều thành <b>6 tam giác đều</b> bằng nhau (cạnh $a$, chiều cao $h = OH \\approx ' + soL(h) + '$ cm). Vậy $S = 6 \\cdot \\dfrac{a \\cdot h}{2} \\approx 6 \\cdot \\dfrac{' + soL(a) + ' \\cdot ' + soL(h) + '}{2} \\approx \\mathbf{' + soL(3 * a * h) + '}$ <b>cm²</b>.'; },
+  })).concat(DX.lamSang(thongTin)),
+  hoatHinh: [
+    { id: 'cat', nhan: 'Cắt theo ba đường chéo chính rồi ghép lại', thoiGian: 9000, anDiem: true,
+      vuaKhung: function (P) { var a = H.dai(P.O, P.A); return [H.cong(P.O, [-1.6 * a, -1.6 * a]), H.cong(P.O, [1.6 * a, 1.6 * a])]; },
+      ghiChu: function (P, ts, t) {
+        if (t < 0.22) return 'Cắt lục giác đều theo ba đường chéo chính $AD$, $BE$, $CF$.';
+        if (t < 0.42) return 'Ta được <b>6 tam giác đều</b> bằng nhau (mỗi tam giác có ba cạnh bằng $a$).';
+        if (t < 0.72) return 'Đổi chỗ các mảnh cho nhau…';
+        if (t < 0.97) return 'Ghép các mảnh lại…';
+        return 'Sáu tam giác đều ghép khít lại thành <b>lục giác đều</b>. Vì vậy $OA = OB = … = AB = a$ và ba đường chéo chính bằng nhau, bằng $2a$.';
+      } },
+  ].concat(DX.hoatHinh(thongTin)),
 
   ve: function (g, P, ts) {
-    var f = thongTin(P), d = f.ds, hoat = DX.dangHoat(g);
+    var f = thongTin(P), d = f.ds, hoat = DX.dangHoat(g), O = P.O, tc = g.hoat('cat');
+    if (tc !== null) { veCat(g, P, tc); return; }
     if (!hoat) g.daGiac(d, {});
     DX.ve(g, f, ts);
     if (hoat) return;
-    g.nhanDo(d[0], d[1], 'a = ' + so(H.dai(d[0], d[1])) + ' cm', { benTrai: false });
+    var a = H.dai(d[0], d[1]), hO = a * Math.sqrt(3) / 2;
+    if (g.bat('cheo')) {
+      [[0, 2], [0, 4], [1, 3], [1, 5], [2, 4], [3, 5]].forEach(function (c) { g.doan(d[c[0]], d[c[1]], { mau: MAU_CHEO, rong: 1.8, dut: '6 5', doMo: 0.75 }); });
+      [[0, 3], [1, 4], [2, 5]].forEach(function (c) { g.doan(d[c[0]], d[c[1]], { sang: 'cheo', rongSang: 4.5 }); });
+      g.nhanDo(d[3], d[0], 'AD = BE = CF = ' + so(2 * a) + ' cm', { sang: 'cheo', t: 0.5, kc: 62 + 1.73 * a * g.tiLe() / 2, benTrai: false });
+      g.diem(O, 'O', { mau: MAU_CHEO, huong: [0.7, -0.9] });
+    }
+    if (g.bat('canh')) d.forEach(function (p, k) {
+      var q = d[(k + 1) % 6];
+      g.doan(p, q, { sang: 'canh', kyHieu: 1 });
+      g.nhanDo(p, q, TEN[k] + TEN[(k + 1) % 6] + ' = ' + so(a), { sang: 'canh', benTrai: false, kc: 'tu' });
+    });
+    if (g.bat('goc')) d.forEach(function (p, k) { g.goc(d[(k + 5) % 6], p, d[(k + 1) % 6], { sang: 'goc', r: 22, nhan: '120°', xaNhan: 14 }); });
+    CV.ve(g, { ds: d, canh: d.map(function (p, k) { return { A: p, B: d[(k + 1) % 6], nhan: so(a) + ' cm' }; }),
+      cv: ['C = AB + BC + CD + DE + EF + FA', '\\phantom{C} = 6 \\cdot a = 6 \\cdot ' + soL(a), '\\phantom{C} = \\mathbf{' + soL(6 * a) + '}\\ \\text{cm}'],
+      dt: ['S = 6 \\cdot S_{OAB} = 6 \\cdot \\frac{a \\cdot h}{2}', '\\phantom{S} \\approx 6 \\cdot \\frac{' + soL(a) + ' \\cdot ' + soL(hO) + '}{2}', '\\phantom{S} \\approx \\mathbf{' + soL(3 * a * hO) + '}\\ \\text{cm}^2'],
+      phuDt: function (g, e) { if (e <= 0) return; d.forEach(function (p) { g.doan(O, p, { mau: '#B45309', rong: 2, doMo: e }); }); g.daGiac([O, d[0], d[1]], { to: '#F59E0B', doMoTo: 0.45 * e, khongVien: true }); var Hm = H.trung(d[0], d[1]); g.doan(O, Hm, { mau: '#B45309', rong: 2.5, dut: '6 4' }); g.goc(d[1], Hm, O, { mau: '#B45309', r: 11, vuong: true, nhan: false }); g.diem(Hm, 'H', { r: 3.5, mau: '#B45309', huong: H.tru(Hm, O) }); g.nhanDo(O, Hm, 'h ≈ ' + so(hO), { mau: '#B45309', benTrai: true, kc: 'tu' }); } });
+    if (!g.bat('cv') && !g.bat('canh') && !g.bat('dt')) g.nhanDo(d[0], d[1], 'a = ' + so(a) + ' cm', { benTrai: false });
     d.forEach(function (p, k) { g.diem(p, TEN[k], { huong: H.tru(p, P.O) }); });
     if (!g.bat('tam') && !g.bat('diemTam')) g.diem(P.O, 'O', { r: 3, huong: [0.8, -0.8], mau: '#94A3B8' });
   },
 
   congThuc: function (P) {
     var a = H.dai(P.O, P.A);
-    return [{ id: null, ten: 'Chu vi lục giác đều cạnh a', bt: '$C = 6 \\cdot a = 6 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(6 * a) + '}$ (cm)' }];
+    return [{ id: 'cv', ten: 'Chu vi lục giác đều cạnh a', bt: '$C = 6 \\cdot a = 6 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(6 * a) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích (6 tam giác đều, h = OH đo được)', bt: '$S = 6 \\cdot \\dfrac{a \\cdot h}{2} \\approx \\mathbf{' + soL(3 * a * a * Math.sqrt(3) / 2) + '}$ (cm²)' }];
   },
-  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo O để dời hình, kéo A để đổi cỡ và xoay.</span>'; },
-  khungNhin: function (P) { return dinh(P); },
+  nhanXet: function (P) {
+    var a = H.dai(P.O, P.A);
+    function dong(mau, td, ct) { return '<div style="margin:3px 0 2px">• <b style="color:' + mau + '">' + td + '</b>:<br><span style="padding-left:14px">' + ct + '</span></div>'; }
+    return '<b>Lục giác đều $ABCDEF$</b> có:' +
+      dong(MAU_CANH, 'Sáu cạnh bằng nhau', '$AB = BC = CD = DE = EF = FA = ' + soL(a) + '$ cm') +
+      dong(MAU_GOC, 'Sáu góc bằng nhau, mỗi góc bằng $120^\\circ$', '$\\widehat{A} = \\widehat{B} = \\widehat{C} = \\widehat{D} = \\widehat{E} = \\widehat{F} = 120^\\circ$') +
+      dong(MAU_CHEO, 'Ba đường chéo chính bằng nhau', '$AD = BE = CF = ' + soL(2 * a) + '$ cm') +
+      '<div style="height:4px"></div>' + DX.nhanXet(thongTin(P)) + '<br><span class="dung">Kéo O để dời hình, kéo A để đổi cỡ và xoay.</span>';
+  },
+  khungNhin: function (P, ts, bat) { var d = dinh(P); return d.concat(CV.khungNhin(d, bat)); },
 });
 </script>
 </body>

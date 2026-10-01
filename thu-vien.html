@@ -90,7 +90,7 @@
   document.getElementById('loi-chao').textContent = 'Xin chào ' + (p.hoTen || '') + '! Chọn một hình để bắt đầu khám phá.';
   var nhom = {}; (CH.TAC_GIA || []).forEach(function (t) { (nhom[t.vaiTro] = nhom[t.vaiTro] || []).push(t.ten); });
   var tg = Object.keys(nhom).map(function (k) { return k + ': ' + nhom[k].join(', '); }).join(' · ');
-  document.getElementById('chan').innerHTML = [CH.TEN_SAN_PHAM, CH.DON_VI, tg].filter(Boolean).map(GiaoDien.thoat).join('<br>');
+  document.getElementById('chan').innerHTML = [CH.TEN_SAN_PHAM + (CH.SLOGAN ? ' · ' + CH.SLOGAN : ''), CH.DON_VI, tg].filter(Boolean).map(GiaoDien.thoat).join('<br>');
 
   var loc = { nhom: '', lop: '', tim: '' };
   try { var cu = JSON.parse(localStorage.getItem('mh3d_loc')); if (cu) { loc.nhom = cu.nhom || ''; loc.lop = cu.lop || ''; } } catch (e) {}

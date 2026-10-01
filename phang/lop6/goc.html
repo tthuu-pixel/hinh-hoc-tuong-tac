@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Góc</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   GÓC — Toán 6
+   Tia, hai tia chung gốc tạo thành góc, đỉnh – cạnh – góc,
+   đo góc và vẽ góc có số đo cho trước bằng thước đo góc.
+   Kéo O để dời góc; kéo A, B (trên hai cạnh) để đổi góc — số đo làm tròn tới độ.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, D = KhungPhang.dung;
+var soL = KhungPhang.soL;
+var R = 4, MAU_DINH = '#DC2626', MAU_CANH = '#2563EB', MAU_GOC = '#16A34A';
+function DO(d) { return d * Math.PI / 180; }
+// Điểm trên cạnh luôn cách O một khoảng R, góc làm tròn tới 1°
+function lenCanh(p, P) { var a = Math.round(Math.atan2(p[1] - P.O[1], p[0] - P.O[0]) * 180 / Math.PI); return [P.O[0] + R * Math.cos(DO(a)), P.O[1] + R * Math.sin(DO(a))]; }
+function gocDo(P) { return Math.round(H.gocDo(P.A, P.O, P.B)); }
+function loai(d) { return d < 90 ? 'góc nhọn' : d === 90 ? 'góc vuông' : d < 180 ? 'góc tù' : 'góc bẹt'; }
+function dauTia(O, A, k) { return H.lerp(O, A, k || 1.35); }
+function tenTia(g, O, A, ten, mau) { var X = dauTia(O, A, 1.42); g.chu(X, ten, { mau: mau || '#1B2540', nghieng: true }); }
+
+/* ---------- Vẽ một tia ---------- */
+function kbTia(P) {
+  var O = P.O, X = dauTia(O, P.A);
+  return KhungPhang.kichBan([
+    D.hien(function (g) { g.diem(O, 'O', { huong: H.tru(O, P.A) }); }, { tg: 0.7, ghi: '<b>Bước 1.</b> Lấy một điểm $O$ làm <b>gốc</b> của tia.' }),
+    D.doan(O, X, { ghi: '<b>Bước 2.</b> Đặt thước đi qua $O$, dùng bút chì vạch một đường thẳng <b>bắt đầu từ $O$</b> và kéo dài về một phía.', net: { rong: 3, mau: MAU_CANH } }),
+    D.hien(function (g) { tenTia(g, O, P.A, 'x', MAU_CANH); g.songSong(O, X, 1, MAU_CANH, 0.97); }, { tg: 1, ghi: 'Ta được <b>tia $Ox$</b>: gốc $O$, tia kéo dài mãi về phía $x$ (không có điểm cuối).' }),
+  ]);
+}
+/* ---------- Hai tia chung gốc tạo thành góc ---------- */
+function kbHaiTia(P) {
+  var O = P.O, X = dauTia(O, P.A), Y = dauTia(O, P.B), d = gocDo(P);
+  return KhungPhang.kichBan([
+    D.hien(function (g) { g.diem(O, 'O', { huong: H.tru(O, H.trung(P.A, P.B)) }); }, { tg: 0.6, ghi: '<b>Bước 1.</b> Lấy điểm $O$.' }),
+    D.doan(O, X, { ghi: '<b>Bước 2.</b> Vẽ tia $Ox$ gốc $O$.', net: { rong: 3, mau: MAU_CANH }, sau: function (g) { tenTia(g, O, P.A, 'x', MAU_CANH); } }),
+    D.doan(O, Y, { ben: 1, ghi: '<b>Bước 3.</b> Vẽ tia $Oy$ <b>chung gốc $O$</b> với tia $Ox$.', net: { rong: 3, mau: MAU_CANH }, sau: function (g) { tenTia(g, O, P.B, 'y', MAU_CANH); } }),
+    D.hien(function (g) { g.goc(P.A, O, P.B, { mau: MAU_GOC, r: 34, nhan: false }); g.diem(O, 'O', { mau: MAU_DINH, r: 5, huong: H.tru(O, H.trung(P.A, P.B)) }); },
+      { tg: 1.2, ghi: 'Hai tia chung gốc $Ox$, $Oy$ tạo thành <b>góc $xOy$</b>, kí hiệu $\\widehat{xOy}$. Đỉnh $O$, hai cạnh $Ox$, $Oy$.' }),
+  ]);
+}
+/* ---------- Đo góc xOy bằng thước đo góc ---------- */
+function kbDo(P) {
+  var O = P.O, d = gocDo(P);
+  var nen = function (g) { g.doan(O, dauTia(O, P.A), { mau: MAU_CANH, rong: 3 }); g.doan(O, dauTia(O, P.B), { mau: MAU_CANH, rong: 3 }); tenTia(g, O, P.A, 'x', MAU_CANH); tenTia(g, O, P.B, 'y', MAU_CANH); g.diem(O, 'O', { huong: H.tru(O, H.trung(P.A, P.B)) }); };
+  return KhungPhang.kichBan([
+    D.hien(nen, { tg: 0.6, ghi: 'Đo góc $xOy$.' }),
+    D.doGoc(O, P.A, P.B, { tg: 2.4, r: R * 0.8, ghi: '<b>Bước 1.</b> Đặt thước đo góc sao cho <b>tâm</b> của thước trùng với đỉnh $O$, vạch $0^\\circ$ nằm trên cạnh $Ox$. <b>Bước 2.</b> Cạnh $Oy$ đi qua vạch nào thì đó là số đo góc.', danh: nen, sau: nen }),
+    D.hien(function (g) { nen(g); g.goc(P.A, O, P.B, { mau: MAU_GOC, r: 34, nhan: d + '°' }); }, { tg: 1, ghi: 'Cạnh $Oy$ đi qua vạch $' + d + '^\\circ$: $\\widehat{xOy} = ' + d + '^\\circ$ (' + loai(d) + ').' }),
+  ]);
+}
+/* ---------- Vẽ góc có số đo cho trước bằng thước đo góc ---------- */
+function kbVeGoc(P, ts) {
+  var O = P.O, d = ts.soDo, a0 = H.huong(O, P.A), a1 = a0 + DO(d), Y = [O[0] + R * 1.35 * Math.cos(a1), O[1] + R * 1.35 * Math.sin(a1)], Yt = [O[0] + R * Math.cos(a1), O[1] + R * Math.sin(a1)];
+  return KhungPhang.kichBan([
+    D.doan(O, dauTia(O, P.A), { ghi: '<b>Bước 1.</b> Vẽ tia $Ox$.', net: { rong: 3, mau: MAU_CANH }, sau: function (g) { tenTia(g, O, P.A, 'x', MAU_CANH); g.diem(O, 'O', { huong: [-Math.cos(a0 + DO(d) / 2), -Math.sin(a0 + DO(d) / 2)] }); } }),
+    D.danhDauGoc(O, a0, a1, { tg: 2, r: R * 0.8, ghi: '<b>Bước 2.</b> Đặt thước đo góc: tâm trùng $O$, vạch $0^\\circ$ nằm trên tia $Ox$. Đánh dấu một điểm tại vạch $' + d + '^\\circ$.' }),
+    D.doan(O, Y, { ghi: '<b>Bước 3.</b> Vẽ tia $Oy$ đi qua điểm vừa đánh dấu.', net: { rong: 3, mau: MAU_CANH }, sau: function (g) { g.chu(H.lerp(O, Y, 1.06), 'y', { mau: MAU_CANH, nghieng: true }); } }),
+    D.hien(function (g) { g.goc(P.A, O, Yt, { mau: MAU_GOC, r: 34, nhan: d + '°' }); }, { tg: 1, ghi: 'Ta được <b>góc $xOy = ' + d + '^\\circ$</b> (' + loai(d) + ').' }),
+  ]);
+}
+
+KhungPhang.tao({
+  ten: 'Góc',
+  lop: 6,
+  diem: { O: [0, 0], A: [R, 0], B: [R * Math.cos(DO(60)), R * Math.sin(DO(60))] },
+  buocLuoi: 0.5,
+  rangBuoc: { A: lenCanh, B: lenCanh },
+  sauKeo: function (ten, P) { if (ten === 'O') { P.A = lenCanh(P.A, P); P.B = lenCanh(P.B, P); } },
+  thamSo: [{ khoa: 'soDo', nhan: 'Số đo góc cần vẽ', min: 10, max: 180, buoc: 5, gt: 50, mau: MAU_GOC, hienThi: function (ts) { return ts.soDo + '°'; } }],
+  tieuDeLuaChon: 'Vẽ góc bằng thước đo góc',
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
+  lamSang: [
+    { id: 'dinh', nhan: 'Đỉnh', mau: MAU_DINH, ghiChu: 'Điểm $O$ là <b>đỉnh</b> của góc (gốc chung của hai tia).' },
+    { id: 'canh', nhan: 'Cạnh', mau: MAU_CANH, ghiChu: 'Hai tia $Ox$, $Oy$ là <b>hai cạnh</b> của góc.' },
+    { id: 'goc', nhan: 'Góc', mau: MAU_GOC, ghiChu: function (P) { var d = gocDo(P); return '<b>Góc $xOy$</b> (còn gọi là góc $yOx$, góc $O$), kí hiệu $\\widehat{xOy}$: $\\widehat{xOy} = ' + d + '^\\circ$ — ' + loai(d) + '.'; } },
+    { id: 'diemTrong', nhan: 'Điểm trong góc', mau: '#7C3AED', ghiChu: 'Điểm $M$ nằm <b>trong góc</b> $xOy$ khi $M$ nằm trong phần mặt phẳng giới hạn bởi hai cạnh của góc (vùng tô tím).' },
+  ],
+  hoatHinh: [
+    { id: 'tia', nhan: 'Vẽ tia', anDiem: true, thoiGian: function (P) { return kbTia(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbTia(P).ghi(t); } },
+    { id: 'haiTia', nhan: 'Vẽ hai tia chung gốc tạo thành góc', anDiem: true, thoiGian: function (P) { return kbHaiTia(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbHaiTia(P).ghi(t); } },
+    { id: 'do', nhan: 'Đo góc bằng thước đo góc', anDiem: true, thoiGian: function (P) { return kbDo(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbDo(P).ghi(t); } },
+    { id: 'veDo', nhan: 'Vẽ góc có số đo cho trước', anDiem: true,
+      vuaKhung: function (P) { return [H.cong(P.O, [-R * 1.4, -1]), H.cong(P.O, [R * 1.4, R * 1.4])]; },
+      thoiGian: function (P, ts) { return kbVeGoc(P, ts).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVeGoc(P, ts).ghi(t); } },
+  ],
+
+  ve: function (g, P, ts) {
+    var O = P.O, X = dauTia(O, P.A), Y = dauTia(O, P.B), d = gocDo(P);
+    var t1 = g.hoat('tia'), t2 = g.hoat('haiTia'), t3 = g.hoat('do'), t4 = g.hoat('veDo');
+    if (t1 !== null) { kbTia(P).ve(g, t1); return; }
+    if (t2 !== null) { kbHaiTia(P).ve(g, t2); return; }
+    if (t3 !== null) { kbDo(P).ve(g, t3); return; }
+    if (t4 !== null) { kbVeGoc(P, ts).ve(g, t4); return; }
+    if (g.bat('diemTrong') && d < 180) {
+      var dau = ((P.A[0] - O[0]) * (P.B[1] - O[1]) - (P.A[1] - O[1]) * (P.B[0] - O[0])) >= 0 ? 1 : -1, ds = [O];
+      for (var i = 0; i <= 30; i++) { var a = H.huong(O, P.A) + dau * DO(d) * i / 30; ds.push([O[0] + R * 1.35 * Math.cos(a), O[1] + R * 1.35 * Math.sin(a)]); }
+      g.daGiac(ds, { to: '#7C3AED', doMoTo: 0.14, khongVien: true });
+      var Mm = H.lerp(O, H.trung(H.lerp(O, P.A, 1), H.lerp(O, P.B, 1)), 0.75);
+      g.diem(Mm, 'M', { mau: '#7C3AED', huong: [0.6, 0.8] });
+    }
+    g.goc(P.A, O, P.B, { sang: 'goc', mau: g.bat('goc') ? MAU_GOC : '#64748B', r: 34, nhan: g.bat('goc') ? d + '°' : false, doMoTo: g.bat('goc') ? 0.3 : 0.12 });
+    g.doan(O, X, { sang: 'canh', mau: '#1B2540', rong: 3 }); g.doan(O, Y, { sang: 'canh', mau: '#1B2540', rong: 3 });
+    tenTia(g, O, P.A, 'x', g.bat('canh') ? MAU_CANH : null); tenTia(g, O, P.B, 'y', g.bat('canh') ? MAU_CANH : null);
+    if (g.bat('canh')) { g.nhanDo(O, X, 'cạnh Ox', { sang: 'canh', t: 0.62, kc: 20, benTrai: false }); g.nhanDo(O, Y, 'cạnh Oy', { sang: 'canh', t: 0.62, kc: 20 }); }
+    var ra = H.tru(O, H.trung(P.A, P.B)); if (Math.hypot(ra[0], ra[1]) < 1e-6) ra = [0, -1];
+    g.diem(O, 'O', { sang: 'dinh', r: g.bat('dinh') ? 7 : 4, huong: ra });
+    if (g.bat('dinh')) g.nhanDo(O, H.cong(O, [1, 0]), 'đỉnh O', { sang: 'dinh', t: 0, kc: 30, benTrai: ra[1] > 0 });
+  },
+
+  congThuc: function (P) {
+    var d = gocDo(P);
+    return [{ id: 'goc', ten: 'Số đo góc', bt: '$\\widehat{xOy} = ' + d + '^\\circ$ — ' + loai(d) }];
+  },
+  nhanXet: function (P) {
+    var d = gocDo(P);
+    return '<b>Góc</b> là hình gồm <b>hai tia chung gốc</b>.' +
+      '<div style="margin:4px 0 2px">• <b style="color:' + MAU_DINH + '">Đỉnh</b>: $O$ (gốc chung)</div>' +
+      '<div style="margin:2px 0">• <b style="color:' + MAU_CANH + '">Hai cạnh</b>: tia $Ox$ và tia $Oy$</div>' +
+      '<div style="margin:2px 0 6px">• <b style="color:' + MAU_GOC + '">Góc $xOy$</b>: $\\widehat{xOy} = ' + d + '^\\circ$ (' + loai(d) + ')</div>' +
+      '<span style="color:#475569">Góc nhọn: nhỏ hơn $90^\\circ$ · góc vuông: $90^\\circ$ · góc tù: lớn hơn $90^\\circ$, nhỏ hơn $180^\\circ$ · góc bẹt: $180^\\circ$.</span>';
+  },
+  khungNhin: function (P) { return [H.cong(P.O, [-R * 1.45, -R * 0.4]), H.cong(P.O, [R * 1.45, R * 1.45])]; },
+  goiY: 'Kéo A, B để đổi góc; kéo O để dời góc',
+});
+</script>
+</body>
+</html>

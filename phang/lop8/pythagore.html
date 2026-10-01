@@ -49,6 +49,27 @@ function soSanh(P, ts) {
   return { a: a, b: b, c: c, tong: tong, a2: a * a, goc: H.gocDo(q.B, q.A, q.C), kq: Math.abs(tong - a * a) < 1e-6 ? 0 : tong > a * a ? 1 : -1 };
 }
 function laThuan(P, ts) { return ts.che !== 'dao'; }
+function chinhXac(x) { return Math.abs(x * 100 - Math.round(x * 100)) < 1e-6; }   // số có đúng tối đa 2 chữ số thập phân → dùng dấu "="
+var DXK = KhungPhang.doiXung;
+function chuan(v) { var L = Math.hypot(v[0], v[1]); return [v[0] / L, v[1] / L]; }
+function catGoc(ds, O, d1, d2) {   // phần đa giác nằm trong góc phần tư {(p-O)·d1 >= 0, (p-O)·d2 >= 0}
+  var r = DXK.catDaGiac(ds, O, H.cong(O, [d1[1], -d1[0]]), 1);
+  return r.length > 2 ? DXK.catDaGiac(r, O, H.cong(O, [d2[1], -d2[0]]), 1) : r;
+}
+// Cắt ghép Perigal: hình vuông cạnh góc vuông lớn hơn cắt thành 4 mảnh bằng hai đường qua tâm (song song và vuông góc với BC),
+// 4 mảnh tịnh tiến vào 4 góc hình vuông cạnh huyền, hình vuông nhỏ vào giữa.
+function perigal(P) {
+  var A = P.A, B = P.B, C = P.C, T = H.trongTam(A, B, C);
+  var qAB = ngoai(A, B, T), qAC = ngoai(A, C, T), qBC = ngoai(B, C, T);
+  var lonAB = H.dai(A, B) >= H.dai(A, C), lon = lonAB ? qAB : qAC, nho = lonAB ? qAC : qAB;
+  var O1 = H.trungBinh(lon), Oh = H.trungBinh(qBC), On = H.trungBinh(nho), a = H.dai(B, C);
+  var u = chuan(H.tru(C, B)), v = [-u[1], u[0]], mu = [-u[0], -u[1]], mv = [-v[0], -v[1]];
+  var manh = [[u, v], [v, mu], [mu, mv], [mv, u]].map(function (d) {
+    var ds = catGoc(lon, O1, d[0], d[1]), goc = H.tru(Oh, H.nhan(H.cong(d[0], d[1]), a / 2));
+    return { ds: ds, dich: H.tru(goc, O1) };
+  });
+  return { lon: lon, nho: nho, bc: qBC, O1: O1, manh: manh, dichNho: H.tru(Oh, On), u: u, v: v, lonAB: lonAB };
+}
 
 KhungPhang.tao({
   ten: 'Định lí Pythagore',
@@ -78,7 +99,25 @@ KhungPhang.tao({
   ],
 
   hoatHinh: [
-    { id: 'ghep', nhan: 'Chứng minh bằng cắt ghép', thoiGian: 8000, hien: laThuan,
+    { id: 'perigal', nhan: 'Cắt ghép hai hình vuông vào hình vuông cạnh huyền', thoiGian: 10000, hien: laThuan,
+      vuaKhung: function (P) { var T = H.trongTam(P.A, P.B, P.C); return [].concat(ngoai(P.A, P.B, T), ngoai(P.A, P.C, T), ngoai(P.B, P.C, T)); },
+      ghiChu: function (P, ts, t) {
+        var lonAB = H.dai(P.A, P.B) >= H.dai(P.A, P.C), ten = lonAB ? 'AB' : 'AC', nho = lonAB ? 'AC' : 'AB';
+        if (t < 0.12) return 'Dựng ba hình vuông trên ba cạnh của tam giác vuông $ABC$.';
+        if (t < 0.25) return 'Cắt hình vuông cạnh $' + ten + '$ thành <b>4 mảnh</b> bằng hai đường thẳng đi qua tâm của nó: một đường song song với $BC$, một đường vuông góc với $BC$.';
+        if (t < 0.78) return 'Dời (không xoay) từng mảnh vào bốn góc của hình vuông cạnh huyền $BC$…';
+        if (t < 0.97) return 'Dời hình vuông cạnh $' + nho + '$ vào chỗ trống ở giữa…';
+        return 'Năm mảnh <b>lấp kín, trùng khít</b> hình vuông cạnh huyền: <b>$BC^2 = AB^2 + AC^2$</b>.';
+      } },
+    { id: 'do', nhan: 'Đổ màu hai hình vuông sang hình vuông cạnh huyền', thoiGian: 7000, hien: laThuan,
+      vuaKhung: function (P) { var T = H.trongTam(P.A, P.B, P.C); return [].concat(ngoai(P.A, P.B, T), ngoai(P.A, P.C, T), ngoai(P.B, P.C, T)); },
+      ghiChu: function (P, ts, t) {
+        var s = soSanh(P, ts);
+        if (t < 0.1) return 'Coi mỗi hình vuông là một bể chứa đầy màu: $AB^2 = ' + soL(s.c * s.c) + '$, $AC^2 = ' + soL(s.b * s.b) + '$.';
+        if (t < 0.95) return 'Đổ màu từ hai hình vuông cạnh góc vuông sang hình vuông cạnh huyền…';
+        return 'Màu từ hai hình vuông <b>đầy vừa khít</b> hình vuông cạnh huyền: $' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = ' + soL(s.tong) + ' = BC^2$.';
+      } },
+    { id: 'ghep', nhan: 'Chứng minh bằng 4 tam giác vuông', thoiGian: 8000, hien: laThuan,
       vuaKhung: function (P) { var c = H.dai(P.A, P.B), b = H.dai(P.A, P.C), x0 = c + b + 2; return [[x0, -0.3], [x0 + b + c, b + c + 0.3], [-b - 0.5, -c - 0.5]]; },
       ghiChu: function (P, ts, t) {
         if (t < 0.22) return 'Xếp 4 tam giác vuông bằng tam giác $ABC$ vào hình vuông cạnh $AB + AC$: phần còn trống là hình vuông cạnh $BC$ (màu vàng).';
@@ -89,7 +128,51 @@ KhungPhang.tao({
 
   ve: function (g, P, ts) {
     var q = tg(P, ts), A = q.A, B = q.B, C = q.C, T = H.trongTam(A, B, C), s = soSanh(P, ts), dao = ts.che === 'dao';
-    var t = dao ? null : g.hoat('ghep');
+    var t = dao ? null : g.hoat('ghep'), tp = dao ? null : g.hoat('perigal'), td = dao ? null : g.hoat('do');
+    if (tp !== null) {
+      var pg = perigal(P), mauLon = pg.lonAB ? MAU_AB : MAU_AC, mauNho = pg.lonAB ? MAU_AC : MAU_AB;
+      g.daGiac(pg.bc, { to: '#FEF3C7', doMoTo: 0.6, mauNet: '#B45309', rong: 2.5, dut: tp > 0.25 ? '7 5' : false });
+      g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.3, rong: 2.5 });
+      var mauManh = [mauLon, '#F472B6', '#FB923C', '#A78BFA'];
+      if (tp < 0.13) g.daGiac(pg.lon, { to: mauLon, doMoTo: 0.7, mauNet: '#1B2540', rong: 2 });
+      else pg.manh.forEach(function (m, i) {
+        var e = H.em(H.doan(tp, 0.28 + i * 0.12, 0.28 + (i + 1) * 0.12));
+        g.daGiac(m.ds.map(function (p) { return H.cong(p, H.nhan(m.dich, e)); }), { to: tp < 0.25 ? mauLon : mauManh[i], doMoTo: 0.7, mauNet: '#1B2540', rong: 2 });
+      });
+      if (tp > 0.13 && tp < 0.3) {
+        var k = H.doan(tp, 0.13, 0.25), L = H.dai(pg.lon[0], pg.lon[1]) * 0.75;
+        [pg.u, pg.v].forEach(function (d) { g.doan(H.cong(pg.O1, H.nhan(d, -L * k)), H.cong(pg.O1, H.nhan(d, L * k)), { mau: '#DC2626', rong: 2.5, dut: '8 5' }); });
+      }
+      var en = H.em(H.doan(tp, 0.8, 0.96));
+      g.daGiac(pg.nho.map(function (p) { return H.cong(p, H.nhan(pg.dichNho, en)); }), { to: mauNho, doMoTo: 0.7, mauNet: '#1B2540', rong: 2 });
+      if (tp >= 0.97) g.daGiac(pg.bc, { to: 'none', mauNet: '#B45309', rong: 3.5 });
+      g.diem(A, 'A', { huong: H.tru(A, T) }); g.diem(B, 'B', { huong: H.tru(B, T) }); g.diem(C, 'C', { huong: H.tru(C, T) });
+      return;
+    }
+    if (td !== null) {
+      var qab = ngoai(A, B, T), qac = ngoai(A, C, T), qbc = ngoai(B, C, T), e2 = H.em(H.doan(td, 0.1, 0.92));
+      [qab, qac, qbc].forEach(function (qq) { g.daGiac(qq, { to: '#fff', doMoTo: 0.9, mauNet: '#1B2540', rong: 2.5 }); });
+      // phần màu còn lại trong hình vuông cạnh góc vuông: lớp sát cạnh tam giác, dày (1 - e) cạnh
+      function conLai(qq, P1, P2, mau, f) {
+        var n = chuan(H.tru(qq[3], qq[0])), muc = H.cong(P1, H.nhan(n, H.dai(P1, P2) * f));
+        var r = DXK.catDaGiac(qq, muc, H.cong(muc, H.tru(P2, P1)), (n[0] * (P2[1] - P1[1]) - n[1] * (P2[0] - P1[0])) > 0 ? 1 : -1);
+        if (f > 0.001 && r.length > 2) g.daGiac(r, { to: mau, doMoTo: 0.7, khongVien: true });
+      }
+      conLai(qab, A, B, MAU_AB, 1 - e2); conLai(qac, A, C, MAU_AC, 1 - e2);
+      // hình vuông cạnh huyền: lớp đỏ (từ AB²) rồi lớp xanh (từ AC²), song song với BC
+      var nB = chuan(H.tru(qbc[3], qbc[0])), dR = e2 * s.c * s.c / s.a, dX = e2 * s.b * s.b / s.a;
+      function lop(t0, t1, mau) {
+        if (t1 - t0 < 1e-4) return;
+        var P0 = H.cong(B, H.nhan(nB, t0)), P1 = H.cong(B, H.nhan(nB, t1)), u2 = H.tru(C, B), dau = (nB[0] * u2[1] - nB[1] * u2[0]) > 0 ? -1 : 1;
+        var r = DXK.catDaGiac(qbc, P0, H.cong(P0, u2), dau); r = r.length > 2 ? DXK.catDaGiac(r, P1, H.cong(P1, u2), -dau) : r;
+        if (r.length > 2) g.daGiac(r, { to: mau, doMoTo: 0.7, khongVien: true });
+      }
+      lop(0, dR, MAU_AB); lop(dR, dR + dX, MAU_AC);
+      g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.3, rong: 2.5 });
+      [qab, qac, qbc].forEach(function (qq) { g.daGiac(qq, { to: 'none', mauNet: '#1B2540', rong: 2.5 }); });
+      g.diem(A, 'A', { huong: H.tru(A, T) }); g.diem(B, 'B', { huong: H.tru(B, T) }); g.diem(C, 'C', { huong: H.tru(C, T) });
+      return;
+    }
     if (g.bat('goiY') && dao) {
       var O = H.trung(B, C), ds = [];
       for (var i = 0; i <= 48; i++) { var a = Math.PI * i / 48; ds.push([O[0] + 2.5 * Math.cos(a), O[1] + 2.5 * Math.sin(a)]); }
@@ -133,8 +216,8 @@ KhungPhang.tao({
     ];
     return [
       { id: 'bc', vuaKhung: true, ten: 'Định lí Pythagore (tam giác ABC vuông tại A)', bt: '$' + C.m('bc', 'BC^2') + ' = ' + C.m('ab', 'AB^2') + ' + ' + C.m('ac', 'AC^2') + '$' },
-      { id: null, ten: 'Kiểm tra với số đo hiện tại', bt: '$' + soL(s.a) + '^2 \\approx ' + soL(s.c) + '^2 + ' + soL(s.b) + '^2$<br>$' + soL(s.a2) + ' = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + '$' },
-      { id: null, ten: 'Tính cạnh huyền', bt: '$BC = \\sqrt{AB^2 + AC^2} \\approx \\mathbf{' + soL(s.a) + '}$ (cm)' },
+      { id: null, ten: 'Kiểm tra với số đo hiện tại', bt: '$AB^2 + AC^2 = ' + soL(s.c) + '^2 + ' + soL(s.b) + '^2 = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = ' + soL(s.tong) + '$<br>$BC^2 = ' + soL(s.tong) + '$' },
+      { id: null, ten: 'Tính cạnh huyền', bt: '$BC = \\sqrt{' + soL(s.tong) + '}' + (chinhXac(s.a) ? ' = ' : ' \\approx ') + '\\mathbf{' + soL(s.a) + '}$ (cm)' },
     ];
   },
   nhanXet: function (P, ts) {
@@ -145,7 +228,7 @@ KhungPhang.tao({
           'Chưa bằng nhau → $\\widehat{A} \\approx ' + soL(s.goc, 1) + '^\\circ$ ' + (s.kq > 0 ? '(nhọn)' : '(tù)') + '. Kéo $A$ để hai số bằng nhau.');
     }
     var dep = Number.isInteger(Math.round(s.a * 1e6) / 1e6) ? '<br><span class="dung">Bộ ba số đẹp: $' + soL(s.c) + '$, $' + soL(s.b) + '$, $' + soL(s.a) + '$!</span>' : '';
-    return '$AB^2 + AC^2 = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = \\mathbf{' + soL(s.tong) + '}$<br>$BC^2 = \\mathbf{' + soL(s.a2) + '}$' + dep;
+    return '$AB^2 + AC^2 = ' + soL(s.c * s.c) + ' + ' + soL(s.b * s.b) + ' = \\mathbf{' + soL(s.tong) + '}$<br>$BC^2 = \\mathbf{' + soL(s.tong) + '}$, $BC ' + (chinhXac(s.a) ? '=' : '\\approx') + ' ' + soL(s.a) + '$ cm' + dep;
   },
   khungNhin: function (P, ts, bat) {
     var q = tg(P, ts), T = H.trongTam(q.A, q.B, q.C), ds = [q.A, q.B, q.C];

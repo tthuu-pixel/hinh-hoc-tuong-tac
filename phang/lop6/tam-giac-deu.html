@@ -18,16 +18,71 @@
 <script>
 /* =====================================================================
    TAM GIÁC ĐỀU ABC — Toán 6
-   Nhận dạng, chu vi và tính đối xứng (3 trục, không có tâm).
+   Nhận dạng (ba cạnh, ba góc), chu vi, cách vẽ bằng thước – compa và
+   bằng thước – ê ke 60°, tính đối xứng (3 trục, không có tâm).
    Kéo A, B; đỉnh C luôn được dựng để tam giác đều.
    ===================================================================== */
-var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung, CV = KhungPhang.chuVi, D = KhungPhang.dung;
 var soL = KhungPhang.soL;
+var MAU_CANH = '#2563EB', MAU_GOC = '#16A34A';
 function dinhC(P) { return H.xoay(P.B, P.A, Math.PI / 3); }
+function diemTron(O, r, a) { return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
 function thongTin(P) {
   var A = P.A, B = P.B, C = dinhC(P);
   return { ten: 'Tam giác đều', ds: [A, B, C], tam: null, tamThu: H.trongTam(A, B, C),
     truc: [[H.trung(A, B), C], [H.trung(B, C), A], [H.trung(C, A), B]] };
+}
+function tenDinh(g, A, B, C) {
+  if (A) g.diem(A, 'A', { huong: [-1, -0.6] });
+  if (B) g.diem(B, 'B', { huong: [1, -0.6] });
+  if (C) g.diem(C, 'C', { huong: [0, 1] });
+}
+function kyHieuBaCanh(g, A, B, C, mau) {
+  [[A, B], [B, C], [C, A]].forEach(function (c) { g.doan(c[0], c[1], { mau: mau || MAU_CANH, rong: 3.5, kyHieu: 1 }); });
+}
+
+/* ---------- Vẽ bằng thước và compa ---------- */
+function kbCompa(P) {
+  var A = P.A, B = P.B, C = dinhC(P), a = H.dai(A, B), lech = 0.32, n = 0;
+  var aAB = H.huong(A, B), aAC = H.huong(A, C), aBC = H.huong(B, C);
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doan(A, B, { ghi: Bc('Dùng thước vẽ đoạn thẳng $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenDinh(g, A, B); } }),
+    D.doCompa(A, B, { ghi: Bc('Mở compa bằng độ dài đoạn $AB$: mũi kim tại $A$, đầu chì tại $B$.') }),
+    D.xoayCompa(A, a, aAB, aAC - lech, { ghi: 'Giữ nguyên độ mở của compa, xoay lên phía trên.' }),
+    D.cung(A, a, aAC - lech, aAC + lech, { ghi: Bc('Vẽ cung tròn tâm $A$ bán kính $AB$.') }),
+    D.chuyenCompa(A, diemTron(A, a, aAC + lech), B, diemTron(B, a, aBC + lech), { ghi: 'Giữ nguyên độ mở của compa, đặt mũi kim tại $B$.' }),
+    D.cung(B, a, aBC + lech, aBC - lech, { ghi: Bc('Vẽ cung tròn tâm $B$ bán kính $BA$. Hai cung tròn cắt nhau tại $C$.'),
+      sau: function (g) { g.diem(C, 'C', { huong: [0, 1], mau: '#0D9488' }); } }),
+    D.doan(A, C, { ghi: Bc('Dùng thước nối $C$ với $A$, $C$ với $B$.') }),
+    D.doan(B, C, {}),
+    D.hien(function (g) { g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.35, rong: 0 }); kyHieuBaCanh(g, A, B, C); tenDinh(g, A, B, C); },
+      { tg: 1.2, ghi: 'Ta được <b>tam giác đều $ABC$</b>: $AB = BC = CA = ' + soL(a) + '$ cm.' }),
+  ]);
+}
+
+/* ---------- Vẽ bằng thước và ê ke 60° ---------- */
+function kbEke(P) {
+  var A = P.A, B = P.B, C = dinhC(P), a = H.dai(A, B), n = 0, L = 0.7 * a;
+  var aAB = H.huong(A, B), aBA = H.huong(B, A);
+  var X = H.lerp(A, C, 1.28), Y = H.lerp(B, C, 1.28), tia = { rong: 2, mau: '#475569' };
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doan(A, B, { ghi: Bc('Dùng thước vẽ đoạn thẳng $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenDinh(g, A, B); } }),
+    D.datEke(A, aAB, 1, { loai: '60', dai: L, ghi: Bc('Đặt ê ke sao cho đỉnh góc $60^\\circ$ trùng với điểm $A$, một cạnh của góc $60^\\circ$ nằm trên $AB$.') }),
+    D.keTheoEke(A, aAB, 1, X, { loai: '60', dai: L, net: tia, ghi: 'Kẻ tia $Ax$ theo cạnh còn lại của góc $60^\\circ$: $\\widehat{xAB} = 60^\\circ$.',
+      sau: function (g) { g.chu(X, 'x', { mau: '#475569', dx: 10, nghieng: true }); g.goc(B, A, C, { mau: MAU_GOC, r: 22, nhan: false, doMoTo: 0.25 }); } }),
+    D.datEke(B, aBA, -1, { loai: '60', dai: L, ghi: Bc('Đặt ê ke tại $B$: đỉnh góc $60^\\circ$ trùng với $B$, một cạnh của góc $60^\\circ$ nằm trên $BA$.') }),
+    D.keTheoEke(B, aBA, -1, Y, { loai: '60', dai: L, net: tia, ghi: 'Kẻ tia $By$: $\\widehat{yBA} = 60^\\circ$.',
+      sau: function (g) { g.chu(Y, 'y', { mau: '#475569', dx: -10, nghieng: true }); g.goc(C, B, A, { mau: MAU_GOC, r: 22, nhan: false, doMoTo: 0.25 }); } }),
+    D.hien(function (g) { g.diem(C, 'C', { huong: [0, 1], mau: '#0D9488' }); }, { tg: 0.9, ghi: Bc('Hai tia $Ax$ và $By$ cắt nhau tại $C$.') }),
+    D.doan(A, C, { tg: 0.6, ghi: 'Tô đậm hai đoạn $CA$ và $CB$.' }),
+    D.doan(B, C, { tg: 0.6 }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.35, rong: 0 }); kyHieuBaCanh(g, A, B, C);
+      g.goc(A, C, B, { mau: MAU_GOC, r: 22, nhan: false, doMoTo: 0.25 }); tenDinh(g, A, B, C);
+    }, { tg: 1.2, ghi: 'Ta được <b>tam giác đều $ABC$</b>: $\\widehat{A} = \\widehat{B} = \\widehat{C} = 60^\\circ$ và $AB = BC = CA$.' }),
+  ]);
 }
 
 KhungPhang.tao({
@@ -37,24 +92,59 @@ KhungPhang.tao({
   buocLuoi: 0.5,
   luaChon: [DX.luaChonTruc(3)],
   hopChon: [DX.hopChonVet],
-  lamSang: DX.lamSang(thongTin),
-  hoatHinh: DX.hoatHinh(thongTin),
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
+  lamSang: [
+    { id: 'canh', nhan: 'Cạnh', mau: MAU_CANH,
+      ghiChu: function (P) { return 'Tam giác đều có <b>ba cạnh bằng nhau</b>: $AB = BC = CA = ' + soL(H.dai(P.A, P.B)) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Góc', mau: MAU_GOC,
+      ghiChu: 'Tam giác đều có <b>ba góc bằng nhau</b> và <b>bằng $60^\\circ$</b>: $\\widehat{A} = \\widehat{B} = \\widehat{C} = 60^\\circ$.' },
+  ].concat(CV.lamSang({
+    cv: function (P) { var a = H.dai(P.A, P.B); return 'Chu vi tam giác đều = tổng độ dài ba cạnh $= 3 \\cdot a = 3 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(3 * a) + '}$ <b>cm</b>.'; },
+    dt: function (P) { var a = H.dai(P.A, P.B), h = a * Math.sqrt(3) / 2; return 'Diện tích tam giác = cạnh đáy nhân chiều cao rồi chia 2: $S = \\dfrac{a \\cdot h}{2}$. Đo chiều cao $CH \\approx ' + soL(h) + '$ cm nên $S \\approx \\dfrac{' + soL(a) + ' \\cdot ' + soL(h) + '}{2} \\approx \\mathbf{' + soL(a * h / 2) + '}$ <b>cm²</b>.'; },
+  })).concat(DX.lamSang(thongTin)),
+
+  hoatHinh: [
+    { id: 'veCompa', vuaKhung: function (P) { var C = dinhC(P); return [H.lerp(P.A, C, 1.35), H.lerp(P.B, C, 1.35)]; }, nhan: 'Vẽ bằng thước và compa', anDiem: true,
+      thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
+    { id: 'veEke', vuaKhung: function (P) { var C = dinhC(P); return [H.lerp(P.A, C, 1.35), H.lerp(P.B, C, 1.35)]; }, nhan: 'Vẽ bằng thước và ê ke 60°', anDiem: true,
+      thoiGian: function (P) { return kbEke(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbEke(P).ghi(t); } },
+  ].concat(DX.hoatHinh(thongTin)),
 
   ve: function (g, P, ts) {
-    var f = thongTin(P), A = P.A, B = P.B, C = dinhC(P), hoat = DX.dangHoat(g);
+    var f = thongTin(P), A = P.A, B = P.B, C = dinhC(P), a = H.dai(A, B), hC = a * Math.sqrt(3) / 2, hoat = DX.dangHoat(g);
+    var tv = g.hoat('veCompa'), te = g.hoat('veEke');
+    if (tv !== null) { kbCompa(P).ve(g, tv); return; }
+    if (te !== null) { kbEke(P).ve(g, te); return; }
     if (!hoat) g.daGiac(f.ds, {});
     DX.ve(g, f, ts);
     if (hoat) return;
-    g.nhanDo(A, B, 'a = ' + so(H.dai(A, B)) + ' cm', { benTrai: false });
-    g.diem(A, 'A', { huong: [-1, -0.6] }); g.diem(B, 'B', { huong: [1, -0.6] }); g.diem(C, 'C', { huong: [0, 1] });
+    var canh = [[A, B, 'AB'], [B, C, 'BC'], [C, A, 'CA']];
+    if (g.bat('canh')) canh.forEach(function (c) {
+      g.doan(c[0], c[1], { sang: 'canh', kyHieu: 1 });
+      g.nhanDo(c[0], c[1], c[2] + ' = ' + so(a) + ' cm', { sang: 'canh', benTrai: false, kc: 'tu' });
+    });
+    if (g.bat('goc')) [[B, A, C], [C, B, A], [A, C, B]].forEach(function (x) { g.goc(x[0], x[1], x[2], { sang: 'goc', r: 30, nhan: '60°', xaNhan: 18 }); });
+    CV.ve(g, { canh: canh.map(function (c) { return { A: c[0], B: c[1], nhan: c[2] + ' = ' + so(a) + ' cm' }; }),
+      cv: ['C = AB + BC + CA', '\\phantom{C} = ' + soL(a) + ' + ' + soL(a) + ' + ' + soL(a), '\\phantom{C} = 3 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(3 * a) + '}\\ \\text{cm}'],
+      dt: ['S = \\frac{a \\cdot h}{2}', '\\phantom{S} \\approx \\frac{' + soL(a) + ' \\cdot ' + soL(hC) + '}{2}', '\\phantom{S} \\approx \\mathbf{' + soL(a * hC / 2) + '}\\ \\text{cm}^2'],
+      phuDt: function (g, e) { if (e <= 0) return; var Hm = H.trung(A, B); g.doan(C, Hm, { mau: '#B45309', rong: 2.5, dut: '6 4' }); g.goc(B, Hm, C, { mau: '#B45309', r: 12, vuong: true, nhan: false }); g.diem(Hm, 'H', { r: 3.5, mau: '#B45309', huong: [0, -1] }); g.nhanDo(Hm, C, 'h ≈ ' + so(hC) + ' cm', { mau: '#B45309', benTrai: true, kc: 'tu' }); g.nhanDo(A, B, 'a = ' + so(a) + ' cm', { mau: '#B45309', benTrai: false, kc: 30, t: 0.25 }); } });
+    if (!g.bat('canh') && !g.bat('cv') && !g.bat('dt')) g.nhanDo(A, B, 'a = ' + so(a) + ' cm', { benTrai: false });
+    tenDinh(g, A, B, C);
   },
 
   congThuc: function (P) {
     var a = H.dai(P.A, P.B);
-    return [{ id: null, ten: 'Chu vi tam giác đều cạnh a', bt: '$C = 3 \\cdot a = 3 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(3 * a) + '}$ (cm)' }];
+    return [{ id: 'cv', ten: 'Chu vi tam giác đều cạnh a', bt: '$C = 3 \\cdot a = 3 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(3 * a) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích (h là chiều cao đo được)', bt: '$S = \\dfrac{a \\cdot h}{2} \\approx \\dfrac{' + soL(a) + ' \\cdot ' + soL(a * Math.sqrt(3) / 2) + '}{2} \\approx \\mathbf{' + soL(a * a * Math.sqrt(3) / 4) + '}$ (cm²)' }];
   },
-  nhanXet: function (P) { return DX.nhanXet(thongTin(P)); },
-  khungNhin: function (P) { return [dinhC(P)]; },
+  nhanXet: function (P) {
+    var a = soL(H.dai(P.A, P.B));
+    return '<b>Tam giác đều $ABC$</b> có:' +
+      '<div style="margin:4px 0 2px">• <b style="color:' + MAU_CANH + '">Ba cạnh bằng nhau</b>:<br><span style="padding-left:14px">$AB = BC = CA = ' + a + '$ cm</span></div>' +
+      '<div style="margin:2px 0 6px">• <b style="color:' + MAU_GOC + '">Ba góc bằng nhau và bằng $60^\\circ$</b>:<br><span style="padding-left:14px">$\\widehat{A} = \\widehat{B} = \\widehat{C} = 60^\\circ$</span></div>' +
+      DX.nhanXet(thongTin(P));
+  },
+  khungNhin: function (P, ts, bat) { var ds = [P.A, P.B, dinhC(P)]; return ds.concat(CV.khungNhin(ds, bat)); },
 });
 </script>
 </body>

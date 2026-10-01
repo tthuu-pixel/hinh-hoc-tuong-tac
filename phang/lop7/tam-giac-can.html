@@ -134,7 +134,7 @@ KhungPhang.tao({
       g.goc(A, Hc, C, { mau: M.duongCheo, r: 14 });
       g.kyHieu(B, Hc, 2, M.duongCheo); g.kyHieu(Hc, C, 2, M.duongCheo);
       g.goc(B, A, Hc, { mau: M.duongCheo, r: 50, doMoTo: 0.2, nhan: false }); g.goc(Hc, A, C, { mau: M.duongCheo, r: 50, doMoTo: 0.2, nhan: false });
-      g.diem(Hc, 'H', { huong: [0, -1], mau: M.duongCheo });
+      g.diem(Hc, 'H', { huong: [-0.7, -1], mau: M.duongCheo });
     }
 
     // Các cạnh
@@ -163,8 +163,9 @@ KhungPhang.tao({
     else g.goc(B, A, C, { mau: onDinh ? MA : '#94A3B8', r: 30, doMoTo: onDinh ? 0.4 : 0.12, nhan: onDinh ? true : undefined });
 
     if (g.hienSo()) {
-      if (deu) g.nhanDo(B, C, so(s.day) + ' cm', { benTrai: false });
-      else { g.nhanDo(B, A, so(s.ben), {}); g.nhanDo(A, C, so(s.ben), {}); g.nhanDo(B, C, so(s.day), { benTrai: false }); }
+      // nhãn số đo đặt lệch khỏi trung điểm để không che ký hiệu bằng nhau và chữ H
+      if (deu) g.nhanDo(B, C, so(s.day) + ' cm', { benTrai: false, t: 0.78, kc: 'tu' });
+      else { g.nhanDo(B, A, so(s.ben), { t: 0.32, kc: 'tu' }); g.nhanDo(A, C, so(s.ben), { t: 0.68, kc: 'tu' }); g.nhanDo(B, C, so(s.day), { benTrai: false, t: 0.8, kc: 'tu' }); }
     }
     g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -1] }); g.diem(C, 'C', { huong: [1, -1] });
   },

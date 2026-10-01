@@ -31,8 +31,8 @@ KhungPhang.tao({
 
   lamSang: [
     { id: 'tb', nhan: 'Đường trung bình MN', mau: MAU_TB, ghiChu: 'Đoạn thẳng $MN$ nối <b>trung điểm hai cạnh</b> $AB$, $AC$ gọi là <b>đường trung bình</b> của tam giác $ABC$.' },
-    { id: 'ss', nhan: 'MN song song BC', mau: M.song, ghiChu: 'Đường trung bình của tam giác thì <b>song song với cạnh thứ ba</b>: ${MN \\parallel BC}$.' },
-    { id: 'nua', nhan: 'MN bằng nửa BC', mau: MAU_BC, ghiChu: function (P) { var Mm = H.trung(P.A, P.B), N = H.trung(P.A, P.C); return 'Đường trung bình <b>bằng nửa cạnh thứ ba</b>: $MN = ' + soL(H.dai(Mm, N)) + ' = \\dfrac{' + soL(H.dai(P.B, P.C)) + '}{2}$.'; } },
+    { id: 'ss', nhan: 'MN song song BC', mau: M.song, ghiChu: function (P) { var g1 = H.gocDo(P.A, H.trung(P.A, P.B), H.trung(P.A, P.C)); return 'Đường trung bình của tam giác thì <b>song song với cạnh thứ ba</b>: ${MN \\parallel BC}$.<br>Hai góc tô màu $\\widehat{AMN}$ và $\\widehat{ABC}$ ở vị trí <b>đồng vị</b> và <b>bằng nhau</b> ($\\approx ' + soL(g1, 0) + '^\\circ$) — đó là dấu hiệu nhận biết $MN \\parallel BC$.'; } },
+    { id: 'nua', nhan: 'MN bằng nửa BC', mau: MAU_BC, lap: 6, ghiChu: function (P) { var Mm = H.trung(P.A, P.B), N = H.trung(P.A, P.C); return 'Đặt đoạn $MN$ lên cạnh $BC$ <b>hai lần</b> thì vừa khít: $BC = 2 \\cdot MN$, tức là $MN = \\dfrac{BC}{2} = \\dfrac{' + soL(H.dai(P.B, P.C)) + '}{2} = ' + soL(H.dai(Mm, N)) + '$.'; } },
   ],
 
   hoatHinh: [
@@ -58,14 +58,25 @@ KhungPhang.tao({
       return;
     }
     var on = g.bat('tb') || g.bat('ss') || g.bat('nua');
-    if (g.bat('ss')) { g.duongThang(Mm, N, { mau: M.song, dut: '6 5', rong: 1.5 }); g.goc(N, Mm, B, { mau: M.song, r: 22, nhan: false }); g.goc(C, B, Mm, { mau: M.song, r: 22, nhan: false }); }
+    if (g.bat('ss')) {
+      g.duongThang(Mm, N, { mau: M.song, dut: '6 5', rong: 1.5 });
+      var gd = so(H.gocDo(A, Mm, N), 0) + '°';
+      g.goc(A, Mm, N, { mau: '#F59E0B', r: 26, kyHieu: 1, nhan: gd, doMoTo: 0.35 }); g.goc(A, B, C, { mau: '#F59E0B', r: 26, kyHieu: 1, nhan: gd, doMoTo: 0.35 });
+      g.songSong(Mm, N, 1, M.song, 0.65); g.songSong(B, C, 1, M.song, 0.75);
+    }
     g.doan(Mm, N, { mau: on ? MAU_TB : '#475569', rong: on ? 5 : 3 });
     if (g.bat('nua')) {
-      var I = H.trung(B, C);
-      g.doan(B, I, { mau: MAU_BC, rong: 5 }); g.doan(I, C, { mau: '#14B8A6', rong: 5 });
-      g.diem(I, '', { mau: MAU_BC, r: 4 });
+      var I = H.trung(B, C), tn = g.tg('nua') || 0, e1 = H.em(H.doan(tn, 0.3, 1.5)), e2 = H.em(H.doan(tn, 1.8, 3));
+      g.doan(B, C, { mau: '#CBD5E1', rong: 5 });
+      // hai bản sao của MN trượt xuống, đặt nối tiếp nhau trên BC
+      [[B, I, e1, MAU_TB], [I, C, e2, '#A855F7']].forEach(function (x, i) {
+        if (x[2] <= 0 && i === 1 && tn < 1.8) return;
+        var P1 = H.lerp(Mm, x[0], x[2]), P2 = H.lerp(N, x[1], x[2]);
+        g.doan(P1, P2, { mau: x[3], rong: 5, doMo: 0.9 });
+        if (x[2] >= 1) { g.kyHieu(x[0], x[1], 3, '#fff'); g.nhanDo(x[0], x[1], 'MN', { mau: x[3], benTrai: false, kc: 22 }); }
+      });
+      if (tn > 3) { g.diem(I, '', { mau: MAU_BC, r: 4 }); g.nhanDo(B, C, 'BC = 2·MN = ' + so(H.dai(B, C)), { mau: MAU_BC, benTrai: false, kc: 52 }); }
       g.nhanDo(Mm, N, 'MN = ' + so(H.dai(Mm, N)), { mau: MAU_TB, kc: 18 });
-      g.nhanDo(B, C, 'BC = ' + so(H.dai(B, C)), { mau: MAU_BC, benTrai: false });
     }
     g.diem(Mm, 'M', { huong: [-1, 0.3] }); g.diem(N, 'N', { huong: [1, 0.3] });
     g.diem(A, 'A', { huong: [0, 1] }); g.diem(B, 'B', { huong: [-1, -0.6] }); g.diem(C, 'C', { huong: [1, -0.6] });

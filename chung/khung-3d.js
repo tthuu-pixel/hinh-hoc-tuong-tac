@@ -361,6 +361,11 @@
         huong.normalize().multiplyScalar(DD.banKinh * 0.12 + 0.12);
         o.position.copy(DD.dinh[k]).add(huong);
         nhomKhoi.add(o); doiTuong.nhanDinh[k] = o;
+        // chấm tròn đánh dấu tâm (O, O′, …) hoặc các điểm khai báo trong cfg.chamDinh
+        if (cfg.chamDinh ? cfg.chamDinh.indexOf(k) >= 0 : /^O/.test(k)) {
+          var cham = new T.Mesh(new T.SphereGeometry(DD.banKinh * 0.022 + 0.035, 16, 12), new T.MeshBasicMaterial({ color: '#1B2540', depthTest: false }));
+          cham.position.copy(DD.dinh[k]); cham.renderOrder = 6; nhomKhoi.add(cham);
+        }
       });
     }
 
@@ -423,6 +428,8 @@
         M.material.color.set(id ? mapSang[id].mau : MAU_MAT);
         M.userData.sang = id || null;
         M.material.opacity = id ? 0.5 : (TT.toMat ? 0.28 : 0);
+        // mặt đang làm nổi bật luôn hiện màu, kể cả khi nằm khuất phía sau (ví dụ mặt đáy)
+        M.material.depthTest = !id; M.renderOrder = id ? 2 : 1;
         M.visible = !anKhoi || !!id && !mapSang[id].khoi;
       });
       doiTuong.matSau.forEach(function (s) { s.visible = !anKhoi; });

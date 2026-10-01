@@ -31,6 +31,17 @@ function tt(X, Y) {   // trung điểm I và vectơ pháp tuyến đơn vị n c
 }
 function chieuM(p, P) { var q = tt(P.A, P.B), k = (p[0] - q.I[0]) * q.n[0] + (p[1] - q.I[1]) * q.n[1]; return H.cong(q.I, H.nhan(q.n, k)); }
 function laDoan(P, ts) { return ts.che === 'doan'; }
+function laThu(P, ts) { return ts.che === 'thu'; }
+// Chế độ thử: đường thẳng d đi qua K trên AB (lệch khỏi trung điểm một đoạn ts.lechD), tạo với AB góc ts.gocD
+function duongThu(P, ts, g) {
+  var q = tt(P.A, P.B), gocD = ts.gocD, lech = ts.lechD;
+  var t1 = g ? g.hoat('lechGoc') : null, t2 = g ? g.hoat('lechTrung') : null;
+  if (t1 !== null) { gocD = 90 + 28 * Math.sin(Math.PI * 2 * t1); lech = 0; }
+  if (t2 !== null) { lech = 1.6 * Math.sin(Math.PI * 2 * t2); gocD = 90; }
+  gocD = Math.round(gocD); lech = Math.round(lech * 10) / 10;
+  var K = H.cong(q.I, H.nhan(q.u, lech)), a = H.huong(P.A, P.B) + gocD * Math.PI / 180, v = [Math.cos(a), Math.sin(a)];
+  return { q: q, K: K, v: v, goc: gocD, lech: lech, vuong: gocD === 90, giua: Math.abs(lech) < 1e-9 };
+}
 function laTG(P, ts) { return ts.che === 'tg'; }
 function veTT(g, X, Y, O, o, nVach) {   // vẽ trung trực của XY dạng đoạn ngắn đi qua trung điểm (và O nếu có)
   var q = tt(X, Y), t0 = -1.5, t1 = 1.5;
@@ -71,9 +82,13 @@ KhungPhang.tao({
   diem: { A: [-3, 0], B: [3, 0], C: [0.5, 4], M: [0, 3] },
   buocLuoi: 0.5,
   rangBuoc: { M: function (p, P) { return chieuM(p, P); } },
-  anTayCam: function (k, P, ts) { return ts.che === 'doan' ? k === 'C' : k === 'M'; },
+  anTayCam: function (k, P, ts) { return ts.che === 'tg' ? k === 'M' : k === 'C' || (ts.che === 'thu' && k === 'M'); },
   luaChon: [{ khoa: 'che', gt: 'doan', nhan: 'Trung trực của', vuaKhung: true,
-    ds: [{ gt: 'doan', nhan: 'Đoạn thẳng AB' }, { gt: 'tg', nhan: 'Tam giác ABC' }] }],
+    ds: [{ gt: 'doan', nhan: 'Đoạn thẳng AB' }, { gt: 'thu', nhan: 'Thử: d không phải trung trực' }, { gt: 'tg', nhan: 'Tam giác ABC' }] }],
+  thamSo: [
+    { khoa: 'gocD', nhan: 'Góc giữa d và AB', min: 50, max: 130, buoc: 1, gt: 75, mau: MD, hien: laThu, hienThi: function (ts) { return ts.gocD + '°'; } },
+    { khoa: 'lechD', nhan: 'Giao điểm K lệch khỏi trung điểm I', min: -2, max: 2, buoc: 0.5, gt: 0, mau: MM, hien: laThu, hienThi: function (ts) { return ts.lechD === 0 ? '0 (K ≡ I)' : so(ts.lechD) + ' cm'; } },
+  ],
   batDau: ['d'],
 
   lamSang: [
@@ -98,6 +113,10 @@ KhungPhang.tao({
       ghiChu: function (P, ts, t) { return 'Dù $M$ ở vị trí nào trên $d$, luôn có <b>$MA = MB$</b>.'; } },
     { id: 'compa', nhan: 'Vẽ bằng thước và compa', hien: laDoan, anDiem: true,
       thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
+    { id: 'lechGoc', nhan: 'Kéo lệch góc vuông', thoiGian: 7000, hien: laThu,
+      ghiChu: function (P, ts, t) { return 'Giữ $K$ là trung điểm, cho góc giữa $d$ và $AB$ thay đổi: chỉ khi góc bằng $90^\\circ$ thì $d$ mới là trung trực ($MA = MB$). Góc lệch khỏi $90^\\circ$ thì $MA \\ne MB$.'; } },
+    { id: 'lechTrung', nhan: 'Kéo lệch trung điểm', thoiGian: 7000, hien: laThu,
+      ghiChu: function (P, ts, t) { return 'Giữ $d \\perp AB$, cho giao điểm $K$ trượt khỏi trung điểm $I$: chỉ khi $K \\equiv I$ thì $d$ mới là trung trực ($MA = MB$). $K$ lệch thì $KA \\ne KB$ và $MA \\ne MB$.'; } },
     { id: 'no', nhan: 'Đường tròn nở ra từ O', thoiGian: 5000, hien: laTG,
       ghiChu: function (P, ts, t) { return t < 0.85 ? 'Vẽ đường tròn tâm $O$ với bán kính tăng dần…' : 'Đường tròn đi qua <b>cả ba đỉnh cùng lúc</b> (vì $OA = OB = OC$): đó là đường tròn ngoại tiếp.'; } },
   ],
@@ -133,6 +152,27 @@ KhungPhang.tao({
       return;
     }
 
+    if (ts.che === 'thu') {
+      var d = duongThu(P, ts, g), q2 = d.q, K = d.K, ok = d.vuong && d.giua, md = ok ? MD : '#DC2626';
+      var M2 = H.cong(K, H.nhan(d.v, 2.6));
+      g.doan(A, B, { rong: 3 });
+      g.doan(H.cong(K, H.nhan(d.v, -3)), H.cong(K, H.nhan(d.v, 3.4)), { mau: md, rong: 3 });
+      g.chu(H.cong(K, H.nhan(d.v, 3.8)), 'd', { nghieng: true, mau: md });
+      // góc giữa d và AB
+      var B2 = H.cong(K, H.nhan(q2.u, 2)), Dd = H.cong(K, d.v);
+      if (d.vuong) g.goc(Dd, K, B2, { mau: md, r: 14, to: false }); else g.goc(B2, K, Dd, { mau: md, r: 34, nhan: d.goc + '°', doMoTo: 0.25 });
+      // trung điểm I và giao điểm K
+      g.kyHieu(A, q2.I, 1, MM); g.kyHieu(q2.I, B, 1, MM); g.diem(q2.I, 'I', { r: 3.5, mau: MM, huong: d.giua ? [-0.6, -1] : [-0.8, 1] });
+      if (!d.giua) { g.diem(K, 'K', { r: 4.5, mau: '#DC2626', huong: [0.8, 1] }); g.nhanDo(A, K, 'KA = ' + so(H.dai(A, K)), { mau: '#DC2626', benTrai: false, kc: 30 }); g.nhanDo(K, B, 'KB = ' + so(H.dai(K, B)), { mau: '#DC2626', benTrai: false, kc: 30 }); }
+      // điểm M trên d: so sánh MA, MB
+      var ma = H.dai(M2, A), mb = H.dai(M2, B), bang = Math.abs(ma - mb) < 0.01;
+      g.doan(M2, A, { mau: bang ? MM : '#EA580C', rong: 2.6 }); g.doan(M2, B, { mau: bang ? MM : '#7C3AED', rong: 2.6 });
+      g.nhanDo(A, M2, 'MA ≈ ' + so(ma), { mau: bang ? MM : '#EA580C' }); g.nhanDo(M2, B, 'MB ≈ ' + so(mb), { mau: bang ? MM : '#7C3AED' });
+      g.diem(M2, 'M', { r: 5, mau: md, huong: [0.9, 0.3] });
+      g.diem(A, 'A', { huong: H.nhan(q2.u, -1) }); g.diem(B, 'B', { huong: q2.u });
+      return;
+    }
+
     /* ---------- Tam giác ---------- */
     var C = P.C, O = H.ngoaiTiep(A, B, C), tn = g.hoat('no'), G = H.trongTam(A, B, C);
     g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
@@ -156,6 +196,15 @@ KhungPhang.tao({
   },
 
   nhanXet: function (P, ts) {
+    if (ts.che === 'thu') {
+      var d = duongThu(P, ts), M2 = H.cong(d.K, H.nhan(d.v, 2.6)), ma = H.dai(M2, P.A), mb = H.dai(M2, P.B);
+      var dk = function (ok, chu) { return (ok ? '<span class="dung">✓ ' : '<span style="color:#B91C1C;font-weight:700">✗ ') + chu + '</span>'; };
+      return 'Đường thẳng $d$ là trung trực của $AB$ khi có <b>đủ hai điều kiện</b>:<br>' +
+        dk(d.vuong, '$d \\perp AB$ (góc hiện tại: $' + d.goc + '^\\circ$)') + '<br>' +
+        dk(d.giua, '$d$ đi qua trung điểm $I$ của $AB$' + (d.giua ? '' : ' ($KA \\ne KB$)')) + '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:6px 0">' +
+        (d.vuong && d.giua ? '<span class="dung">⇒ $d$ là đường trung trực: $MA = MB$.</span>' : '<b style="color:#B91C1C">⇒ $d$ không phải đường trung trực</b>: $MA \\approx ' + soL(ma) + '$, $MB \\approx ' + soL(mb) + '$ — không bằng nhau.') +
+        '<br><span style="color:#475569">Dùng hai thanh trượt hoặc hai hoạt hình để làm mất từng điều kiện.</span>';
+    }
     if (ts.che === 'doan') {
       var Mm = chieuM(P.M, P);
       return '$MA = ' + soL(H.dai(Mm, P.A)) + '$ ; $MB = ' + soL(H.dai(Mm, P.B)) + '$ → <b>$MA = MB$</b><br><span class="dung">Kéo $M$ dọc theo $d$, hoặc kéo $A$, $B$.</span>';
@@ -166,11 +215,12 @@ KhungPhang.tao({
       (Math.abs(mx - 90) < 0.05 ? 'Tam giác vuông: $O$ là <b>trung điểm cạnh huyền</b>.' : mx > 90 ? 'Tam giác tù: $O$ nằm <b>ngoài</b> tam giác.' : 'Tam giác nhọn: $O$ nằm <b>trong</b> tam giác.');
   },
   congThuc: function (P, ts, C) {
+    if (ts.che === 'thu') return [{ id: null, ten: 'Đường trung trực của đoạn AB', bt: '$d \\perp AB$ tại trung điểm $I$ $\\Rightarrow$ $MA = MB$ với mọi $M \\in d$' }];
     if (ts.che === 'doan') return [{ id: 'MA', ten: 'Tính chất đường trung trực', bt: '$M \\in d \\Leftrightarrow ' + C.m('MA', 'MA = MB') + '$' }];
     return [{ id: 'OA', ten: 'Giao điểm ba đường trung trực', bt: '$' + C.m('OA', 'OA = OB = OC') + '$' }];
   },
   khungNhin: function (P, ts) {
-    if (ts.che === 'doan') { var q = tt(P.A, P.B); return [H.cong(q.I, H.nhan(q.n, 3.5)), H.cong(q.I, H.nhan(q.n, -3.5))]; }
+    if (ts.che !== 'tg') { var q = tt(P.A, P.B); return [H.cong(q.I, H.nhan(q.n, 4)), H.cong(q.I, H.nhan(q.n, -3.5))]; }
     var O = H.ngoaiTiep(P.A, P.B, P.C); return O && H.dai(O, P.A) < 12 ? [O] : [];
   },
 });

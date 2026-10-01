@@ -18,21 +18,126 @@
 <script>
 /* =====================================================================
    HÌNH VUÔNG ABCD — Toán 6
-   Nhận dạng, chu vi, diện tích và tính đối xứng (4 trục, có tâm).
+   Nhận dạng (cạnh, góc, đường chéo), chu vi, diện tích, vẽ bằng thước –
+   ê ke – compa, tình huống SGK (gấp cắt giấy, cắt theo đường chéo),
+   tính đối xứng (4 trục, có tâm).
    Kéo A, B; C và D được dựng để ABCD luôn là hình vuông.
    ===================================================================== */
-var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung, CV = KhungPhang.chuVi, D = KhungPhang.dung;
 var soL = KhungPhang.soL;
+var MAU_CANH = '#2563EB', MAU_GOC = '#16A34A', MAU_CHEO = '#C026D3';
 function dinh(P) {
   var u = H.tru(P.B, P.A), v = [-u[1], u[0]];
   return { A: P.A, B: P.B, C: H.cong(P.B, v), D: H.cong(P.A, v) };
 }
+function diemTron(O, r, a) { return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
 function thongTin(P) {
   var q = dinh(P), O = H.trung(q.A, q.C);
   return { ten: 'Hình vuông', ds: [q.A, q.B, q.C, q.D], tam: O,
     truc: [[H.trung(q.A, q.B), H.trung(q.D, q.C)], [H.trung(q.D, q.A), H.trung(q.B, q.C)], [q.A, q.C], [q.B, q.D]] };
 }
 function nam(P) { var q = dinh(P); return Math.abs(q.A[1] - q.B[1]) < 1e-9 && q.B[0] > q.A[0] && Number.isInteger(q.A[0]) && Number.isInteger(q.A[1]) && Number.isInteger(q.B[0]); }
+function tenDinh(g, q, chi) {
+  var O = H.trung(q.A, q.C), ds = chi || 'ABCD';
+  ds.split('').forEach(function (k) { g.diem(q[k], k, { huong: H.tru(q[k], O) }); });
+}
+function gocVuong(g, q, dinhs, o) {
+  o = o || {};
+  var ke = { A: ['B', 'D'], B: ['C', 'A'], C: ['D', 'B'], D: ['A', 'C'] };
+  dinhs.split('').forEach(function (k) { g.goc(q[ke[k][0]], q[k], q[ke[k][1]], { mau: o.mau || MAU_NET_TOI, sang: o.sang, r: o.r || 16, nhan: o.nhan || false, nhanVuong: !!o.nhan, to: o.to, xaNhan: 14 }); });
+}
+var MAU_NET_TOI = '#1B2540';
+
+/* ---------- Vẽ hình vuông bằng thước, ê ke và compa ---------- */
+function kbVe(P) {
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), n = 0, lech = 0.3, L = 1.3 * a;
+  var aAB = H.huong(A, B), aBA = H.huong(B, A), aBC = H.huong(B, C), aAD = H.huong(A, Dd);
+  var X = H.lerp(B, C, 1.25), Y = H.lerp(A, Dd, 1.25), tia = { rong: 2, mau: '#475569' };
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doan(A, B, { ghi: Bc('Dùng thước vẽ đoạn thẳng $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenDinh(g, q, 'AB'); } }),
+    D.datEke(B, aBA, -1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke sao cho đỉnh góc vuông trùng với $B$, một cạnh góc vuông nằm trên $BA$.') }),
+    D.keTheoEke(B, aBA, -1, X, { loai: 'vuong', dai: L, net: tia, ghi: 'Kẻ tia $Bx$ theo cạnh góc vuông còn lại: $Bx \\perp AB$.',
+      sau: function (g) { g.chu(X, 'x', { mau: '#475569', dx: 10, nghieng: true }); g.goc(A, B, X, { mau: MAU_GOC, r: 16, nhan: false }); } }),
+    D.doCompa(B, A, { ghi: Bc('Mở compa bằng độ dài đoạn $AB$: mũi kim tại $B$, đầu chì tại $A$.') }),
+    D.xoayCompa(B, a, aBA, aBC - lech, { ghi: 'Giữ nguyên độ mở của compa, xoay tới tia $Bx$.' }),
+    D.cung(B, a, aBC - lech, aBC + lech, { ghi: 'Vạch một cung tròn cắt tia $Bx$ tại $C$: $BC = AB$.', sau: function (g) { g.diem(C, 'C', { huong: [1, 1], mau: '#0D9488' }); } }),
+    D.datEke(A, aAB, 1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke tại $A$: đỉnh góc vuông trùng với $A$, một cạnh góc vuông nằm trên $AB$.') }),
+    D.keTheoEke(A, aAB, 1, Y, { loai: 'vuong', dai: L, net: tia, ghi: 'Kẻ tia $Ay \\perp AB$.',
+      sau: function (g) { g.chu(Y, 'y', { mau: '#475569', dx: -10, nghieng: true }); g.goc(B, A, Y, { mau: MAU_GOC, r: 16, nhan: false }); } }),
+    D.chuyenCompa(B, diemTron(B, a, aBC + lech), A, diemTron(A, a, aAD - lech), { ghi: Bc('Giữ nguyên độ mở của compa, đặt mũi kim tại $A$.') }),
+    D.cung(A, a, aAD - lech, aAD + lech, { ghi: 'Vạch một cung tròn cắt tia $Ay$ tại $D$: $AD = AB$.', sau: function (g) { g.diem(Dd, 'D', { huong: [-1, 1], mau: '#0D9488' }); } }),
+    D.doan(Dd, C, { ghi: Bc('Dùng thước nối $D$ với $C$.') }),
+    D.doan(B, C, { tg: 0.5, ghi: 'Tô đậm các cạnh $BC$, $AD$.' }),
+    D.doan(A, Dd, { tg: 0.5 }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      [[A, B], [B, C], [C, Dd], [Dd, A]].forEach(function (c) { g.doan(c[0], c[1], { mau: MAU_CANH, rong: 3.5, kyHieu: 1 }); });
+      gocVuong(g, q, 'ABCD', { mau: MAU_GOC }); tenDinh(g, q);
+    }, { tg: 1.3, ghi: 'Ta được <b>hình vuông $ABCD$</b>: bốn cạnh bằng nhau, bốn góc vuông.' }),
+  ]);
+}
+
+/* ---------- Tình huống SGK: gấp và cắt tờ giấy hình chữ nhật thành hình vuông ---------- */
+var GIAY = '#FEF3C7', VIEN = '#B45309';
+function hinhGiay(P) {
+  var q = dinh(P), a = H.dai(q.A, q.B), u = H.nhan(H.tru(q.B, q.A), 1 / a), v = [-u[1], u[0]];
+  var B2 = H.cong(q.A, H.nhan(u, 1.65 * a));
+  return { q: q, a: a, u: u, v: v, B2: B2, C2: H.cong(B2, H.nhan(v, a)) };
+}
+function veGapCat(g, P, t) {
+  var s = hinhGiay(P), q = s.q;
+  var eGap = H.em(H.doan(t, 0.1, 0.38)), eCat = H.doan(t, 0.42, 0.58), eBo = H.em(H.doan(t, 0.58, 0.72)), eMo = H.em(H.doan(t, 0.76, 0.96));
+  var th = Math.PI * (eGap - eMo);
+  if (t < 0.1) { g.daGiac([q.A, s.B2, s.C2, q.D], { to: GIAY, doMoTo: 0.95, mauNet: VIEN, rong: 2.2 }); tenDinh(g, q, 'AD'); return; }
+  // Phần giấy thừa bên phải (sau khi cắt thì trượt ra xa và mờ dần)
+  var dich = H.nhan(s.u, 1.3 * s.a * eBo);
+  if (eBo < 1) g.daGiac([q.B, s.B2, s.C2, q.C].map(function (p) { return H.cong(p, dich); }), { to: GIAY, doMoTo: 0.95 * (1 - eBo), mauNet: VIEN, rong: 2, doMo: 1 - eBo });
+  // Nửa dưới (tam giác ABC) nằm yên
+  g.daGiac([q.A, q.B, q.C], { to: GIAY, doMoTo: 0.95, mauNet: VIEN, rong: 2 });
+  // Đường cắt
+  if (t >= 0.42 && eBo < 1) {
+    var d0 = H.cong(q.B, H.nhan(s.v, -0.35)), d1 = H.cong(q.C, H.nhan(s.v, 0.35));
+    g.doan(d0, H.lerp(d0, d1, eCat), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+    if (eCat < 1) g.chu(H.lerp(d0, d1, eCat), '✂', { mau: '#DC2626', dx: 16 });
+  }
+  // Nếp gấp AC sau khi mở ra
+  if (eMo > 0.05) g.doan(q.A, q.C, { mau: '#94A3B8', rong: 1.8, dut: '6 5' });
+  // Tam giác ACD gấp theo đường AC (vẽ sau cùng: nằm trên)
+  var p3 = [q.A, q.C, q.D].map(function (p) { return DX.quanhTruc(p, q.A, q.C, th); });
+  if (th > 0.01) g.daGiac(p3.map(DX.bong), { to: '#0F172A', doMoTo: 0.12 * Math.sin(th), khongVien: true });
+  g.daGiac(p3.map(function (p) { return DX.chieu(g, p); }), { to: Math.cos(th) >= 0 ? GIAY : '#FDE68A', doMoTo: 0.95, mauNet: VIEN, rong: 2 });
+  if (t >= 0.97) {
+    [[q.A, q.B], [q.B, q.C], [q.C, q.D], [q.D, q.A]].forEach(function (c) { g.doan(c[0], c[1], { mau: MAU_CANH, rong: 3, kyHieu: 1 }); });
+    gocVuong(g, q, 'ABCD', { mau: MAU_GOC });
+    tenDinh(g, q);
+  } else tenDinh(g, q, t < 0.38 ? 'AB' : 'ABC');
+}
+
+/* ---------- Tình huống SGK: cắt hình vuông theo hai đường chéo rồi ghép lại ---------- */
+var MAU_MANH = ['#60A5FA', '#F59E0B', '#34D399', '#F472B6'];
+function veCatCheo(g, P, t) {
+  var q = dinh(P), O = H.trung(q.A, q.C), a = H.dai(q.A, q.B);
+  var manh = [[O, q.A, q.B], [O, q.B, q.C], [O, q.C, q.D], [O, q.D, q.A]];
+  var eCat = H.doan(t, 0.04, 0.2), eTach = H.em(H.doan(t, 0.22, 0.4)), eXoay = H.em(H.doan(t, 0.44, 0.7)), eGhep = H.em(H.doan(t, 0.74, 0.94));
+  var xa = 0.42 * a * (eTach - eGhep), goc = Math.PI / 2 * eXoay;
+  g.daGiac([q.A, q.B, q.C, q.D], { to: 'none', mauNet: '#CBD5E1', rong: 1.5, dut: '5 5' });
+  manh.forEach(function (m, i) {
+    var giua = H.trung(m[1], m[2]), huong = H.nhan(H.tru(giua, O), 1 / H.dai(giua, O));
+    var ds = m.map(function (p) { return H.xoay(H.cong(p, H.nhan(huong, xa)), O, goc); });
+    g.daGiac(ds, { to: t < 0.2 ? GIAY : MAU_MANH[i], doMoTo: t < 0.2 ? 0.95 : 0.75, mauNet: VIEN, rong: 2 });
+  });
+  if (t < 0.22) {   // đang cắt theo hai đường chéo
+    g.doan(q.A, H.lerp(q.A, q.C, Math.min(1, eCat * 2)), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+    if (eCat > 0.5) g.doan(q.B, H.lerp(q.B, q.D, (eCat - 0.5) * 2), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+  }
+  if (t >= 0.97) {
+    g.doan(q.A, q.C, { mau: MAU_CHEO, rong: 3 }); g.doan(q.B, q.D, { mau: MAU_CHEO, rong: 3 });
+    [q.A, q.B, q.C, q.D].forEach(function (p) { g.kyHieu(O, p, 2, MAU_CHEO); });
+    g.diem(O, 'O', { huong: [1, 0], mau: MAU_CHEO });
+  }
+  if (t < 0.22 || t >= 0.97) tenDinh(g, q);
+}
 
 KhungPhang.tao({
   ten: 'Hình vuông',
@@ -41,42 +146,105 @@ KhungPhang.tao({
   buocLuoi: 1,
   luaChon: [DX.luaChonTruc(4)],
   hopChon: [DX.hopChonVet],
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
 
-  lamSang: DX.lamSang(thongTin).concat([
-    { id: 'dt', nhan: 'Diện tích', mau: M.dienTich,
-      ghiChu: function (P) { var a = H.dai(P.A, P.B); return 'Diện tích hình vuông cạnh $a$: $S = a \\cdot a = ' + soL(a) + ' \\cdot ' + soL(a) + ' = \\mathbf{' + soL(a * a) + '}$ <b>cm²</b>.'; } },
-  ]),
+  lamSang: [
+    { id: 'canh', nhan: 'Cạnh', mau: MAU_CANH,
+      ghiChu: function (P) { return 'Hình vuông có <b>bốn cạnh bằng nhau</b>: $AB = BC = CD = DA = ' + soL(H.dai(P.A, P.B)) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Góc', mau: MAU_GOC,
+      ghiChu: 'Hình vuông có <b>bốn góc bằng nhau</b> và <b>bằng $90^\\circ$</b> (bốn góc vuông).' },
+    { id: 'cheo', nhan: 'Đường chéo', mau: MAU_CHEO,
+      ghiChu: function (P) { return 'Hình vuông có <b>hai đường chéo bằng nhau</b>: $AC = BD \\approx ' + soL(H.dai(P.A, P.B) * Math.SQRT2) + '$ cm; chúng cắt nhau tại trung điểm $O$ của mỗi đường.'; } },
+  ].concat(CV.lamSang({
+    cv: function (P) { var a = H.dai(P.A, P.B); return 'Chu vi hình vuông cạnh $a$: $C = 4 \\cdot a = 4 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(4 * a) + '}$ <b>cm</b>.'; },
+    dt: function (P) { var a = H.dai(P.A, P.B); return 'Diện tích hình vuông cạnh $a$: $S = a \\cdot a = ' + soL(a) + ' \\cdot ' + soL(a) + ' = \\mathbf{' + soL(a * a) + '}$ <b>cm²</b>.'; },
+  })).concat(DX.lamSang(thongTin)),
 
-  hoatHinh: DX.hoatHinh(thongTin).concat([
+  hoatHinh: [
+    { id: 've', nhan: 'Vẽ bằng thước, ê ke và compa', anDiem: true,
+      vuaKhung: function (P) { var q = dinh(P), a = H.dai(q.A, q.B); return [H.lerp(q.B, q.C, 1.35), H.lerp(q.A, q.D, 1.35), H.lerp(q.B, q.A, 1.3), H.cong(q.D, H.nhan(H.tru(q.D, q.A), 0.4))]; },
+      thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } },
+    { id: 'gapCat', nhan: 'Gấp, cắt giấy thành hình vuông', thoiGian: 9000, anDiem: true,
+      vuaKhung: function (P) { var s = hinhGiay(P); return [s.B2, s.C2, H.cong(s.B2, H.nhan(s.u, 1.3 * s.a))]; },
+      ghiChu: function (P, ts, t) {
+        if (t < 0.1) return 'Lấy một tờ giấy hình chữ nhật.';
+        if (t < 0.4) return 'Gấp chéo tờ giấy sao cho cạnh $AD$ nằm trùng lên cạnh $AB$.';
+        if (t < 0.58) return 'Cắt theo mép của phần giấy đã gấp (đường nét đứt màu đỏ).';
+        if (t < 0.74) return 'Bỏ đi phần giấy hình chữ nhật thừa.';
+        if (t < 0.97) return 'Mở tờ giấy ra…';
+        return 'Ta được <b>hình vuông $ABCD$</b>. Nếp gấp $AC$ là một <b>đường chéo</b> của hình vuông.';
+      } },
+    { id: 'catCheo', nhan: 'Cắt theo hai đường chéo rồi ghép lại', thoiGian: 9000, anDiem: true,
+      vuaKhung: function (P) { var q = dinh(P), O = H.trung(q.A, q.C), a = H.dai(q.A, q.B); return [H.cong(O, [-a, -a]), H.cong(O, [a, a])]; },
+      ghiChu: function (P, ts, t) {
+        if (t < 0.22) return 'Cắt hình vuông theo hai đường chéo $AC$ và $BD$.';
+        if (t < 0.42) return 'Ta được <b>4 mảnh</b> hình tam giác.';
+        if (t < 0.72) return 'Đổi chỗ các mảnh cho nhau…';
+        if (t < 0.97) return 'Ghép các mảnh lại…';
+        return 'Bốn mảnh vẫn <b>ghép khít</b> thành hình vuông: bốn tam giác bằng nhau. Hai đường chéo <b>bằng nhau</b> và cắt nhau tại trung điểm $O$ của mỗi đường: $OA = OB = OC = OD$.';
+      } },
     { id: 'dem', nhan: 'Đếm ô vuông 1 cm²', thoiGian: 5000,
       ghiChu: function (P, ts, t) {
         if (!nam(P)) return 'Hãy đặt cạnh $AB$ nằm ngang trên một dòng kẻ của lưới để đếm ô (bấm <b>Đặt lại</b>).';
         var a = Math.round(H.dai(P.A, P.B)), n = Math.min(a * a, Math.floor(t * a * a + 1e-9));
         return 'Đã đếm <b>' + n + '</b> ô vuông 1 cm²' + (n >= a * a ? ' — mỗi hàng ' + a + ' ô, có ' + a + ' hàng: <b>$' + a + ' \\cdot ' + a + ' = ' + a * a + '$ cm²</b>.' : '…');
       } },
-  ]),
+  ].concat(DX.hoatHinh(thongTin)),
 
   ve: function (g, P, ts) {
-    var q = dinh(P), f = thongTin(P), t = g.hoat('dem'), hoat3D = DX.dangHoat(g);
+    var q = dinh(P), f = thongTin(P), a = H.dai(q.A, q.B), t = g.hoat('dem'), hoat3D = DX.dangHoat(g);
+    var tv = g.hoat('ve'), tg = g.hoat('gapCat'), tc = g.hoat('catCheo');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
+    if (tg !== null) { veGapCat(g, P, tg); return; }
+    if (tc !== null) { veCatCheo(g, P, tc); return; }
     if (!hoat3D) {
-      g.daGiac(f.ds, { sang: 'dt', to: t !== null ? 'none' : undefined });
-      if (t !== null && nam(P)) { var a = Math.round(H.dai(q.A, q.B)); g.oVuong(q.A[0], q.A[1], a, a, Math.floor(t * a * a + 1e-9)); }
+      g.daGiac(f.ds, { to: t !== null ? 'none' : undefined });
+      if (t !== null && nam(P)) g.oVuong(q.A[0], q.A[1], a, a, Math.floor(t * a * a + 1e-9));
     }
     DX.ve(g, f, ts);
     if (hoat3D) return;
-    g.nhanDo(q.A, q.B, 'a = ' + so(H.dai(q.A, q.B)) + ' cm', { benTrai: false });
-    g.diem(q.A, 'A', { huong: [-1, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] }); g.diem(q.D, 'D', { huong: [-1, 1] });
+    var canh = [[q.A, q.B, 'AB'], [q.B, q.C, 'BC'], [q.C, q.D, 'CD'], [q.D, q.A, 'DA']];
+    // Đường chéo
+    if (g.bat('cheo')) {
+      var O = H.trung(q.A, q.C);
+      g.doan(q.A, q.C, { sang: 'cheo', rongSang: 4 }); g.doan(q.B, q.D, { sang: 'cheo', rongSang: 4 });
+      [q.A, q.B, q.C, q.D].forEach(function (p) { g.kyHieu(O, p, 2, MAU_CHEO); });
+      g.nhanDo(q.A, q.B, 'AC = BD ≈ ' + so(a * Math.SQRT2) + ' cm', { sang: 'cheo', benTrai: false, kc: 62 });
+      g.diem(O, 'O', { mau: MAU_CHEO, huong: [1, 0] });
+    }
+    // Cạnh
+    if (g.bat('canh')) canh.forEach(function (c) {
+      g.doan(c[0], c[1], { sang: 'canh', kyHieu: 1 });
+      g.nhanDo(c[0], c[1], c[2] + ' = ' + so(a) + ' cm', { sang: 'canh', benTrai: false, kc: 'tu' });
+    });
+    // Góc: luôn có ký hiệu góc vuông tại A; bấm "Góc" để hiện cả bốn góc 90°
+    if (g.bat('goc')) gocVuong(g, q, 'ABCD', { sang: 'goc', r: 22, nhan: '90°' });
+    else gocVuong(g, q, 'A', { r: 16 });
+    CV.ve(g, { canh: canh.map(function (c) { return { A: c[0], B: c[1], nhan: c[2] + ' = ' + so(a) + ' cm' }; }), ds: f.ds,
+      cv: ['C = AB + BC + CD + DA', '\\phantom{C} = 4 \\cdot a = 4 \\cdot ' + soL(a), '\\phantom{C} = \\mathbf{' + soL(4 * a) + '}\\ \\text{cm}'],
+      dt: ['S = a \\cdot a', '\\phantom{S} = ' + soL(a) + ' \\cdot ' + soL(a), '\\phantom{S} = \\mathbf{' + soL(a * a) + '}\\ \\text{cm}^2'],
+      phuDt: function (g, e) { if (e > 0) { g.nhanDo(q.A, q.B, 'a = ' + so(a) + ' cm', { benTrai: false, mau: '#B45309' }); g.nhanDo(q.B, q.C, 'a = ' + so(a) + ' cm', { benTrai: false, mau: '#B45309', kc: 'tu' }); } } });
+    if (!g.bat('canh') && !g.bat('cv') && !g.bat('dt')) g.nhanDo(q.A, q.B, 'a = ' + so(a) + ' cm', { benTrai: false });
+    tenDinh(g, q);
   },
 
   congThuc: function (P, ts, C) {
     var a = H.dai(P.A, P.B);
     return [
-      { id: null, ten: 'Chu vi', bt: '$C = 4 \\cdot a = 4 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(4 * a) + '}$ (cm)' },
+      { id: 'cv', ten: 'Chu vi', bt: '$C = 4 \\cdot a = 4 \\cdot ' + soL(a) + ' = \\mathbf{' + soL(4 * a) + '}$ (cm)' },
       { id: 'dt', ten: 'Diện tích', bt: '$S = a \\cdot a = ' + soL(a) + ' \\cdot ' + soL(a) + ' = \\mathbf{' + soL(a * a) + '}$ (cm²)' },
     ];
   },
-  nhanXet: function (P) { return DX.nhanXet(thongTin(P)) + '<br>Cạnh $a = ' + soL(H.dai(P.A, P.B)) + '$ cm'; },
-  khungNhin: function (P) { var q = dinh(P); return [q.C, q.D]; },
+  nhanXet: function (P) {
+    var a = H.dai(P.A, P.B);
+    function dong(mau, tieuDe, ct, cuoi) { return '<div style="margin:' + (cuoi ? '2px 0 6px' : '3px 0 2px') + '">• <b style="color:' + mau + '">' + tieuDe + '</b>:<br><span style="padding-left:14px">' + ct + '</span></div>'; }
+    return '<b>Hình vuông $ABCD$</b> có:' +
+      dong(MAU_CANH, 'Bốn cạnh bằng nhau', '$AB = BC = CD = DA = ' + soL(a) + '$ cm') +
+      dong(MAU_GOC, 'Bốn góc bằng nhau và bằng $90^\\circ$', '$\\widehat{A} = \\widehat{B} = \\widehat{C} = \\widehat{D} = 90^\\circ$') +
+      dong(MAU_CHEO, 'Hai đường chéo bằng nhau', '$AC = BD \\approx ' + soL(a * Math.SQRT2) + '$ cm', true) +
+      DX.nhanXet(thongTin(P));
+  },
+  khungNhin: function (P, ts, bat) { var q = dinh(P), ds = [q.A, q.B, q.C, q.D]; return ds.concat(CV.khungNhin(ds, bat)); },
 });
 </script>
 </body>

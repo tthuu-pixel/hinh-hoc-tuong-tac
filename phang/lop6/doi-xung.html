@@ -17,91 +17,139 @@
 <script src="../../chung/khung-phang.js"></script>
 <script>
 /* =====================================================================
-   TRỤC VÀ TÂM ĐỐI XỨNG — CHỮ CÁI, CHỮ SỐ, HÌNH THỰC TẾ — Toán 6
-   Mỗi ký tự vẽ bằng các nét (đường gấp khúc), căn giữa tại gốc toạ độ.
-   truc: góc (độ) của các trục đối xứng đi qua tâm · tam: có tâm đối xứng
+   TRỤC VÀ TÂM ĐỐI XỨNG — Toán 6
+   Chữ cái in hoa (như SGK: A, B, G, H, E, F…), chữ số, các hình trong SGK
+   (ngôi sao sáu cánh, hai hình vuông, hai đường tròn, mũi tên bốn hướng,
+   chong chóng ba cánh) và hình trong thực tế. Nét vẽ góc nhọn, không bo tròn.
+   truc: góc (độ) của các trục đối xứng đi qua gốc toạ độ · tam: có tâm đối xứng
    ===================================================================== */
 var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
 function cung(cx, cy, r, a0, a1, n) { var ds = []; n = n || 28; for (var i = 0; i <= n; i++) { var a = (a0 + (a1 - a0) * i / n) * Math.PI / 180; ds.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return ds; }
-function elip(rx, ry, n) { var ds = []; n = n || 60; for (var i = 0; i <= n; i++) { var a = i / n * 2 * Math.PI; ds.push([rx * Math.cos(a), ry * Math.sin(a)]); } return ds; }
+function elip(rx, ry, n, cx, cy) { var ds = []; n = n || 60; for (var i = 0; i <= n; i++) { var a = i / n * 2 * Math.PI; ds.push([(cx || 0) + rx * Math.cos(a), (cy || 0) + ry * Math.sin(a)]); } return ds; }
 function noi() { return [].concat.apply([], arguments); }
+function dong(ds) { return ds.concat([ds[0]]); }
+function xoay(ds, d) { return ds.map(function (p) { return H.xoay(p, [0, 0], d * Math.PI / 180); }); }
+function daGiacDeu(n, r, a0) { var ds = []; for (var i = 0; i < n; i++) { var a = (a0 + i * 360 / n) * Math.PI / 180; ds.push([r * Math.cos(a), r * Math.sin(a)]); } return dong(ds); }
 function cucTa(f, n) { var ds = []; n = n || 180; for (var i = 0; i <= n; i++) { var t = i / n * 2 * Math.PI, r = f(t); ds.push([r * Math.cos(t), r * Math.sin(t)]); } return ds; }
 
+// Kiểu nét theo nhóm: chữ và số là chữ in đậm màu xanh (như SGK), hình SGK là nét mảnh trên lưới
+var KIEU = {
+  chu: { rongCm: 0.56, mau: '#0EA5E9', gioiHan: 2.4 },
+  so: { rongCm: 0.56, mau: '#0EA5E9', gioiHan: 2.4 },
+  sgk: { rongCm: 0.11, mau: '#1E293B', gioiHan: 10 },
+  thucTe: { rongCm: 0.2, mau: '#2451C7', gioiHan: 6 },
+};
+var NHOM = [
+  { gt: 'chu', nhan: 'Chữ cái' },
+  { gt: 'so', nhan: 'Chữ số' },
+  { gt: 'sgk', nhan: 'Hình trong SGK' },
+  { gt: 'thucTe', nhan: 'Hình thực tế' },
+];
+
 var KI = {
-  // ---- Chữ cái in hoa ----
-  A: { net: [[[-1.5, -2], [0, 2], [1.5, -2]], [[-0.8, -0.15], [0.8, -0.15]]], truc: [90] },
-  B: { net: [[[-1.3, -2], [-1.3, 2]], noi([[-1.3, 2], [0.2, 2]], cung(0.2, 1, 1, 90, -90), [[0.2, 0], [-1.3, 0]]), noi([[-1.3, 0], [0.2, 0]], cung(0.2, -1, 1, 90, -90), [[0.2, -2], [-1.3, -2]])], truc: [0] },
-  C: { net: [cung(0, 0, 1.9, 45, 315, 40)], truc: [0] },
-  D: { net: [noi([[-1.3, -2], [-1.3, 2], [-0.3, 2]], cung(-0.3, 0, 2, 90, -90, 36), [[-0.3, -2], [-1.3, -2]])], truc: [0] },
-  E: { net: [[[1.3, 2], [-1.3, 2], [-1.3, -2], [1.3, -2]], [[-1.3, 0], [1.3, 0]]], truc: [0] },
-  F: { net: [[[1.3, 2], [-1.3, 2], [-1.3, -2]], [[-1.3, 0], [0.8, 0]]], truc: [] },
-  G: { net: [noi(cung(0, 0, 1.9, 45, 320, 40), [[1.46, -1.22], [1.46, -0.2], [0.3, -0.2]])], truc: [] },
-  H: { net: [[[-1.3, -2], [-1.3, 2]], [[1.3, -2], [1.3, 2]], [[-1.3, 0], [1.3, 0]]], truc: [90, 0], tam: true },
-  I: { net: [[[0, -2], [0, 2]], [[-0.9, 2], [0.9, 2]], [[-0.9, -2], [0.9, -2]]], truc: [90, 0], tam: true },
-  J: { net: [noi([[-0.2, 2], [0.9, 2], [0.9, -1]], cung(0, -1, 0.9, 0, -180))], truc: [] },
-  K: { net: [[[-1.3, -2], [-1.3, 2]], [[1.3, 2], [-1.3, 0], [1.3, -2]]], truc: [0] },
-  L: { net: [[[-1.3, 2], [-1.3, -2], [1.3, -2]]], truc: [] },
-  M: { net: [[[-1.5, -2], [-1.5, 2], [0, -0.3], [1.5, 2], [1.5, -2]]], truc: [90] },
-  N: { net: [[[-1.3, -2], [-1.3, 2], [1.3, -2], [1.3, 2]]], truc: [], tam: true },
-  O: { net: [elip(1.4, 2)], truc: [90, 0], tam: true },
-  P: { net: [noi([[-1.3, -2], [-1.3, 2], [-0.1, 2]], cung(-0.1, 1, 1, 90, -90), [[-0.1, 0], [-1.3, 0]])], truc: [] },
-  Q: { net: [elip(1.4, 2), [[0.4, -1], [1.5, -2.3]]], truc: [] },
-  R: { net: [noi([[-1.3, -2], [-1.3, 2], [-0.1, 2]], cung(-0.1, 1, 1, 90, -90), [[-0.1, 0], [-1.3, 0]]), [[-0.2, 0], [1.3, -2]]], truc: [] },
-  S: { net: [noi(cung(0, 1, 1, 20, 270), cung(0, -1, 1, 90, -160))], truc: [], tam: true },
-  T: { net: [[[-1.5, 2], [1.5, 2]], [[0, 2], [0, -2]]], truc: [90] },
-  U: { net: [noi([[-1.3, 2], [-1.3, -0.7]], cung(0, -0.7, 1.3, 180, 360), [[1.3, -0.7], [1.3, 2]])], truc: [90] },
-  V: { net: [[[-1.5, 2], [0, -2], [1.5, 2]]], truc: [90] },
-  W: { net: [[[-1.8, 2], [-0.9, -2], [0, 1], [0.9, -2], [1.8, 2]]], truc: [90] },
-  X: { net: [[[-1.4, 2], [1.4, -2]], [[-1.4, -2], [1.4, 2]]], truc: [90, 0], tam: true },
-  Y: { net: [[[-1.4, 2], [0, 0], [1.4, 2]], [[0, 0], [0, -2]]], truc: [90] },
-  Z: { net: [[[-1.3, 2], [1.3, 2], [-1.3, -2], [1.3, -2]]], truc: [], tam: true },
+  // ---- Chữ cái in hoa (6 chữ đầu như SGK) ----
+  A: { nhom: 'chu', net: [[[-1.55, -2], [0, 2], [1.55, -2]], [[-0.95, -0.45], [0.95, -0.45]]], truc: [90] },
+  B: { nhom: 'chu', net: [[[-1.2, -2], [-1.2, 2]], noi([[-1.2, 2], [0.15, 2]], cung(0.15, 1, 1, 90, -90), [[0.15, 0], [-1.2, 0]]), noi([[-1.2, 0], [0.25, 0]], cung(0.25, -1, 1, 90, -90), [[0.25, -2], [-1.2, -2]])], truc: [0] },
+  G: { nhom: 'chu', net: [noi(cung(0, 0, 1.95, 42, 330, 44), [[1.69, -0.98], [1.69, -0.1], [0.25, -0.1]])], truc: [] },
+  H: { nhom: 'chu', net: [[[-1.3, -2], [-1.3, 2]], [[1.3, -2], [1.3, 2]], [[-1.3, 0], [1.3, 0]]], truc: [90, 0], tam: true },
+  E: { nhom: 'chu', net: [[[1.25, 2], [-1.2, 2], [-1.2, -2], [1.25, -2]], [[-1.2, 0], [0.95, 0]]], truc: [0] },
+  F: { nhom: 'chu', net: [[[1.25, 2], [-1.2, 2], [-1.2, -2]], [[-1.2, 0], [0.95, 0]]], truc: [] },
+  C: { nhom: 'chu', net: [cung(0, 0, 1.95, 42, 318, 44)], truc: [0] },
+  D: { nhom: 'chu', net: [noi([[-1.3, -2], [-1.3, 2], [-0.3, 2]], cung(-0.3, 0, 2, 90, -90, 36), [[-0.3, -2], [-1.3, -2]])], truc: [0] },
+  I: { nhom: 'chu', net: [[[0, -2], [0, 2]]], truc: [90, 0], tam: true },
+  K: { nhom: 'chu', net: [[[-1.2, -2], [-1.2, 2]], [[1.3, 2], [-1.2, 0], [1.3, -2]]], truc: [0] },
+  M: { nhom: 'chu', net: [[[-1.6, -2], [-1.3, 2], [0, -1.2], [1.3, 2], [1.6, -2]]], truc: [90] },
+  N: { nhom: 'chu', net: [[[-1.3, -2], [-1.3, 2], [1.3, -2], [1.3, 2]]], truc: [], tam: true },
+  O: { nhom: 'chu', net: [elip(1.8, 1.95)], truc: [90, 0], tam: true },
+  S: { nhom: 'chu', net: [noi(cung(0, 1, 1, 20, 270), cung(0, -1, 1, 90, -160))], truc: [], tam: true },
+  T: { nhom: 'chu', net: [[[-1.5, 2], [1.5, 2]], [[0, 2], [0, -2]]], truc: [90] },
+  U: { nhom: 'chu', net: [noi([[-1.3, 2], [-1.3, -0.7]], cung(0, -0.7, 1.3, 180, 360), [[1.3, -0.7], [1.3, 2]])], truc: [90] },
+  V: { nhom: 'chu', net: [[[-1.6, 2], [0, -2], [1.6, 2]]], truc: [90] },
+  X: { nhom: 'chu', net: [[[-1.4, 2], [1.4, -2]], [[-1.4, -2], [1.4, 2]]], truc: [90, 0], tam: true },
+  Y: { nhom: 'chu', net: [[[-1.5, 2], [0, 0], [1.5, 2]], [[0, 0], [0, -2]]], truc: [90] },
+  Z: { nhom: 'chu', net: [[[-1.3, 2], [1.3, 2], [-1.3, -2], [1.3, -2]]], truc: [], tam: true },
   // ---- Chữ số ----
-  '0': { net: [elip(1.2, 2)], truc: [90, 0], tam: true },
-  '1': { net: [[[-0.8, 1.2], [0.2, 2], [0.2, -2]], [[-0.8, -2], [1.2, -2]]], truc: [] },
-  '2': { net: [noi(cung(0, 0.9, 1.1, 150, -30), [[0.95, 0.35], [-1.2, -2], [1.2, -2]])], truc: [] },
-  '3': { net: [noi(cung(0, 1, 1, 150, -90), cung(0, -1, 1, 90, -150))], truc: [0] },
-  '4': { net: [[[0.6, -2], [0.6, 2], [-1.3, -0.6], [1.3, -0.6]]], truc: [] },
-  '5': { net: [noi([[1.1, 2], [-0.9, 2], [-1.0, 0.2]], cung(0, -0.8, 1.2, 125, -145))], truc: [] },
-  '6': { net: [noi(cung(0, -0.9, 1.1, 180, 540), cung(1.0, -0.9, 2.1, 180, 115))], truc: [] },
-  '7': { net: [[[-1.2, 2], [1.2, 2], [-0.3, -2]]], truc: [] },
-  '8': { net: [elip(1, 1).map(function (p) { return [p[0], p[1] + 1]; }), elip(1, 1).map(function (p) { return [p[0], p[1] - 1]; })], truc: [90, 0], tam: true },
-  '9': { net: [noi(cung(0, 0.9, 1.1, 0, 360), cung(-1.0, 0.9, 2.1, 0, -65))], truc: [] },
+  '0': { nhom: 'so', net: [elip(1.25, 2)], truc: [90, 0], tam: true },
+  '1': { nhom: 'so', net: [[[-0.8, 1.2], [0.25, 2], [0.25, -2]]], truc: [] },
+  '2': { nhom: 'so', net: [noi(cung(0, 0.9, 1.1, 150, -30), [[0.95, 0.35], [-1.2, -2], [1.25, -2]])], truc: [] },
+  '3': { nhom: 'so', net: [noi(cung(0, 1, 1, 150, -90), cung(0, -1, 1, 90, -150))], truc: [0] },
+  '4': { nhom: 'so', net: [[[0.6, -2], [0.6, 2], [-1.3, -0.6], [1.35, -0.6]]], truc: [] },
+  '5': { nhom: 'so', net: [noi([[1.1, 2], [-0.9, 2], [-1.0, 0.2]], cung(0, -0.8, 1.2, 125, -145))], truc: [] },
+  '6': { nhom: 'so', net: [noi(cung(0, -0.9, 1.1, 180, 540), cung(1.0, -0.9, 2.1, 180, 115))], truc: [] },
+  '7': { nhom: 'so', net: [[[-1.2, 2], [1.25, 2], [-0.3, -2]]], truc: [] },
+  '8': { nhom: 'so', net: [elip(1, 1, 60, 0, 1), elip(1, 1, 60, 0, -1)], truc: [90, 0], tam: true },
+  '9': { nhom: 'so', net: [noi(cung(0, 0.9, 1.1, 0, 360), cung(-1.0, 0.9, 2.1, 0, -65))], truc: [] },
+  // ---- Hình trong SGK ----
+  sao6: { nhom: 'sgk', ten: 'Ngôi sao sáu cánh', net: [daGiacDeu(3, 2.6, 90), daGiacDeu(3, 2.6, 270), daGiacDeu(3, 2.12, 90), daGiacDeu(3, 2.12, 270)], truc: [90, 30, 150, 0, 60, 120], tam: true },
+  vuong2: { nhom: 'sgk', ten: 'Hai hình vuông', net: [dong([[-2, -2], [2, -2], [2, 2], [-2, 2]]), daGiacDeu(4, 2 * Math.SQRT2, 90)], truc: [0, 90, 45, 135], tam: true },
+  tron2: { nhom: 'sgk', ten: 'Hai đường tròn', net: [elip(1.3, 1.3, 72), elip(2.1, 2.1, 90, 0, -1.65), [[-1.3, 0], [1.3, 0]]], truc: [90], tamThu: [0, 0], ghiO: true },
+  muiTen: { nhom: 'sgk', ten: 'Mũi tên bốn hướng', net: [0, 90, 180, 270].map(function (d) {
+    return xoay(dong([[0, 3], [1.25, 1.75], [0.45, 1.75], [0.45, 0.9], [0.9, 0.9], [0.9, 0.45], [-0.9, 0.45], [-0.9, 0.9], [-0.45, 0.9], [-0.45, 1.75], [-1.25, 1.75]]), d);
+  }), truc: [0, 90, 45, 135], tam: true },
+  chongChong3: { nhom: 'sgk', ten: 'Chong chóng ba cánh', net: [0, 120, 240].map(function (d) {
+    return xoay([[0, 0], [-0.18, 2.4], [-1.25, 2.6]], d);
+  }), truc: [], ghiO: true },
   // ---- Hình trong thực tế ----
-  tim: { ten: 'Trái tim', net: [(function () { var ds = []; for (var i = 0; i <= 120; i++) { var t = i / 120 * 2 * Math.PI; ds.push([16 * Math.pow(Math.sin(t), 3) / 8, (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 8 + 0.3]); } return ds; })()], truc: [90] },
-  sao: { ten: 'Ngôi sao năm cánh', net: [(function () { var ds = []; for (var i = 0; i <= 10; i++) { var a = (90 + i * 36) * Math.PI / 180, r = i % 2 ? 0.85 : 2.1; ds.push([r * Math.cos(a), r * Math.sin(a)]); } return ds; })()], truc: [90, 18, 162, 54, 126] },
-  buom: { ten: 'Con bướm', net: [cucTa(function (t) { return 0.35 + 1.6 * Math.abs(Math.cos(t)) * (1 + 0.35 * Math.sin(t)); }), [[0, -1.3], [0, 1.2]], [[0, 1.2], [-0.5, 2]], [[0, 1.2], [0.5, 2]]], truc: [90] },
-  hoa: { ten: 'Bông hoa sáu cánh', net: [cucTa(function (t) { return 1.35 + 0.75 * Math.cos(6 * t); }, 240), elip(0.45, 0.45, 30)], truc: [0, 30, 60, 90, 120, 150], tam: true },
-  la: { ten: 'Chiếc lá', net: [(function () { var tr = [], du = []; for (var i = 0; i <= 30; i++) { var x = -1.9 + 3.8 * i / 30, y = 1.0 * (1 - Math.pow(x / 1.9, 2)); tr.push([x, y]); du.unshift([x, -y]); } return tr.concat(du); })(), [[-1.9, 0], [2.6, 0]]], truc: [0] },
-  chongChong: { ten: 'Chong chóng', net: [0, 90, 180, 270].map(function (d) { return [[0, 0], [2, 0], [0.3, 1.2], [0, 0]].map(function (p) { return H.xoay(p, [0, 0], d * Math.PI / 180); }); }), truc: [], tam: true },
+  tim: { nhom: 'thucTe', ten: 'Trái tim', net: [(function () { var ds = []; for (var i = 0; i <= 120; i++) { var t = i / 120 * 2 * Math.PI; ds.push([16 * Math.pow(Math.sin(t), 3) / 8, (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 8 + 0.3]); } return ds; })()], truc: [90] },
+  sao: { nhom: 'thucTe', ten: 'Ngôi sao năm cánh', net: [(function () { var ds = []; for (var i = 0; i <= 10; i++) { var a = (90 + i * 36) * Math.PI / 180, r = i % 2 ? 0.85 : 2.1; ds.push([r * Math.cos(a), r * Math.sin(a)]); } return ds; })()], truc: [90, 18, 162, 54, 126] },
+  buom: { nhom: 'thucTe', ten: 'Con bướm', net: [cucTa(function (t) { return 0.35 + 1.6 * Math.abs(Math.cos(t)) * (1 + 0.35 * Math.sin(t)); }), [[0, -1.3], [0, 1.2]], [[0, 1.2], [-0.5, 2]], [[0, 1.2], [0.5, 2]]], truc: [90] },
+  hoa: { nhom: 'thucTe', ten: 'Bông hoa sáu cánh', net: [cucTa(function (t) { return 1.35 + 0.75 * Math.cos(6 * t); }, 240), elip(0.45, 0.45, 30)], truc: [0, 30, 60, 90, 120, 150], tam: true },
+  bongTuyet: { nhom: 'thucTe', ten: 'Bông tuyết', net: [].concat.apply([], [0, 60, 120, 180, 240, 300].map(function (d) {
+    return [xoay([[0, 0], [0, 2.4]], d), xoay([[-0.55, 1.95], [0, 1.4], [0.55, 1.95]], d), xoay([[-0.4, 1.05], [0, 0.7], [0.4, 1.05]], d)];
+  })), truc: [0, 30, 60, 90, 120, 150], tam: true },
+  chuThap: { nhom: 'thucTe', ten: 'Chữ thập (dấu cộng)', net: [dong([[-0.7, 2.1], [0.7, 2.1], [0.7, 0.7], [2.1, 0.7], [2.1, -0.7], [0.7, -0.7], [0.7, -2.1], [-0.7, -2.1], [-0.7, -0.7], [-2.1, -0.7], [-2.1, 0.7], [-0.7, 0.7]])], truc: [0, 90, 45, 135], tam: true },
+  bienCam: { nhom: 'thucTe', ten: 'Biển cấm (tròn, gạch chéo)', net: [elip(2.2, 2.2, 90), [[-1.56, -1.56], [1.56, 1.56]]], truc: [45, 135], tam: true },
+  amDuong: { nhom: 'thucTe', ten: 'Hình âm dương', net: [elip(2.2, 2.2, 90), noi(cung(0, 1.1, 1.1, 90, 270, 30), cung(0, -1.1, 1.1, 90, -90, 30)), elip(0.3, 0.3, 24, 0, 1.1), elip(0.3, 0.3, 24, 0, -1.1)], truc: [], tam: true },
+  la: { nhom: 'thucTe', ten: 'Chiếc lá', net: [(function () { var tr = [], du = []; for (var i = 0; i <= 30; i++) { var x = -1.9 + 3.8 * i / 30, y = 1.0 * (1 - Math.pow(x / 1.9, 2)); tr.push([x, y]); du.unshift([x, -y]); } return tr.concat(du); })(), [[-1.9, 0], [2.6, 0]]], truc: [0] },
+  chongChong: { nhom: 'thucTe', ten: 'Chong chóng bốn cánh', net: [0, 90, 180, 270].map(function (d) { return xoay([[0, 0], [2, 0], [0.3, 1.2], [0, 0]], d); }), truc: [], tam: true },
 };
 var DS_KI = Object.keys(KI);
-function tenKi(k) { return KI[k].ten || (/[0-9]/.test(k) ? 'Chữ số ' + k : 'Chữ ' + k); }
+function tenKi(k) { return KI[k].ten || (KI[k].nhom === 'so' ? 'Chữ số ' + k : 'Chữ ' + k); }
 function thongTin(P, ts) {
-  var k = KI[ts.ki];
-  return { ten: tenKi(ts.ki), net: k.net, rongCm: 0.42, tam: k.tam ? [0, 0] : null, tamThu: [0, 0],
+  var k = KI[ts.ki], kieu = KIEU[k.nhom];
+  return { ten: tenKi(ts.ki), net: k.net, rongCm: kieu.rongCm, mauNet: kieu.mau, nhon: true, tam: k.tam ? [0, 0] : null, tamThu: [0, 0],
     truc: k.truc.map(function (a) { var r = a * Math.PI / 180; return [[-3 * Math.cos(r), -3 * Math.sin(r)], [3 * Math.cos(r), 3 * Math.sin(r)]]; }) };
 }
 function dapAn(ts) { var k = KI[ts.ki], t = k.truc.length > 0, c = !!k.tam; return t && c ? 'caHai' : t ? 'truc' : c ? 'tam' : 'khong'; }
 var TEN_DAP_AN = { truc: 'chỉ có trục đối xứng', tam: 'chỉ có tâm đối xứng', caHai: 'có cả trục và tâm đối xứng', khong: 'không có trục, không có tâm đối xứng' };
 function traLoi(gt) { return function (P, ts, api) { if (ts.doan) { ts.traLoi = gt; } }; }
+function chonKi(k, ts, api) {
+  ts.ki = k; ts.doan = false; ts.traLoi = null; ts.truc = 0;
+  if (api) { api.datLuaChon('ki', k); api.datLuaChon('truc', 0); api.dungHoat(); }
+}
+function hop(ts) {
+  var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  KI[ts.ki].net.forEach(function (d) { d.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); });
+  var r = KIEU[KI[ts.ki].nhom].rongCm / 2;
+  return [[x0 - r, y0 - r], [x1 + r, y1 + r]];
+}
+// Chọn trục: chỉ hiện đúng số nút bằng số trục của hình đang chọn
+var LUA_CHON_TRUC = (function () {
+  var l = DX.luaChonTruc(6);
+  l.hien = function (P, ts) { return KI[ts.ki].truc.length > 1; };
+  l.ds.forEach(function (d, i) { d.hien = function (P, ts) { return i < KI[ts.ki].truc.length; }; });
+  return l;
+})();
 
 KhungPhang.tao({
   ten: 'Trục và tâm đối xứng',
   lop: 6,
   diem: {},
-  le: 0.3,
+  le: 0.6,
   tieuDeLuaChon: 'Chọn chữ, số hoặc hình',
   luaChon: [
-    { khoa: 'ki', gt: 'H', ds: DS_KI.map(function (k) { return { gt: k, nhan: KI[k].ten || k }; }),
-      khiDoi: function (gt, P, ts) { ts.doan = false; ts.traLoi = null; } },
-    DX.luaChonTruc(6),
+    { khoa: 'nhom', gt: 'chu', ds: NHOM,
+      khiDoi: function (gt, P, ts, api) { chonKi(DS_KI.filter(function (k) { return KI[k].nhom === gt; })[0], ts, api); }, vuaKhung: true },
+    { khoa: 'ki', gt: 'A', ds: DS_KI.map(function (k) { return { gt: k, nhan: KI[k].ten || k, hien: function (P, ts) { return KI[k].nhom === ts.nhom; } }; }),
+      khiDoi: function (gt, P, ts, api) { chonKi(gt, ts, api); }, vuaKhung: true },
+    LUA_CHON_TRUC,
   ],
   hopChon: [DX.hopChonVet],
   tieuDeNutPhu: 'Trò chơi “Đoán xem”',
   nutPhu: [
     { nhan: '🎲 Chọn ngẫu nhiên', chinh: true, bam: function (P, ts, api) {
       var k; do { k = DS_KI[Math.floor(Math.random() * DS_KI.length)]; } while (k === ts.ki);
-      api.datLuaChon('ki', k); api.tatSang(); api.dungHoat(); ts.doan = true; ts.traLoi = null; } },
+      ts.nhom = KI[k].nhom; api.datLuaChon('nhom', ts.nhom); chonKi(k, ts, api); api.tatSang(); api.vuaKhung(); ts.doan = true; ts.traLoi = null; } },
     { nhan: 'Chỉ có trục', bam: traLoi('truc') },
     { nhan: 'Chỉ có tâm', bam: traLoi('tam') },
     { nhan: 'Có cả hai', bam: traLoi('caHai') },
@@ -111,9 +159,12 @@ KhungPhang.tao({
   hoatHinh: DX.hoatHinh(thongTin),
 
   ve: function (g, P, ts) {
-    var f = thongTin(P, ts);
-    if (!DX.dangHoat(g)) f.net.forEach(function (d) { g.duong(d, { rongCm: f.rongCm, mau: (g.bat('diemTruc') || g.bat('diemTam')) ? '#BFD3FA' : '#2451C7' }); });
+    var f = thongTin(P, ts), k = KI[ts.ki], kieu = KIEU[k.nhom];
+    if (!DX.dangHoat(g)) f.net.forEach(function (d) {
+      g.duong(d, { rongCm: f.rongCm, mau: (g.bat('diemTruc') || g.bat('diemTam')) ? '#BFD3FA' : f.mauNet, nhon: true, gioiHanNhon: kieu.gioiHan });
+    });
     DX.ve(g, f, ts);
+    if (k.ghiO && !DX.dangHoat(g) && !g.bat('tam') && !g.bat('diemTam')) g.diem([0, 0], 'O', { r: 3.5, huong: [0.9, 0.5] });
   },
 
   nhanXet: function (P, ts) {
@@ -123,10 +174,13 @@ KhungPhang.tao({
       return (dung ? '<span class="dung" style="font-size:18px">✓ Chính xác!</span>' : '<span style="color:#B91C1C;font-weight:700;font-size:18px">✗ Chưa đúng.</span>') +
         '<br>' + tenKi(ts.ki) + ' ' + TEN_DAP_AN[dapAn(ts)] + '. Bấm các nút bên dưới để kiểm tra bằng hình.';
     }
-    return DX.nhanXet(thongTin(P, ts));
+    var s = DX.nhanXet(thongTin(P, ts));
+    if (ts.ki === 'chongChong3') s += '<br><span style="color:#475569">Quay hình $\\frac{1}{3}$ vòng thì hình trùng với chính nó, nhưng quay nửa vòng thì không trùng: hình <b>không có tâm đối xứng</b>.</span>';
+    if (ts.ki === 'tron2') s += '<br><span style="color:#475569">Hai đường tròn khác nhau nên <b>chỉ có một trục</b> là đường thẳng đi qua hai tâm.</span>';
+    return s;
   },
-  khungNhin: function () { return [[-3, -2.8], [3, 2.8]]; },
-  goiY: 'Chọn chữ ở bảng bên phải, bật hiệu ứng để kiểm tra',
+  khungNhin: function (P, ts) { return hop(ts); },
+  goiY: 'Chọn nhóm và hình ở bảng bên phải, bật hiệu ứng để kiểm tra',
 });
 </script>
 </body>

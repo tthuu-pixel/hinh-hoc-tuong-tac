@@ -22,7 +22,7 @@
    Hai góc xOy và yOz kề nhau khi có chung cạnh Oy và hai cạnh Ox, Oz
    nằm về hai phía của đường thẳng chứa Oy.
    ===================================================================== */
-var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU;
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
 var soL = KhungPhang.soL;
 function keNhau(P) {
   var O = P.O, c1 = (P.y[0] - O[0]) * (P.x[1] - O[1]) - (P.y[1] - O[1]) * (P.x[0] - O[0]);
@@ -46,17 +46,33 @@ KhungPhang.tao({
     { id: 'g2', nhan: 'Góc yOz', mau: M.goc2, ghiChu: function (P) { return '$\\widehat{yOz} = ' + soL(H.gocDo(P.y, P.O, P.z), 0) + '^\\circ$.'; } },
     { id: 'chung', nhan: 'Cạnh chung Oy', mau: M.song,
       ghiChu: 'Hai góc có <b>chung đỉnh $O$</b> và <b>chung cạnh $Oy$</b>. Đường thẳng chứa $Oy$ (nét đứt) chia mặt phẳng làm hai phía.' },
+    { id: 'phia', nhan: 'Ox, Oz khác phía với Oy', mau: '#0D9488',
+      ghiChu: function (P) { return keNhau(P) ? 'Đường thẳng chứa cạnh chung $Oy$ chia mặt phẳng thành <b>hai nửa mặt phẳng</b>. Cạnh $Ox$ nằm ở <b style="color:#E0342F">nửa thứ nhất</b>, cạnh $Oz$ nằm ở <b style="color:#1E6FE0">nửa thứ hai</b>: $Ox$, $Oz$ <b>nằm khác phía</b> đối với đường thẳng chứa $Oy$.' : 'Hiện $Ox$ và $Oz$ nằm <b>cùng một phía</b> đối với đường thẳng chứa $Oy$ nên hai góc <b>không kề nhau</b>. Kéo $z$ sang nửa mặt phẳng bên kia.'; } },
     { id: 'tong', nhan: 'Tổng hai góc', mau: M.goc3,
       ghiChu: function (P) { return keNhau(P) ? 'Hai góc kề nhau: $\\widehat{xOy} + \\widehat{yOz} = \\widehat{xOz} = ' + soL(H.gocDo(P.x, P.O, P.y) + H.gocDo(P.y, P.O, P.z), 0) + '^\\circ$.' : 'Hai góc không kề nhau nên không cộng lại thành $\\widehat{xOz}$.'; } },
   ],
 
   ve: function (g, P) {
     var O = P.O, ke = keNhau(P);
+    if (g.bat('phia')) {
+      var Y2 = H.tru(H.nhan(O, 2), P.y), r = 7, khung = [[O[0] - r, O[1] - r], [O[0] + r, O[1] - r], [O[0] + r, O[1] + r], [O[0] - r, O[1] + r]];
+      var cx = (P.y[0] - O[0]) * (P.x[1] - O[1]) - (P.y[1] - O[1]) * (P.x[0] - O[0]), dx = cx > 0 ? 1 : -1;
+      g.daGiac(DX.catDaGiac(khung, O, P.y, dx), { to: '#E0342F', doMoTo: 0.09, khongVien: true });
+      g.daGiac(DX.catDaGiac(khung, O, P.y, -dx), { to: '#1E6FE0', doMoTo: 0.09, khongVien: true });
+      g.duongThang(Y2, P.y, { mau: '#0D9488', dut: '8 5', rong: 2.2, daiHet: true });
+    }
     if (g.bat('chung')) { g.duongThang(H.tru(H.nhan(O, 2), P.y), P.y, { mau: M.song, dut: '6 5', rong: 1.8, du: 0.6 }); }
     if (g.bat('tong') && ke) g.goc(P.x, O, P.z, { mau: M.goc3, r: 86, doMoTo: 0.12 });
     g.goc(P.x, O, P.y, { mau: M.goc1, r: 54, doMoTo: g.bat('g1') ? 0.4 : 0.18, sang: 'g1' });
     g.goc(P.y, O, P.z, { mau: M.goc2, r: 54, kyHieu: 2, doMoTo: g.bat('g2') ? 0.4 : 0.18, sang: 'g2' });
     g.tia(O, P.x, { rong: 3 }); g.tia(O, P.y, { rong: g.bat('chung') ? 5 : 3, mau: g.bat('chung') ? M.song : undefined }); g.tia(O, P.z, { rong: 3 });
+    if (g.bat('phia')) {
+      g.tia(O, P.x, { mau: '#E0342F', rong: 5 }); g.tia(O, P.z, { mau: ke ? '#1E6FE0' : '#E0342F', rong: 5 });
+      var cx2 = (P.y[0] - O[0]) * (P.x[1] - O[1]) - (P.y[1] - O[1]) * (P.x[0] - O[0]) > 0 ? 1 : -1;
+      var nY = [-(P.y[1] - O[1]), P.y[0] - O[0]], LY = Math.hypot(nY[0], nY[1]); nY = [nY[0] / LY * cx2, nY[1] / LY * cx2];
+      g.chu(H.cong(H.lerp(O, P.x, 0.55), H.nhan(nY, 0.9)), 'nửa mặt phẳng 1', { mau: '#E0342F' });
+      g.chu(H.cong(H.lerp(O, P.z, 0.55), H.nhan(nY, ke ? -0.9 : 0.9)), 'nửa mặt phẳng ' + (ke ? 2 : 1), { mau: ke ? '#1E6FE0' : '#E0342F' });
+    }
     g.diem(O, 'O', { huong: [0, -1] });
     ['x', 'y', 'z'].forEach(function (k) { g.chu(H.cong(O, H.nhan(H.tru(P[k], O), 1 + 1.4 / H.dai(O, P[k]))), k, { nghieng: true }); });
   },

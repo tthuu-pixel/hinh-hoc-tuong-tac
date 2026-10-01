@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hình tam giác</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   HÌNH TAM GIÁC ABC — Toán 6
+   Ba đỉnh, ba cạnh, ba góc; chu vi; diện tích (đáy × chiều cao : 2),
+   ghép hai tam giác bằng nhau thành hình bình hành để thấy công thức.
+   Kéo A, B, C để thay đổi tam giác.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, CV = KhungPhang.chuVi;
+var soL = KhungPhang.soL;
+var MAU_DINH = '#DC2626', MAU_CANH = { AB: '#E0342F', BC: '#1E6FE0', CA: '#16A34A' }, MAU_GOC = { A: '#F59E0B', B: '#7C3AED', C: '#0D9488' }, MAU_CAO = M.chieuCao;
+function hq(P) {   // chân đường cao từ A xuống đường thẳng BC
+  var Hh = H.chan(P.A, P.B, P.C);
+  return { H: Hh, h: H.dai(P.A, Hh), a: H.dai(P.B, P.C), b: H.dai(P.C, P.A), c: H.dai(P.A, P.B) };
+}
+function cheo(P) { return (P.B[0] - P.A[0]) * (P.C[1] - P.A[1]) - (P.B[1] - P.A[1]) * (P.C[0] - P.A[0]); }
+function tenDinh(g, P, o) { var G = H.trongTam(P.A, P.B, P.C); ['A', 'B', 'C'].forEach(function (k) { g.diem(P[k], k, { huong: H.tru(P[k], G), r: o && o.to ? 6 : 4, mau: o && o.to ? MAU_DINH : undefined }); }); }
+function goc(P, k) { var o = { A: ['B', 'C'], B: ['C', 'A'], C: ['A', 'B'] }[k]; return H.gocDo(P[o[0]], P[k], P[o[1]]); }
+function veCao(g, P, e, o) {
+  var s = hq(P), Hh = s.H, ngoai = H.dai(P.B, Hh) + H.dai(Hh, P.C) > s.a + 1e-6;
+  if (ngoai) g.doan(H.dai(P.B, Hh) < H.dai(P.C, Hh) ? P.B : P.C, Hh, { mau: MAU_CAO, rong: 1.6, dut: '5 4' });
+  g.doan(P.A, H.lerp(P.A, Hh, e == null ? 1 : e), { mau: MAU_CAO, rong: 3.5, dut: o && o.dut ? '7 5' : false });
+  if (e == null || e >= 1) {
+    g.goc(P.A, Hh, H.dai(P.B, Hh) > 1e-6 ? P.B : P.C, { mau: MAU_CAO, nhan: false, r: 12 });
+    g.diem(Hh, 'H', { mau: MAU_CAO, huong: H.tru(Hh, P.A) });
+    g.nhanDo(Hh, P.A, 'h = AH ≈ ' + so(s.h), { mau: MAU_CAO, kc: 'tu', benTrai: cheo(P) < 0 });
+  }
+}
+
+KhungPhang.tao({
+  ten: 'Hình tam giác',
+  lop: 6,
+  diem: { A: [1.5, 3.5], B: [0, 0], C: [5, 0] },
+  buocLuoi: 0.5,
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
+  lamSang: [
+    { id: 'dinh', nhan: 'Ba đỉnh', mau: MAU_DINH, ghiChu: 'Tam giác $ABC$ có <b>ba đỉnh</b> là $A$, $B$, $C$.' },
+    { id: 'canh', nhan: 'Ba cạnh', mau: '#2563EB', ghiChu: function (P) { var s = hq(P); return 'Tam giác $ABC$ có <b>ba cạnh</b>: $AB \\approx ' + soL(s.c) + '$ cm, $BC = ' + soL(s.a) + '$ cm, $CA \\approx ' + soL(s.b) + '$ cm.'; } },
+    { id: 'goc', nhan: 'Ba góc', mau: '#F59E0B', ghiChu: function (P) { return 'Tam giác $ABC$ có <b>ba góc</b>: $\\widehat{A} \\approx ' + soL(goc(P, 'A'), 0) + '^\\circ$, $\\widehat{B} \\approx ' + soL(goc(P, 'B'), 0) + '^\\circ$, $\\widehat{C} \\approx ' + soL(goc(P, 'C'), 0) + '^\\circ$.'; } },
+    { id: 'cao', nhan: 'Chiều cao AH', mau: MAU_CAO, ghiChu: function (P) { var s = hq(P); return '$AH$ vuông góc với cạnh đáy $BC$ là <b>chiều cao</b> ứng với đáy $BC$: $h \\approx ' + soL(s.h) + '$ cm.'; } },
+  ].concat(CV.lamSang({
+    cv: function (P) { var s = hq(P); return 'Chu vi tam giác = tổng độ dài ba cạnh: $C = AB + BC + CA \\approx ' + soL(s.c) + ' + ' + soL(s.a) + ' + ' + soL(s.b) + ' \\approx \\mathbf{' + soL(s.a + s.b + s.c) + '}$ <b>cm</b>.'; },
+    dt: function (P) { var s = hq(P); return 'Diện tích tam giác = đáy × chiều cao : 2 $= ' + soL(s.a) + ' \\cdot ' + soL(s.h) + ' : 2 \\approx \\mathbf{' + soL(s.a * s.h / 2) + '}$ <b>cm²</b>.'; },
+  })),
+  hoatHinh: [
+    { id: 'ghep', nhan: 'Ghép hai tam giác thành hình bình hành', thoiGian: 6500, anDiem: true,
+      vuaKhung: function (P) { return [H.cong(P.A, H.tru(P.C, P.B)), P.B, P.C]; },
+      ghiChu: function (P, ts, t) {
+        var s = hq(P);
+        if (t < 0.15) return 'Lấy thêm một tam giác giống hệt tam giác $ABC$.';
+        if (t < 0.95) return 'Quay tam giác thứ hai nửa vòng quanh trung điểm của cạnh $AC$…';
+        return 'Hai tam giác ghép thành <b>hình bình hành</b> có đáy $BC = ' + soL(s.a) + '$ cm, chiều cao $h \\approx ' + soL(s.h) + '$ cm.<br>Vậy $S_{\\text{tam giác}} = \\dfrac{a \\cdot h}{2} \\approx \\mathbf{' + soL(s.a * s.h / 2) + '}$ <b>cm²</b>.';
+      } },
+  ],
+
+  ve: function (g, P) {
+    var s = hq(P), t = g.hoat('ghep'), ds = [P.A, P.B, P.C];
+    if (t !== null) {
+      var N = H.trung(P.A, P.C), e = H.em(H.doan(t, 0.18, 0.9));
+      g.daGiac(ds, { to: '#93C5FD', doMoTo: 0.65 });
+      if (t > 0.05) g.daGiac(ds.map(function (x) { return H.xoay(x, N, Math.PI * e); }), { to: '#F59E0B', doMoTo: 0.6 * Math.min(1, t / 0.15) });
+      g.diem(N, '', { r: 4, mau: '#0D9488' });
+      if (t >= 0.95) veCao(g, P);
+      tenDinh(g, P);
+      return;
+    }
+    g.daGiac(ds, {});
+    if (g.bat('canh')) [['A', 'B'], ['B', 'C'], ['C', 'A']].forEach(function (c) {
+      var id = c[0] + c[1];
+      g.doan(P[c[0]], P[c[1]], { mau: MAU_CANH[id], rong: 5 });
+      g.nhanDo(P[c[0]], P[c[1]], id + ' ≈ ' + so(H.dai(P[c[0]], P[c[1]])), { mau: MAU_CANH[id], kc: 'tu', benTrai: cheo(P) < 0 });
+    });
+    if (g.bat('goc')) ['A', 'B', 'C'].forEach(function (k, i) {
+      var o = { A: ['B', 'C'], B: ['C', 'A'], C: ['A', 'B'] }[k];
+      g.goc(P[o[0]], P[k], P[o[1]], { mau: MAU_GOC[k], r: 28, kyHieu: i + 1, nhan: so(goc(P, k), 0) + '°', xaNhan: 16, doMoTo: 0.3 });
+    });
+    if (g.bat('cao')) veCao(g, P);
+    CV.ve(g, { ds: ds, canh: [{ A: P.A, B: P.B, nhan: '≈ ' + so(s.c) }, { A: P.B, B: P.C, nhan: so(s.a) }, { A: P.C, B: P.A, nhan: '≈ ' + so(s.b) }],
+      cv: ['C = AB + BC + CA', '\\phantom{C} \\approx ' + soL(s.c) + ' + ' + soL(s.a) + ' + ' + soL(s.b), '\\phantom{C} \\approx \\mathbf{' + soL(s.a + s.b + s.c) + '}\\ \\text{cm}'],
+      dt: ['S = \\dfrac{a \\cdot \\textcolor{' + MAU_CAO + '}{h}}{2}', '\\phantom{S} = \\dfrac{' + soL(s.a) + ' \\cdot ' + soL(s.h) + '}{2}', '\\phantom{S} \\approx \\mathbf{' + soL(s.a * s.h / 2) + '}\\ \\text{cm}^2'],
+      phuDt: function (g, e) { if (e > 0 && !g.bat('cao')) { g.doan(P.B, P.C, { mau: '#1E6FE0', rong: 5 }); veCao(g, P, e); } } });
+    tenDinh(g, P, { to: g.bat('dinh') });
+  },
+
+  congThuc: function (P) {
+    var s = hq(P);
+    return [
+      { id: 'cv', ten: 'Chu vi', bt: '$C = AB + BC + CA \\approx \\mathbf{' + soL(s.a + s.b + s.c) + '}$ (cm)' },
+      { id: 'dt', ten: 'Diện tích (a: cạnh đáy, h: chiều cao)', bt: '$S = \\dfrac{a \\cdot h}{2} = \\dfrac{' + soL(s.a) + ' \\cdot ' + soL(s.h) + '}{2} \\approx \\mathbf{' + soL(s.a * s.h / 2) + '}$ (cm²)' },
+    ];
+  },
+  nhanXet: function (P) {
+    var s = hq(P);
+    return '<b>Tam giác $ABC$</b> có:' +
+      '<div style="margin:4px 0 2px">• <b style="color:' + MAU_DINH + '">Ba đỉnh</b>: $A$, $B$, $C$</div>' +
+      '<div style="margin:2px 0">• <b style="color:#2563EB">Ba cạnh</b>: $AB$, $BC$, $CA$</div>' +
+      '<div style="margin:2px 0 6px">• <b style="color:#F59E0B">Ba góc</b>: $\\widehat{A}$, $\\widehat{B}$, $\\widehat{C}$</div>' +
+      '<b>Cách tính:</b><br>• Chu vi = tổng độ dài ba cạnh.<br>• Diện tích = cạnh đáy × chiều cao ứng với đáy đó : 2.';
+  },
+  khungNhin: function (P, ts, bat) { var ds = [P.A, P.B, P.C]; return ds.concat([H.chan(P.A, P.B, P.C)]).concat(CV.khungNhin(ds, bat)); },
+});
+</script>
+</body>
+</html>

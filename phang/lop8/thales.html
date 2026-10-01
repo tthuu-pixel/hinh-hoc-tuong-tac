@@ -18,7 +18,8 @@
 <script>
 /* =====================================================================
    ĐỊNH LÍ THALÈS TRONG TAM GIÁC — Toán 8
-   Kéo A, B, C; thanh trượt đổi vị trí M trên AB. MN // BC.
+   Kéo A, B, C hoặc kéo M trên AB (N tự chạy để MN // BC).
+   Số đo các đoạn thay đổi khi kéo, nhưng các tỉ số luôn bằng nhau.
    ===================================================================== */
 var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
 var MAU_AB = '#E0342F', MAU_AC = '#1E6FE0', MAU_SS = '#7C3AED', MAU_HQ = '#0D9488';
@@ -27,9 +28,15 @@ function mn(P, k) { return { M: H.lerp(P.A, P.B, k), N: H.lerp(P.A, P.C, k) }; }
 KhungPhang.tao({
   ten: 'Định lí Thalès',
   lop: 8,
-  diem: { A: [-0.5, 5], B: [-4, 0], C: [4, 0] },
+  diem: { A: [-0.5, 5], B: [-4, 0], C: [4, 0], M: [-1.9, 3] },
   buocLuoi: 0.5,
-  thamSo: [{ khoa: 'k', nhan: 'Vị trí điểm M trên AB', min: 0.1, max: 0.9, buoc: 0.05, gt: 0.4, hienThi: function (ts) { return 'AM : AB = ' + so(ts.k); } }],
+  thamSo: [{ khoa: 'k', nhan: 'Vị trí điểm M trên AB (hoặc kéo M)', min: 0.1, max: 0.9, buoc: 0.05, gt: 0.4, hienThi: function (ts) { return 'AM : AB = ' + so(ts.k); },
+    khiDoi: function (gt, P) { P.M = H.lerp(P.A, P.B, gt); } }],
+  rangBuoc: { M: function (p, P) { var d = H.tru(P.B, P.A), t = ((p[0] - P.A[0]) * d[0] + (p[1] - P.A[1]) * d[1]) / (d[0] * d[0] + d[1] * d[1]); t = Math.max(0.08, Math.min(0.92, Math.round(t * 100) / 100)); return H.lerp(P.A, P.B, t); } },
+  sauKeo: function (ten, P, ts) {
+    if (ten === 'M') { ts.k = Math.round(H.dai(P.A, P.M) / H.dai(P.A, P.B) * 100) / 100; var el = document.getElementById('ts-k'); if (el) { el.value = ts.k; document.getElementById('gt-k').textContent = 'AM : AB = ' + so(ts.k); } }
+    P.M = H.lerp(P.A, P.B, ts.k);
+  },
 
   lamSang: [
     { id: 'ab', nhan: 'Tỉ số trên cạnh AB', mau: MAU_AB, ghiChu: 'Đoạn $AM$ và cạnh $AB$.' },
@@ -53,6 +60,10 @@ KhungPhang.tao({
     var ssOn = g.bat('ss') || g.bat('hq');
     g.duongThang(q.M, q.N, { mau: ssOn ? MAU_SS : '#94A3B8', rong: 1.5, dut: '6 5' });
     g.doan(q.M, q.N, { mau: g.bat('hq') ? MAU_HQ : MAU_SS, rong: ssOn ? 5 : 3 });
+    if (!g.bat('ab') && !g.bat('ac') && g.hienSo()) {   // số đo các đoạn luôn hiện để thấy chúng thay đổi khi kéo
+      g.nhanDo(A, q.M, 'AM ≈ ' + so(H.dai(A, q.M)), { mau: MAU_AB, kc: 'tu', t: 0.5, benTrai: false }); g.nhanDo(q.M, B, 'MB ≈ ' + so(H.dai(q.M, B)), { mau: '#B91C1C', kc: 'tu', t: 0.5, benTrai: false });
+      g.nhanDo(A, q.N, 'AN ≈ ' + so(H.dai(A, q.N)), { mau: MAU_AC, kc: 'tu', t: 0.5, benTrai: true }); g.nhanDo(q.N, C, 'NC ≈ ' + so(H.dai(q.N, C)), { mau: '#1D4ED8', kc: 'tu', t: 0.5, benTrai: true });
+    }
     if (g.bat('hq')) { g.doan(B, C, { mau: MAU_HQ, rong: 5 }); g.nhanDo(q.M, q.N, 'MN ≈ ' + so(H.dai(q.M, q.N)), { mau: MAU_HQ, kc: 18 }); g.nhanDo(B, C, 'BC = ' + so(H.dai(B, C)), { mau: MAU_HQ, benTrai: false }); }
     if (ssOn) { g.goc(q.N, q.M, B, { mau: MAU_SS, r: 22, nhan: false }); g.goc(C, B, q.M, { mau: MAU_SS, r: 22, nhan: false }); }
     g.diem(q.M, 'M', { huong: H.tru(q.M, H.trung(q.M, q.N)).map(function (x) { return x; }) });
@@ -70,8 +81,14 @@ KhungPhang.tao({
     ];
   },
   nhanXet: function (P, ts) {
-    var q = mn(P, ts.k);
-    return '$\\dfrac{AM}{AB} = ' + soL(H.dai(P.A, q.M) / H.dai(P.A, P.B)) + '$ &nbsp; $\\dfrac{AN}{AC} = ' + soL(H.dai(P.A, q.N) / H.dai(P.A, P.C)) + '$<br><span class="dung">Hai tỉ số luôn bằng nhau khi ${MN \\parallel BC}$.</span>';
+    var q = mn(P, ts.k), A = P.A, am = H.dai(A, q.M), ab = H.dai(A, P.B), an = H.dai(A, q.N), ac = H.dai(A, P.C), mb = H.dai(q.M, P.B), nc = H.dai(q.N, P.C);
+    var td = function (x) { return '<td style="padding:2px 8px;text-align:center">' + x + '</td>'; };
+    return '<table style="border-collapse:collapse;margin-bottom:4px">' +
+      '<tr style="color:#475569;font-size:13px">' + td('') + td('<b>số đo thay đổi</b>') + td('<b>tỉ số</b>') + '</tr>' +
+      '<tr>' + td('<b style="color:' + MAU_AB + '">AB</b>') + td('$AM \\approx ' + soL(am) + '$, $AB \\approx ' + soL(ab) + '$') + td('$\\dfrac{AM}{AB} \\approx \\mathbf{' + soL(am / ab) + '}$') + '</tr>' +
+      '<tr>' + td('<b style="color:' + MAU_AC + '">AC</b>') + td('$AN \\approx ' + soL(an) + '$, $AC \\approx ' + soL(ac) + '$') + td('$\\dfrac{AN}{AC} \\approx \\mathbf{' + soL(an / ac) + '}$') + '</tr>' +
+      '<tr>' + td('') + td('$MB \\approx ' + soL(mb) + '$, $NC \\approx ' + soL(nc) + '$') + td('$\\dfrac{AM}{MB} \\approx ' + soL(am / mb) + ' = \\dfrac{AN}{NC}$') + '</tr></table>' +
+      '<span class="dung">Kéo $A$, $B$, $C$: các độ dài thay đổi nhưng $\\dfrac{AM}{AB} = \\dfrac{AN}{AC}$ luôn đúng (bất biến) khi ${MN \\parallel BC}$.</span><br><span style="color:#475569">Kéo $M$ trên $AB$ để đổi tỉ số.</span>';
   },
 });
 </script>

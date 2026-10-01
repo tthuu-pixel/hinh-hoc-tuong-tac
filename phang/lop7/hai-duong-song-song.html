@@ -34,13 +34,24 @@ function hinh(P, ts) {
     cTren: di(A, uc, 1.6), cDuoi: di(B, uc, -1.6), AxuongB: di(A, uc, -2), BlenA: di(B, uc, 2),
   };
 }
-function gocs(P, ts) {
+// Bốn góc tại A (A1 trên phải, A2 trên trái, A3 dưới trái, A4 dưới phải) và bốn góc tại B (tương tự)
+function bonGoc(P, ts) {
   var h = hinh(P, ts);
   return {
-    sltA: H.gocDo(h.aPhai, h.A, h.AxuongB), sltB: H.gocDo(h.bTrai, h.B, h.BlenA),
-    dvA: H.gocDo(h.aPhai, h.A, h.cTren), dvB: H.gocDo(h.bPhai, h.B, h.BlenA),
+    A1: [h.aPhai, h.A, h.cTren], A2: [h.cTren, h.A, h.aTrai], A3: [h.aTrai, h.A, h.AxuongB], A4: [h.AxuongB, h.A, h.aPhai],
+    B1: [h.bPhai, h.B, h.BlenA], B2: [h.BlenA, h.B, h.bTrai], B3: [h.bTrai, h.B, h.cDuoi], B4: [h.cDuoi, h.B, h.bPhai],
   };
 }
+var CAP = [
+  { id: 'slt1', loai: 'slt', nhan: 'So le trong – cặp 1', mau: '#E0342F', g: ['A4', 'B2'] },
+  { id: 'slt2', loai: 'slt', nhan: 'So le trong – cặp 2', mau: '#F59E0B', g: ['A3', 'B1'] },
+  { id: 'dv1', loai: 'dv', nhan: 'Đồng vị – cặp 1', mau: '#1E6FE0', g: ['A1', 'B1'] },
+  { id: 'dv2', loai: 'dv', nhan: 'Đồng vị – cặp 2', mau: '#16A34A', g: ['A2', 'B2'] },
+  { id: 'dv3', loai: 'dv', nhan: 'Đồng vị – cặp 3', mau: '#7C3AED', g: ['A3', 'B3'] },
+  { id: 'dv4', loai: 'dv', nhan: 'Đồng vị – cặp 4', mau: '#DB2777', g: ['A4', 'B4'] },
+];
+function soDo(P, ts, k) { var q = bonGoc(P, ts)[k]; return H.gocDo(q[0], q[1], q[2]); }
+function tenGoc(k) { return '\\widehat{' + k[0] + '_' + k[1] + '}'; }
 
 KhungPhang.tao({
   ten: 'Hai đường thẳng song song',
@@ -53,12 +64,14 @@ KhungPhang.tao({
   },
   thamSo: [{ khoa: 'lech', nhan: 'Độ lệch của đường thẳng b so với a', min: -25, max: 25, buoc: 1, gt: 0, hienThi: function (ts) { return ts.lech === 0 ? '0° (a // b)' : so(ts.lech, 0) + '°'; } }],
 
-  lamSang: [
-    { id: 'slt', nhan: 'Cặp góc so le trong', mau: M.goc1,
-      ghiChu: 'Hai góc nằm <b>so le</b> hai bên đường $c$, <b>trong</b> dải giữa $a$ và $b$. Nếu $a \\parallel b$ thì hai góc so le trong <b>bằng nhau</b>.<br><b>Dấu hiệu:</b> nếu hai góc so le trong bằng nhau thì $a \\parallel b$.' },
-    { id: 'dv', nhan: 'Cặp góc đồng vị', mau: M.goc2,
-      ghiChu: 'Hai góc ở <b>cùng vị trí</b> tại $A$ và $B$. Nếu $a \\parallel b$ thì hai góc đồng vị <b>bằng nhau</b>.<br><b>Dấu hiệu:</b> nếu hai góc đồng vị bằng nhau thì $a \\parallel b$.' },
-  ],
+  tieuDeSang: 'Chọn cặp góc để làm nổi bật',
+  lamSang: CAP.map(function (c) {
+    return { id: c.id, nhan: c.nhan, mau: c.mau, ghiChu: function (P, ts) {
+      var x = soDo(P, ts, c.g[0]), y = soDo(P, ts, c.g[1]), bang = Math.abs(x - y) < 0.5;
+      var vt = c.loai === 'slt' ? 'Hai góc nằm <b>so le</b> hai bên đường $c$, <b>trong</b> dải giữa $a$ và $b$ (các cạnh tạo thành chữ <b>' + (c.id === 'slt1' ? 'Z ngược' : 'Z') + '</b>).' : 'Hai góc ở <b>cùng vị trí</b> tại $A$ và tại $B$ (các cạnh tạo thành chữ <b>F</b>).';
+      return vt + '<br>$' + tenGoc(c.g[0]) + ' = ' + soL(x, 0) + '^\\circ$, $' + tenGoc(c.g[1]) + ' = ' + soL(y, 0) + '^\\circ$' + (bang ? ': <b>bằng nhau</b> vì $a \\parallel b$.' : ': <b>khác nhau</b> vì $a$ không song song với $b$.');
+    } };
+  }),
 
   hoatHinh: [
     { id: 'truot', nhan: 'Trượt góc từ A xuống B', thoiGian: 4000,
@@ -73,14 +86,20 @@ KhungPhang.tao({
     g.duongThang(h.aTrai, h.aPhai, { rong: 2.8, mau: '#334155', du: 0 });
     g.duongThang(h.bTrai, h.bPhai, { rong: 2.8, mau: ts.lech === 0 ? '#334155' : '#B91C1C', du: 0 });
     g.duongThang(h.cDuoi, h.cTren, { rong: 2.2, mau: '#64748B', du: 0 });
-    g.goc(h.aPhai, h.A, h.AxuongB, { sang: 'slt', chiKhiSang: true, r: 36 });
-    g.goc(h.bTrai, h.B, h.BlenA, { sang: 'slt', chiKhiSang: true, r: 36 });
-    g.goc(h.aPhai, h.A, h.cTren, { sang: 'dv', chiKhiSang: true, r: 36, kyHieu: 2 });
-    g.goc(h.bPhai, h.B, h.BlenA, { sang: 'dv', chiKhiSang: true, r: 36, kyHieu: 2 });
+    var bg = bonGoc(P, ts), daVe = {};
+    CAP.forEach(function (c) {
+      if (!g.bat(c.id)) return;
+      c.g.forEach(function (k, j) {
+        var q = bg[k], lan = daVe[k] || 0; daVe[k] = lan + 1;
+        g.goc(q[0], q[1], q[2], { mau: c.mau, r: 34 + 14 * lan, kyHieu: c.loai === 'slt' ? 1 : 2, doMoTo: 0.28, nhan: soL(soDo(P, ts, k), 0).replace('{,}', ',') + '°', xaNhan: 14 });
+      });
+    });
     if (t !== null) {
-      var e = H.em(t), O = H.lerp(h.A, h.B, e), a0 = 0, a1 = H.huong(h.A, h.cTren);
-      g.quat(O, 1.4, a0, a1, { to: M.goc2, doMoTo: 0.5, mau: M.goc2 });
-      g.goc(h.bPhai, h.B, h.BlenA, { mau: '#15803D', r: 62, doMoTo: 0.08 });
+      var dvBat = CAP.filter(function (c) { return c.loai === 'dv' && g.bat(c.id); }).pop() || CAP[2], qA = bg[dvBat.g[0]], qB = bg[dvBat.g[1]];
+      var e = H.em(t), O = H.lerp(h.A, h.B, e), a0 = H.huong(qA[1], qA[0]), a1 = H.huong(qA[1], qA[2]);
+      if (a1 < a0) a1 += 2 * Math.PI;
+      g.quat(O, 1.4, a0, a1, { to: dvBat.mau, doMoTo: 0.5, mau: dvBat.mau });
+      g.goc(qB[0], qB[1], qB[2], { mau: '#15803D', r: 62, doMoTo: 0.08, nhan: false });
     }
     g.chu(H.cong(h.aPhai, [0.35, 0.3]), 'a', { nghieng: true }); g.chu(H.cong(h.bPhai, H.cong(H.nhan(h.ub, 0.35), [0, 0.3])), 'b', { nghieng: true, mau: ts.lech === 0 ? undefined : '#B91C1C' });
     g.chu(H.cong(h.cTren, H.nhan(h.uc, 0.4)), 'c', { nghieng: true });
@@ -88,13 +107,14 @@ KhungPhang.tao({
   },
 
   nhanXet: function (P, ts) {
-    var q = gocs(P, ts), ss = ts.lech === 0;
-    return (ss ? '<span class="dung">$a \\parallel b$</span>' : '<span style="color:#B91C1C;font-weight:700">$a$ không song song với $b$</span>') + '<br>' +
-      'So le trong: <b>$' + soL(q.sltA, 0) + '^\\circ$</b> và <b>$' + soL(q.sltB, 0) + '^\\circ$</b> ' + (H.bang(q.sltA, q.sltB) ? '(bằng nhau)' : '(khác nhau)') + '<br>' +
-      'Đồng vị: <b>$' + soL(q.dvA, 0) + '^\\circ$</b> và <b>$' + soL(q.dvB, 0) + '^\\circ$</b> ' + (H.bang(q.dvA, q.dvB) ? '(bằng nhau)' : '(khác nhau)');
+    var ss = ts.lech === 0;
+    var dong = function (c) { var x = soDo(P, ts, c.g[0]), y = soDo(P, ts, c.g[1]); return '<span style="color:' + c.mau + ';font-weight:700">$' + tenGoc(c.g[0]) + ' = ' + soL(x, 0) + '^\\circ$, $' + tenGoc(c.g[1]) + ' = ' + soL(y, 0) + '^\\circ$</span>' + (Math.abs(x - y) < 0.5 ? ' ✓' : ' ✗'); };
+    return (ss ? '<span class="dung">$a \\parallel b$</span>' : '<span style="color:#B91C1C;font-weight:700">$a$ không song song với $b$</span>') +
+      '<div style="margin-top:4px"><b>Hai cặp góc so le trong:</b><br>' + CAP.slice(0, 2).map(dong).join('<br>') + '</div>' +
+      '<div style="margin-top:4px"><b>Bốn cặp góc đồng vị:</b><br>' + CAP.slice(2).map(dong).join('<br>') + '</div>';
   },
   khungNhin: function (P) { return [[-5, -3.5], [5, 4]]; },
-  batDau: ['slt'],
+  batDau: ['slt1'],
   le: 0.3,
 });
 </script>

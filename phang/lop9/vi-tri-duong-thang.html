@@ -20,7 +20,9 @@ var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.do
 var O0 = [0, 0];
 function diemDT(O, R, a) { return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }
 function veCung(g, O, R, a0, a1, o) { var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) * 40)), ds = []; for (var i = 0; i <= n; i++) ds.push(diemDT(O, R, a0 + (a1 - a0) * i / n)); g.duong(ds, o || {}); return ds; }
-function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; return [O[0] + (p[0] - O[0]) * R / d, O[1] + (p[1] - O[1]) * R / d]; }; }
+// Đưa điểm lên đường tròn (O; R), vị trí làm tròn tới số nguyên độ để số đo góc, cung là số nguyên
+function lenDT(O, R) { return function (p) { var d = H.dai(p, O); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1] - O[1], p[0] - O[0]) * 180 / Math.PI) * Math.PI / 180; return [O[0] + R * Math.cos(a), O[1] + R * Math.sin(a)]; }; }
+function DO(d) { return d * Math.PI / 180; }
 function gocCua(p, O) { var a = Math.atan2(p[1] - (O || O0)[1], p[0] - (O || O0)[0]); return a < 0 ? a + 2 * Math.PI : a; }
 function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d >= 2 * Math.PI) d -= 2 * Math.PI; return d; }   // góc quay ngược chiều từ a0 đến a1
 var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
@@ -56,7 +58,7 @@ KhungPhang.tao({
 
   lamSang: [
     { id: 'd', nhan: 'Khoảng cách d = OH', mau: MD, ghiChu: function (P, ts) { var h = hinh(P, ts); return '$d = OH$ là khoảng cách từ tâm $O$ đến đường thẳng $a$: $d = ' + soL(h.d) + '$ cm, so với $R = ' + soL(h.R) + '$ cm.'; } },
-    { id: 'R', nhan: 'Bán kính R', mau: MR, ghiChu: function (P, ts) { return 'Bán kính $R = ' + soL(ts.R) + '$ cm. So sánh $d$ với $R$ để biết vị trí tương đối.'; } },
+    { id: 'R', nhan: 'Bán kính R', mau: MR, ghiChu: function (P, ts) { var l = hinh(P, ts).loai; return 'Bán kính $R = ' + soL(ts.R) + '$ cm. ' + (l === 'cat' ? 'Hai điểm chung $A$, $B$ nằm trên đường tròn nên $OA = OB = R$.' : l === 'tx' ? 'Tiếp điểm $H$ nằm trên đường tròn nên $OH = R$.' : 'So sánh $d$ với $R$ để biết vị trí tương đối.'); } },
     { id: 'giao', nhan: 'Điểm chung', mau: MG, ghiChu: function (P, ts) { return TEN[hinh(P, ts).loai]; } },
   ],
   hoatHinh: [
@@ -76,7 +78,13 @@ KhungPhang.tao({
       g.doan(O0, h.H, g.bat('d') ? { sang: 'd' } : { mau: MD, rong: 2.5 });
       if (h.d > 0.3) { g.goc(O0, h.H, P2, { mau: MD, r: 12, to: false }); g.nhanDo(O0, h.H, 'd = ' + so(h.d), { mau: MD }); }
     }
-    if (g.bat('R')) { var Rp = diemDT(O0, h.R, gocCua(h.H) + 2.2); g.doan(O0, Rp, { sang: 'R' }); g.nhanDo(O0, Rp, 'R = ' + so(h.R), { mau: MR }); }
+    if (h.loai === 'cat') {   // cắt nhau: hai bán kính OA, OB nối tâm với hai điểm chung
+      var bR = g.bat('R');
+      [h.A, h.B].forEach(function (X, i) { g.doan(O0, X, bR ? { sang: 'R' } : { mau: MR, rong: 2.2, dut: '6 4' }); if (bR) { var m = H.trung(O0, X), dx = H.tru(X, O0), pv = [-dx[1] / h.R, dx[0] / h.R]; if ((m[0] + pv[0] - h.H[0]) * pv[0] + (m[1] + pv[1] - h.H[1]) * pv[1] < 0) pv = H.nhan(pv, -1); if (H.dai(H.cong(m, pv), h.H) < H.dai(m, h.H)) pv = H.nhan(pv, -1); g.chu(H.cong(m, H.nhan(pv, 0.5)), (i ? 'OB' : 'OA') + ' = ' + so(h.R), { mau: MR }); } });
+    } else if (g.bat('R')) {
+      if (h.loai === 'tx') g.nhanDo(O0, h.H, 'OH = R = ' + so(h.R), { mau: MR, benTrai: false, kc: 'tu' });
+      else { var Rp = diemDT(O0, h.R, gocCua(h.H) + 2.2); g.doan(O0, Rp, { sang: 'R' }); g.nhanDo(O0, Rp, 'R = ' + so(h.R), { mau: MR }); }
+    }
     if (h.loai === 'cat') { g.diem(h.A, 'A', { r: g.bat('giao') ? 7 : 5, mau: MG, huong: H.cong(H.nhan(h.u, -1), h.n) }); g.diem(h.B, 'B', { r: g.bat('giao') ? 7 : 5, mau: MG, huong: H.cong(h.u, h.n) }); }
     if (h.loai === 'tx') g.chu(H.cong(h.H, H.nhan(h.n, 0.7)), 'tiếp điểm', { mau: '#16A34A', nho: true });
     g.diem(h.H, 'H', { r: h.loai === 'tx' ? (g.bat('giao') ? 7 : 5) : 3.5, mau: h.loai === 'tx' ? MG : MD, huong: H.cong(h.n, H.nhan(h.u, -0.8)) });

@@ -26,7 +26,7 @@ var soL = KhungPhang.soL;
    Kéo tự do bốn đỉnh; hệ thống tự NHẬN BIẾT tứ giác theo các dấu hiệu.
    ===================================================================== */
 var MAU_SAN = {
-  thuong: { A: [-3, -1.5], B: [3, -2], C: [2, 2.5], D: [-2, 2] },
+  thuong: { A: [-3, -1.5], B: [3, -2], C: [2.5, 2.5], D: [-2, 2] },
   thang: { A: [-3.5, -1.5], B: [3.5, -1.5], C: [1.5, 2], D: [-2, 2] },
   thangCan: { A: [-3.5, -1.5], B: [3.5, -1.5], C: [2, 2], D: [-2, 2] },
   thangVuong: { A: [-3, -1.5], B: [3.5, -1.5], C: [1, 2], D: [-3, 2] },
@@ -37,18 +37,71 @@ var MAU_SAN = {
 };
 function datMau(k) { return function (P, ts, api) { var m = MAU_SAN[k]; Object.keys(m).forEach(function (x) { P[x] = m[x].slice(); }); api.vuaKhung(); }; }
 function q_(P) { return { A: P.A, B: P.B, C: P.C, D: P.D }; }
+/* ---------- Giữ dạng khi kéo: hình đã chọn luôn giữ tính chất của nó ---------- */
+function don(v) { var L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L]; }
+function cham(a, b) { return a[0] * b[0] + a[1] * b[1]; }
+var GIU = {
+  thang: function (k, P) {   // AB // DC
+    var u = don(H.tru(P.B, P.A));
+    P.C = H.cong(P.D, H.nhan(u, cham(H.tru(P.C, P.D), u)));
+  },
+  thangVuong: function (k, P) {   // AB // DC, AD ⊥ AB
+    var u = don(H.tru(P.B, P.A)), n = [-u[1], u[0]], h = cham(H.tru(P.D, P.A), n);
+    var dai = cham(H.tru(P.C, P.D), u);
+    P.D = H.cong(P.A, H.nhan(n, h)); P.C = H.cong(P.D, H.nhan(u, dai));
+  },
+  thangCan: function (k, P) {   // AB // DC, D và C đối xứng qua trung trực của AB
+    var u = don(H.tru(P.B, P.A)), n = [-u[1], u[0]], Mm = H.trung(P.A, P.B), w, h;
+    if (k === 'C') { w = cham(H.tru(P.C, Mm), u); h = cham(H.tru(P.C, Mm), n); }
+    else if (k === 'D') { w = -cham(H.tru(P.D, Mm), u); h = cham(H.tru(P.D, Mm), n); }
+    else { w = Math.abs(cham(H.tru(P.C, P.D), u)) / 2; h = cham(H.tru(H.trung(P.C, P.D), Mm), n); }
+    P.D = H.cong(Mm, H.cong(H.nhan(u, -w), H.nhan(n, h))); P.C = H.cong(Mm, H.cong(H.nhan(u, w), H.nhan(n, h)));
+  },
+  binhHanh: function (k, P) {   // AB // DC và AD // BC
+    if (k === 'C') P.A = H.tru(H.cong(P.B, P.D), P.C); else P.C = H.tru(H.cong(P.B, P.D), P.A);
+  },
+  chuNhat: function (k, P) {
+    var u = don(H.tru(P.B, P.A)), n = [-u[1], u[0]];
+    if (k === 'C' || k === 'D') {
+      var h = cham(H.tru(P[k], P.A), n);
+      if (k === 'C') { var dai = cham(H.tru(P.C, P.A), u); P.B = H.cong(P.A, H.nhan(u, dai)); }
+      P.D = H.cong(P.A, H.nhan(n, h)); P.C = H.cong(P.B, H.nhan(n, h));
+    } else {
+      var h2 = H.dai(P.A, P.D) * (cham(H.tru(P.D, P.A), n) >= 0 ? 1 : -1);
+      P.D = H.cong(P.A, H.nhan(n, h2)); P.C = H.cong(P.B, H.nhan(n, h2));
+    }
+  },
+  thoi: function (k, P) {   // bốn cạnh bằng nhau: AB = AD, C = B + D - A
+    var u = H.tru(P.B, P.A), v = H.tru(P.D, P.A);
+    if (k === 'B') v = H.nhan(don(v), Math.hypot(u[0], u[1]));
+    else if (k === 'D') u = H.nhan(don(u), Math.hypot(v[0], v[1]));
+    else if (k === 'C') {   // giữ độ dài đường chéo BD, đổi đường chéo AC
+      var w = H.tru(P.C, P.A), t = H.dai(P.B, P.D) / 2, n = don([-w[1], w[0]]);
+      u = H.cong(H.nhan(w, 0.5), H.nhan(n, -t)); v = H.cong(H.nhan(w, 0.5), H.nhan(n, t));
+    } else { var L = Math.hypot(u[0], u[1]); v = H.nhan(don(v), L); }
+    P.B = H.cong(P.A, u); P.D = H.cong(P.A, v); P.C = H.cong(P.A, H.cong(u, v));
+  },
+  vuong: function (k, P) {
+    var u = H.tru(P.B, P.A);
+    if (k === 'D') { var v0 = H.tru(P.D, P.A); u = [v0[1], -v0[0]]; }
+    else if (k === 'C') { var w = H.tru(P.C, P.A); u = [(w[0] + w[1]) / 2, (w[1] - w[0]) / 2]; }
+    var v = [-u[1], u[0]];
+    P.B = H.cong(P.A, u); P.D = H.cong(P.A, v); P.C = H.cong(P.A, H.cong(u, v));
+  },
+};
+var TEN_DANG = { tuDo: 'Tứ giác bất kì', thang: 'Hình thang', thangCan: 'Hình thang cân', thangVuong: 'Hình thang vuông', binhHanh: 'Hình bình hành', chuNhat: 'Hình chữ nhật', thoi: 'Hình thoi', vuong: 'Hình vuông' };
+var MAU_TU_DANG = { tuDo: 'thuong', thang: 'thang', thangCan: 'thangCan', thangVuong: 'thangVuong', binhHanh: 'binhHanh', chuNhat: 'chuNhat', thoi: 'thoi', vuong: 'vuong' };
 
 KhungPhang.tao({
   ten: 'Tứ giác – Nhận biết tứ giác',
   lop: 8,
-  diem: { A: [-3, -1.5], B: [3, -2], C: [2, 2.5], D: [-2, 2] },
+  diem: { A: [-3, -1.5], B: [3, -2], C: [2.5, 2.5], D: [-2, 2] },
   buocLuoi: 0.5,
-  tieuDeNutPhu: 'Đưa nhanh về dạng (rồi kéo thử)',
-  nutPhu: [
-    { nhan: 'Tứ giác', bam: datMau('thuong') }, { nhan: 'Hình thang', bam: datMau('thang') }, { nhan: 'Thang cân', bam: datMau('thangCan') },
-    { nhan: 'Thang vuông', bam: datMau('thangVuong') }, { nhan: 'Bình hành', bam: datMau('binhHanh') }, { nhan: 'Chữ nhật', bam: datMau('chuNhat') },
-    { nhan: 'Hình thoi', bam: datMau('thoi') }, { nhan: 'Hình vuông', bam: datMau('vuong') },
-  ],
+  tieuDeLuaChon: 'Chọn dạng — kéo đỉnh vẫn giữ dạng đã chọn',
+  luaChon: [{ khoa: 'dang', gt: 'tuDo', vuaKhung: true,
+    ds: Object.keys(TEN_DANG).map(function (k) { return { gt: k, nhan: TEN_DANG[k] }; }),
+    khiDoi: function (gt, P, ts, api) { datMau(MAU_TU_DANG[gt])(P, ts, api); } }],
+  sauKeo: function (ten, P, ts) { if (GIU[ts.dang]) GIU[ts.dang](ten, P); },
 
   lamSang: [
     { id: 'canh', nhan: 'Bốn cạnh', mau: '#475569', ghiChu: 'Tứ giác $ABCD$ có bốn cạnh $AB, BC, CD, DA$. Các cạnh bằng nhau được đánh cùng số vạch.' },
@@ -94,11 +147,13 @@ KhungPhang.tao({
     TG.nhanDinh(g, q);
   },
 
-  nhanXet: function (P) {
+  nhanXet: function (P, ts) {
     var d = TG.nhanDang(q_(P)), dh = function (ok, s) { return '<div class="' + (ok ? 'dung' : 'sai') + '">' + (ok ? '✓ ' : '✗ ') + s + '</div>'; };
-    return '<div style="font-size:16px;margin-bottom:6px">Tứ giác $ABCD$ là: <b style="font-size:19px;color:#1D4ED8">' + d.ten + '</b></div>' +
+    var q = q_(P), ac = H.dai(q.A, q.C), bd = H.dai(q.B, q.D);
+    var giu = ts.dang && ts.dang !== 'tuDo' ? '<div style="font-size:14px;color:#475569;margin-bottom:4px">Đang giữ dạng <b>' + TEN_DANG[ts.dang] + '</b>: kéo đỉnh nào hình vẫn là ' + TEN_DANG[ts.dang].toLowerCase() + '. Kéo tới trường hợp đặc biệt hơn để thấy dấu hiệu mới.</div>' : '';
+    return giu + '<div style="font-size:16px;margin-bottom:6px">Tứ giác $ABCD$ là: <b style="font-size:19px;color:#1D4ED8">' + d.ten + '</b></div>' +
       dh(d.ss1, '${AB \\parallel DC}$') + dh(d.ss2, '${AD \\parallel BC}$') + dh(d.catTrung, 'Hai đường chéo cắt nhau tại trung điểm mỗi đường') +
-      dh(d.cheoBang, 'Hai đường chéo bằng nhau') + dh(d.cheoVuong, 'Hai đường chéo vuông góc') + dh(d.coGocVuong, 'Có góc vuông') + dh(d.ke4Bang, 'Bốn cạnh bằng nhau') +
+      dh(d.cheoBang, 'Hai đường chéo bằng nhau ($AC \\approx ' + soL(ac) + '$, $BD \\approx ' + soL(bd) + '$)') + dh(d.cheoVuong, 'Hai đường chéo vuông góc') + dh(d.coGocVuong, 'Có góc vuông') + dh(d.ke4Bang, 'Bốn cạnh bằng nhau') +
       '<div style="margin-top:6px">Tổng bốn góc: $\\widehat{A} + \\widehat{B} + \\widehat{C} + \\widehat{D} = \\mathbf{' + soL(d.tongGoc, 0) + '^\\circ}$</div>';
   },
   congThuc: function (P, ts, C) { return [{ id: 'goc', ten: 'Tổng các góc của tứ giác', bt: '$' + C.m('goc', '\\widehat{A} + \\widehat{B} + \\widehat{C} + \\widehat{D} = 360^\\circ') + '$' }]; },

@@ -3,8 +3,11 @@
    ===================================================================== */
 window.CAU_HINH = {
   // Tên sản phẩm (hiện ở trang bìa, thanh trên cùng, tiêu đề tab)
-  TEN_SAN_PHAM: 'Mô hình hình học tương tác cho học sinh Trung học cơ sở',
-  TEN_NGAN: 'Hình học tương tác',   // dùng cho tiêu đề tab trình duyệt
+  THUONG_HIEU: 'GeoLab',                         // tên thương hiệu (chữ lớn ở trang bìa)
+  PHU_DE: 'Hình học tương tác THCS',             // dòng dưới tên thương hiệu
+  SLOGAN: 'Từ trực quan đến khám phá',           // khẩu hiệu
+  TEN_SAN_PHAM: 'GeoLab – Hình học tương tác THCS',   // tên đầy đủ (thanh trên cùng, chân trang)
+  TEN_NGAN: 'GeoLab',                            // dùng cho tiêu đề tab trình duyệt
   KHAU_HIEU: 'Nhóm nghiên cứu khoa học · Trường TH-THCS An Lạc',
 
   // Thông tin tác giả

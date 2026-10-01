@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đoạn thẳng</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   ĐOẠN THẲNG — Toán 6
+   Vẽ đoạn thẳng có độ dài cho trước bằng thước, đo độ dài đoạn thẳng,
+   trung điểm của đoạn thẳng (dùng thước, gấp giấy).
+   Kéo A, B để đổi vị trí và độ dài (bắt vào lưới 0,5 cm).
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung, D = KhungPhang.dung;
+var soL = KhungPhang.soL;
+var MAU_DOAN = '#2563EB', MAU_TRUNG = '#DC2626';
+function doDai(P) { return H.dai(P.A, P.B); }
+function trungDiem(P) { return H.trung(P.A, P.B); }
+function tenAB(g, P, chi) {
+  var d = H.tru(P.B, P.A), L = Math.hypot(d[0], d[1]) || 1, n = [-d[1] / L, d[0] / L];
+  if (!chi || chi.indexOf('A') >= 0) g.diem(P.A, 'A', { huong: [n[0] - d[0] / L * 0.6, n[1] - d[1] / L * 0.6] });
+  if (!chi || chi.indexOf('B') >= 0) g.diem(P.B, 'B', { huong: [n[0] + d[0] / L * 0.6, n[1] + d[1] / L * 0.6] });
+}
+function ghiDo(x) { return soL(x, 1); }
+
+/* ---------- Vẽ đoạn thẳng AB có độ dài cho trước ---------- */
+function kbVe(P) {
+  var A = P.A, B = P.B, a = doDai(P), n = 0;
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    { tg: 1.3, ghi: Bc('Đặt thước thẳng có vạch chia, đánh dấu điểm $A$ tại <b>vạch 0</b>.'),
+      ve: function (g, e) { if (e > 0.6) g.diem(A, '', { r: 4.5, mau: '#DC2626' }); },
+      xong: function (g) { tenAB(g, P, 'A'); },
+      cu: function (g, e) { g.thuoc(A, B, { ben: -1, chia: true, them: 1, doMo: 0.4 + 0.55 * Math.min(1, e * 2) }); if (e > 0.3) g.but(A); } },
+    D.doDoan(A, B, { tg: 1.4, ghi: Bc('Đánh dấu điểm $B$ tại <b>vạch ' + so(a, 1) + '</b> của thước.'),
+      sau: function (g) { tenAB(g, P, 'B'); } }),
+    D.doanChia(A, B, { ghi: Bc('Dùng bút chì nối $A$ với $B$ theo cạnh thước.') }),
+    D.hien(function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 4 }); g.nhanDo(A, B, 'AB = ' + so(a, 1) + ' cm', { mau: MAU_DOAN, benTrai: false, kc: 'tu' }); tenAB(g, P); },
+      { tg: 1, ghi: 'Ta được <b>đoạn thẳng $AB = ' + ghiDo(a) + '$ cm</b>.' }),
+  ]);
+}
+
+/* ---------- Đo độ dài đoạn thẳng AB bằng thước ---------- */
+function kbDo(P) {
+  var A = P.A, B = P.B, a = doDai(P);
+  return KhungPhang.kichBan([
+    D.hien(function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); }, { tg: 0.6, ghi: 'Cho đoạn thẳng $AB$. Hãy đo độ dài đoạn thẳng này.' }),
+    { tg: 1.6, ghi: '<b>Bước 1.</b> Đặt cạnh thước dọc theo đoạn thẳng $AB$ sao cho <b>vạch 0</b> của thước trùng với điểm $A$.',
+      ve: function (g, e) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); },
+      xong: function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); },
+      cu: function (g, e) { var dich = H.nhan(H.tru(A, B), 0.25 * (1 - e)); g.thuoc(H.cong(A, dich), H.cong(B, dich), { ben: -1, chia: true, them: 1, doMo: 0.4 + 0.55 * e }); } },
+    { tg: 1.8, ghi: '<b>Bước 2.</b> Xem điểm $B$ trùng với vạch nào của thước: vạch <b>' + so(a, 1) + '</b>.',
+      ve: function (g, e) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); g.diem(B, '', { r: 6 + 3 * Math.sin(e * Math.PI * 4), mau: MAU_TRUNG }); },
+      xong: function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); },
+      cu: function (g, e) { g.thuoc(A, B, { ben: -1, chia: true, them: 1 }); } },
+    D.hien(function (g) { g.nhanDo(A, B, 'AB = ' + so(a, 1) + ' cm', { mau: MAU_DOAN, benTrai: false, kc: 'tu' }); }, { tg: 1, ghi: 'Độ dài đoạn thẳng $AB$ là <b>' + so(a, 1) + ' cm</b>. Ta viết $AB = ' + ghiDo(a) + '$ cm.' }),
+  ]);
+}
+
+/* ---------- Trung điểm bằng thước ---------- */
+function kbTrung(P) {
+  var A = P.A, B = P.B, a = doDai(P), Mm = trungDiem(P), n = 0;
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    { tg: 1.6, ghi: Bc('Đo độ dài đoạn thẳng: $AB = ' + ghiDo(a) + '$ cm.'),
+      ve: function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); }, xong: function (g) { g.doan(A, B, { mau: MAU_DOAN, rong: 3.5 }); tenAB(g, P); },
+      cu: function (g) { g.thuoc(A, B, { ben: -1, chia: true, them: 1 }); } },
+    D.hien(function (g) { }, { tg: 1.2, ghi: Bc('Tính: $AB : 2 = ' + ghiDo(a) + ' : 2 = ' + soL(a / 2, 2) + '$ cm.') }),
+    D.doDoan(A, Mm, { ghi: Bc('Đặt vạch 0 của thước tại $A$, đánh dấu điểm $M$ tại vạch ' + so(a / 2, 2) + '.'), them: a / 2 + 1,
+      sau: function (g) { g.diem(Mm, 'M', { mau: MAU_TRUNG, huong: [0, 1] }); } }),
+    D.hien(function (g) { g.kyHieu(A, Mm, 1, MAU_TRUNG); g.kyHieu(Mm, B, 1, MAU_TRUNG); g.nhanDo(A, Mm, 'MA = ' + so(a / 2), { mau: MAU_TRUNG, benTrai: false, kc: 'tu' }); g.nhanDo(Mm, B, 'MB = ' + so(a / 2), { mau: MAU_TRUNG, benTrai: false, kc: 'tu' }); },
+      { tg: 1.2, ghi: '$M$ là <b>trung điểm</b> của $AB$: $M$ nằm giữa $A$, $B$ và $MA = MB = ' + soL(a / 2, 2) + '$ cm.' }),
+  ]);
+}
+
+/* ---------- Trung điểm bằng gấp giấy ---------- */
+function veGap(g, P, t) {
+  var A = P.A, B = P.B, Mm = trungDiem(P), u = H.tru(B, A), L = Math.hypot(u[0], u[1]); u = [u[0] / L, u[1] / L];
+  var v = [-u[1], u[0]], rong = 1.2, GIAY = '#FEF3C7', VIEN = '#B45309';
+  var tr = [H.cong(Mm, H.nhan(v, -1)), H.cong(Mm, H.nhan(v, 1))];
+  var goc = function (p, s) { return H.cong(H.cong(p, H.nhan(u, s[0])), H.nhan(v, s[1])); };
+  var trai = [goc(A, [-0.6, -rong]), goc(Mm, [0, -rong]), goc(Mm, [0, rong]), goc(A, [-0.6, rong])];
+  var phai = [goc(Mm, [0, -rong]), goc(B, [0.6, -rong]), goc(B, [0.6, rong]), goc(Mm, [0, rong])];
+  var eG = H.em(H.doan(t, 0.1, 0.5)), eM = H.em(H.doan(t, 0.62, 0.92)), th = Math.PI * (eG - eM);
+  g.daGiac(trai, { to: GIAY, doMoTo: 0.95, mauNet: VIEN, rong: 1.5 });
+  g.doan(A, Mm, { mau: MAU_DOAN, rong: 3.5 });
+  var p3 = phai.map(function (p) { return DX.quanhTruc(p, tr[0], tr[1], th); }), d3 = [Mm, B].map(function (p) { return DX.quanhTruc(p, tr[0], tr[1], th); });
+  if (th > 0.01) g.daGiac(p3.map(DX.bong), { to: '#0F172A', doMoTo: 0.12 * Math.sin(th), khongVien: true });
+  g.daGiac(p3.map(function (p) { return DX.chieu(g, p); }), { to: Math.cos(th) >= 0 ? GIAY : '#FDE68A', doMoTo: 0.92, mauNet: VIEN, rong: 1.5 });
+  var d2 = d3.map(function (p) { return DX.chieu(g, p); });
+  g.doan(d2[0], d2[1], { mau: MAU_DOAN, rong: 3.5 });
+  g.diem(A, 'A', { huong: [0, -1] }); g.diem(d2[1], 'B', { huong: [0, 1] });
+  if (t > 0.5) { g.doan(tr[0], tr[1], { mau: '#94A3B8', rong: 1.6, dut: '6 5' }); }
+  if (t >= 0.95) { g.diem(Mm, 'M', { mau: MAU_TRUNG, huong: [0.8, -1] }); g.kyHieu(A, Mm, 1, MAU_TRUNG); g.kyHieu(Mm, B, 1, MAU_TRUNG); }
+}
+
+KhungPhang.tao({
+  ten: 'Đoạn thẳng',
+  lop: 6,
+  diem: { A: [0, 0], B: [5, 0] },
+  buocLuoi: 0.5,
+  rangBuoc: { B: function (p, P) { return H.dai(p, P.A) < 1 ? null : p; }, A: function (p, P) { return H.dai(p, P.B) < 1 ? null : p; } },
+  tieuDeSang: 'Chú thích · bấm để làm nổi bật',
+  lamSang: [
+    { id: 'dau', nhan: 'Hai đầu mút', mau: '#0D9488', ghiChu: 'Hai điểm $A$, $B$ là <b>hai đầu mút</b> (hai đầu) của đoạn thẳng $AB$.' },
+    { id: 'doDai', nhan: 'Độ dài', mau: MAU_DOAN, ghiChu: function (P) { return 'Độ dài đoạn thẳng $AB$ là $' + ghiDo(doDai(P)) + '$ cm. Ta viết $AB = ' + ghiDo(doDai(P)) + '$ cm.'; } },
+    { id: 'trung', nhan: 'Trung điểm', mau: MAU_TRUNG, ghiChu: function (P) { return 'Trung điểm $M$ của đoạn thẳng $AB$ nằm giữa $A$, $B$ và <b>cách đều</b> $A$, $B$: $MA = MB = \\dfrac{AB}{2} = ' + soL(doDai(P) / 2) + '$ cm.'; } },
+  ],
+  hoatHinh: [
+    { id: 've', nhan: 'Vẽ đoạn thẳng có độ dài cho trước', anDiem: true,
+      vuaKhung: function (P) { var d = H.nhan(H.tru(P.B, P.A), 1 / doDai(P)); return [H.cong(P.B, H.nhan(d, 1.5)), H.cong(P.A, [0, 1.5]), H.cong(P.A, [0, -1.5])]; },
+      thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } },
+    { id: 'do', nhan: 'Đo độ dài đoạn thẳng', anDiem: true,
+      thoiGian: function (P) { return kbDo(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbDo(P).ghi(t); } },
+    { id: 'trungThuoc', nhan: 'Lấy trung điểm bằng thước', anDiem: true,
+      thoiGian: function (P) { return kbTrung(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbTrung(P).ghi(t); } },
+    { id: 'trungGap', nhan: 'Lấy trung điểm bằng gấp giấy', anDiem: true, thoiGian: 6500,
+      ghiChu: function (P, ts, t) {
+        if (t < 0.1) return 'Vẽ đoạn thẳng $AB$ trên một băng giấy.';
+        if (t < 0.55) return 'Gấp băng giấy sao cho điểm $B$ trùng với điểm $A$.';
+        if (t < 0.62) return 'Nếp gấp cắt đoạn thẳng $AB$ tại một điểm.';
+        if (t < 0.95) return 'Mở băng giấy ra…';
+        return 'Nếp gấp cắt $AB$ tại <b>trung điểm $M$</b>: $MA = MB = ' + soL(doDai(P) / 2) + '$ cm.';
+      } },
+  ],
+
+  ve: function (g, P, ts) {
+    var A = P.A, B = P.B, a = doDai(P), Mm = trungDiem(P);
+    var tv = g.hoat('ve'), td = g.hoat('do'), tt = g.hoat('trungThuoc'), tg = g.hoat('trungGap');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
+    if (td !== null) { kbDo(P).ve(g, td); return; }
+    if (tt !== null) { kbTrung(P).ve(g, tt); return; }
+    if (tg !== null) { veGap(g, P, tg); return; }
+    g.doan(A, B, { mau: MAU_DOAN, rong: 3.5, sang: 'doDai' });
+    if (g.bat('doDai') || !g.bat('trung')) g.nhanDo(A, B, 'AB = ' + so(a, 1) + ' cm', { mau: MAU_DOAN, sang: 'doDai', benTrai: false, kc: 'tu' });
+    if (g.bat('trung')) {
+      g.kyHieu(A, Mm, 1, MAU_TRUNG); g.kyHieu(Mm, B, 1, MAU_TRUNG);
+      g.nhanDo(A, Mm, 'MA = ' + so(a / 2), { mau: MAU_TRUNG, t: 0.5 });
+      g.nhanDo(Mm, B, 'MB = ' + so(a / 2), { mau: MAU_TRUNG, t: 0.5 });
+      g.diem(Mm, 'M', { r: 6, mau: MAU_TRUNG, huong: [0, 1] });
+    }
+    if (g.bat('dau')) { g.diem(A, '', { r: 8, mau: '#0D9488' }); g.diem(B, '', { r: 8, mau: '#0D9488' }); }
+    tenAB(g, P);
+  },
+  congThuc: function (P) {
+    var a = doDai(P);
+    return [{ id: 'trung', ten: 'Trung điểm M của đoạn thẳng AB', bt: '$MA = MB = \\dfrac{AB}{2} = \\dfrac{' + ghiDo(a) + '}{2} = \\mathbf{' + soL(a / 2) + '}$ (cm)' }];
+  },
+  nhanXet: function (P) {
+    var a = doDai(P);
+    return '<b>Đoạn thẳng $AB$</b> gồm hai điểm $A$, $B$ và tất cả các điểm nằm giữa $A$ và $B$.' +
+      '<div style="margin:4px 0 2px">• <b style="color:' + MAU_DOAN + '">Độ dài</b>: $AB = ' + ghiDo(a) + '$ cm</div>' +
+      '<div style="margin:2px 0">• <b style="color:' + MAU_TRUNG + '">Trung điểm $M$</b>: $MA = MB = ' + soL(a / 2) + '$ cm</div>' +
+      '<span class="dung">Kéo $A$ hoặc $B$ để đổi độ dài (mỗi lần 0,5 cm).</span>';
+  },
+  khungNhin: function (P) { return [H.cong(P.A, [-1, -1.5]), H.cong(P.B, [1, 1.5])]; },
+  goiY: 'Kéo A hoặc B để đổi độ dài đoạn thẳng',
+});
+</script>
+</body>
+</html>

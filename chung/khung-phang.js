@@ -233,6 +233,8 @@
       duong: function (ds, o) {
         o = o || {}; if (an(o) || ds.length < 2) return;
         var k = kieuNet(o), rong = o.rongCm ? o.rongCm * V.s : k.rong;
+        // Bỏ các điểm gần trùng nhau (< 1px): đoạn quá ngắn làm hướng nét lật ngược, nối nhọn sinh "gai" thừa
+        if (o.nhon) { ds = ds.filter(function (p, i) { return i === 0 || i === ds.length - 1 && H.dai(p, ds[0]) < 1e-6 || H.dai(p, ds[i - 1]) * V.s > 1; }); if (ds.length < 2) return; }
         // o.nhon: góc nhọn, đầu nét cắt vuông (không bo tròn); đường khép kín vẽ như đa giác để góc đầu-cuối cũng nhọn
         var kep = o.nhon && ds.length > 3 && H.dai(ds[0], ds[ds.length - 1]) < 1e-6;
         var kieu = o.nhon ? ' stroke-linecap="' + (o.dauNet || 'butt') + '" stroke-linejoin="miter" stroke-miterlimit="' + (o.gioiHanNhon || 3) + '"' : ' stroke-linecap="round" stroke-linejoin="round"';

@@ -13,7 +13,7 @@ window.CAU_HINH = {
   // Thông tin tác giả
   TAC_GIA: [
     { vaiTro: 'Học sinh', ten: 'Nguyễn Khuê (lớp 9.1)' },
-    { vaiTro: 'Học sinh', ten: 'Trần Quang Huy (lớp 9.7)' },
+    { vaiTro: 'Học sinh', ten: 'Ngô Bảo Châu (lớp 9.2)' },
     { vaiTro: 'Giáo viên hướng dẫn', ten: 'Cô Đinh Thanh Tuyền (GVBM Toán)' },
   ],
   DON_VI: 'Nhóm nghiên cứu khoa học trường TH-THCS An Lạc',

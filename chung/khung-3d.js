@@ -24,7 +24,7 @@
     duongCaoDay: '#0891B2',
     chuVi: '#E0342F',
     matDay: '#7C3AED',
-    xungQuanh: '#F59E0B',
+    xungQuanh: '#FF9800',   // cam vàng tươi, đậm (dễ phân biệt với nền xanh nhạt)
     toanPhan: '#EC4899',
     theTich: '#0D9488',
     tam: '#1E6FE0',
@@ -426,8 +426,10 @@
       Object.keys(doiTuong.matMesh).forEach(function (t) {
         var M = doiTuong.matMesh[t], id = bd.mat[t];
         M.material.color.set(id ? mapSang[id].mau : MAU_MAT);
+        // mặt đang nổi bật: tự phát sáng một phần để màu tươi, đậm, không bị tối đi ở mặt khuất sáng
+        M.material.emissive.set(id ? mapSang[id].mau : '#000000'); M.material.emissiveIntensity = id ? 0.45 : 0;
         M.userData.sang = id || null;
-        M.material.opacity = id ? 0.5 : (TT.toMat ? 0.28 : 0);
+        M.material.opacity = id ? 0.68 : (TT.toMat ? 0.28 : 0);
         // mặt đang làm nổi bật luôn hiện màu, kể cả khi nằm khuất phía sau (ví dụ mặt đáy)
         M.material.depthTest = !id; M.renderOrder = id ? 2 : 1;
         M.visible = !anKhoi || !!id && !mapSang[id].khoi;
@@ -442,7 +444,8 @@
         if (o.userData.matTen) {
           var id2 = bd.mat[o.userData.matTen];
           o.material.color.set(id2 ? mapSang[id2].mau : MAU_MAT);
-          o.material.opacity = id2 ? 0.75 : 0.45;
+          o.material.emissive.set(id2 ? mapSang[id2].mau : '#000000'); o.material.emissiveIntensity = id2 ? 0.45 : 0;
+          o.material.opacity = id2 ? 0.82 : 0.45;
           o.userData.sang = id2 || null;
         }
         if (o.userData.canhKhoa) {
@@ -895,7 +898,7 @@
         else { muc = (lan + 1) / 3; toChop = 0.02; }
         U.nuoc.scale.y = Math.max(0.0001, muc * U.cao);
         Object.keys(doiTuong.matMesh).forEach(function (k) {
-          var M = doiTuong.matMesh[k]; M.material.color.set(MAU_NUOC); M.material.opacity = toChop;
+          var M = doiTuong.matMesh[k]; M.material.color.set(MAU_NUOC); M.material.emissiveIntensity = 0; M.material.opacity = toChop;
         });
         var lanHien = Math.min(3, lan + (trong >= 600 || lan >= 3 ? 1 : 0));
         elDem.innerHTML = 'Lần đổ: <span class="toan">' + Math.max(1, lanHien) + '</span> / 3' +
@@ -1269,7 +1272,7 @@
       if (!(TT.donVi && KIEU_V === 'nuoc')) {
         Object.keys(doiTuong.matMesh).forEach(function (k) {
           var M = doiTuong.matMesh[k], id = M.userData.sang;
-          if (id) M.material.opacity = nhip(id, mapSang[id].khoi ? 0.34 : 0.5, 0.3);
+          if (id) M.material.opacity = nhip(id, mapSang[id].khoi ? 0.4 : 0.68, 0.14);   // nhịp nhẹ: không nhạt hẳn vào màu nền
         });
       }
       capNhatDonVi(now);

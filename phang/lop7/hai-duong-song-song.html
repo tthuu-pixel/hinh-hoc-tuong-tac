@@ -50,6 +50,8 @@ var CAP = [
   { id: 'dv3', loai: 'dv', nhan: 'Đồng vị – cặp 3', mau: '#7C3AED', g: ['A3', 'B3'] },
   { id: 'dv4', loai: 'dv', nhan: 'Đồng vị – cặp 4', mau: '#DB2777', g: ['A4', 'B4'] },
 ];
+var capCuoi = 'slt1', dangBat = {};
+function capDangChon() { return CAP.filter(function (c) { return c.id === capCuoi; })[0] || CAP[0]; }
 function soDo(P, ts, k) { var q = bonGoc(P, ts)[k]; return H.gocDo(q[0], q[1], q[2]); }
 function tenGoc(k) { return '\\widehat{' + k[0] + '_' + k[1] + '}'; }
 
@@ -74,10 +76,13 @@ KhungPhang.tao({
   }),
 
   hoatHinh: [
-    { id: 'truot', nhan: 'Trượt góc từ A xuống B', thoiGian: 4000,
+    { id: 'truot', nhan: 'Đưa góc ở A về góc ở B', thoiGian: 5000,
       ghiChu: function (P, ts, t) {
-        if (t < 1) return 'Trượt góc ở $A$ dọc theo đường $c$ xuống $B$…';
-        return ts.lech === 0 ? 'Góc ở $A$ <b>trùng khít</b> góc đồng vị ở $B$: vì $a \\parallel b$ nên hai góc đồng vị bằng nhau.' : 'Góc ở $A$ <b>không trùng</b> góc ở $B$: vì $a$ không song song $b$.';
+        var c = capDangChon(), slt = c.loai === 'slt', bang = ts.lech === 0;
+        if (t < 1) return slt ? 'Cặp góc <b>so le trong</b>: <b>quay</b> góc $' + tenGoc(c.g[0]) + '$ nửa vòng ($180^\\circ$) quanh trung điểm $O$ của đoạn $AB$…'
+                              : 'Cặp góc <b>đồng vị</b>: <b>trượt</b> góc $' + tenGoc(c.g[0]) + '$ dọc theo đường $c$ xuống $B$…';
+        return bang ? 'Góc $' + tenGoc(c.g[0]) + '$ <b>trùng khít</b> góc $' + tenGoc(c.g[1]) + '$: vì $a \\parallel b$ nên hai góc ' + (slt ? 'so le trong' : 'đồng vị') + ' bằng nhau.'
+                    : 'Góc $' + tenGoc(c.g[0]) + '$ <b>không trùng</b> góc $' + tenGoc(c.g[1]) + '$: vì $a$ không song song với $b$.';
       } },
   ],
 
@@ -87,6 +92,9 @@ KhungPhang.tao({
     g.duongThang(h.bTrai, h.bPhai, { rong: 2.8, mau: ts.lech === 0 ? '#334155' : '#B91C1C', du: 0 });
     g.duongThang(h.cDuoi, h.cTren, { rong: 2.2, mau: '#64748B', du: 0 });
     var bg = bonGoc(P, ts), daVe = {};
+    // cặp góc dùng cho hoạt hình: cặp vừa được bật gần nhất
+    CAP.forEach(function (c) { var on = g.bat(c.id); if (on && !dangBat[c.id]) capCuoi = c.id; dangBat[c.id] = on; });
+    if (!g.bat(capCuoi)) { var dau = CAP.filter(function (c) { return g.bat(c.id); })[0]; if (dau) capCuoi = dau.id; }
     CAP.forEach(function (c) {
       if (!g.bat(c.id)) return;
       c.g.forEach(function (k, j) {
@@ -95,11 +103,18 @@ KhungPhang.tao({
       });
     });
     if (t !== null) {
-      var dvBat = CAP.filter(function (c) { return c.loai === 'dv' && g.bat(c.id); }).pop() || CAP[2], qA = bg[dvBat.g[0]], qB = bg[dvBat.g[1]];
-      var e = H.em(t), O = H.lerp(h.A, h.B, e), a0 = H.huong(qA[1], qA[0]), a1 = H.huong(qA[1], qA[2]);
+      var cc = capDangChon(), qA = bg[cc.g[0]], qB = bg[cc.g[1]], e = H.em(H.doan(t, 0.08, 0.85));
+      var a0 = H.huong(qA[1], qA[0]), a1 = H.huong(qA[1], qA[2]);
       if (a1 < a0) a1 += 2 * Math.PI;
-      g.quat(O, 1.4, a0, a1, { to: dvBat.mau, doMoTo: 0.5, mau: dvBat.mau });
-      g.goc(qB[0], qB[1], qB[2], { mau: '#15803D', r: 62, doMoTo: 0.08, nhan: false });
+      g.goc(qB[0], qB[1], qB[2], { mau: cc.mau, r: 62, doMoTo: 0.1, nhan: false, dut: '5 4' });
+      if (cc.loai === 'slt') {   // so le trong: quay nửa vòng quanh trung điểm O của AB
+        var O = H.trung(h.A, h.B), quay = Math.PI * e, Ac = H.xoay(h.A, O, quay);
+        g.diem(O, 'O', { r: 4.5, mau: '#0F172A', huong: [1, 0.3] });
+        g.quat(Ac, 1.4, a0 + quay, a1 + quay, { to: cc.mau, doMoTo: 0.55, mau: cc.mau });
+        if (e > 0) { var vet = []; for (var i = 0; i <= 24; i++) vet.push(H.xoay(h.A, O, quay * i / 24)); g.duong(vet, { mau: cc.mau, rong: 1.8, dut: '5 4' }); }
+      } else {                   // đồng vị: trượt dọc theo c
+        g.quat(H.lerp(h.A, h.B, e), 1.4, a0, a1, { to: cc.mau, doMoTo: 0.55, mau: cc.mau });
+      }
     }
     g.chu(H.cong(h.aPhai, [0.35, 0.3]), 'a', { nghieng: true }); g.chu(H.cong(h.bPhai, H.cong(H.nhan(h.ub, 0.35), [0, 0.3])), 'b', { nghieng: true, mau: ts.lech === 0 ? undefined : '#B91C1C' });
     g.chu(H.cong(h.cTren, H.nhan(h.uc, 0.4)), 'c', { nghieng: true });

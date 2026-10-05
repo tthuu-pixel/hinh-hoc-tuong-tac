@@ -132,6 +132,24 @@
           var p2 = Phien.lay(); if (p2 && p2.ten === d.ten) return { ok: false, loi: 'Không thể tự xoá tài khoản đang dùng.' };
           this.luu(ds.filter(function (t) { return t.ten !== d.ten; })); return { ok: true };
         }
+        // Khảo sát (chạy thử: lưu trong trình duyệt)
+        case 'guiKhaoSat': {
+          var p5 = Phien.lay(), t5 = p5 && tim(p5.ten); if (!t5) return { ok: false, loi: 'Chưa đăng nhập.' };
+          if (t5.vaiTro !== 'giaovien' && t5.vaiTro !== 'hocsinh') return { ok: false, loi: 'Tài khoản quản trị chỉ xem trước phiếu, không gửi được.' };
+          var ks = (doc('mh3d_thu_khaosat') || []).filter(function (o) { return o.ten !== t5.ten; });
+          var o5 = { thoiGian: new Date().toISOString(), ten: t5.ten, hoTen: t5.hoTen, vaiTro: t5.vaiTro, lop: t5.lop || '' };
+          for (var i5 = 1; i5 <= 10; i5++) { var v5 = (d.traLoi || {})['c' + i5]; o5['c' + i5] = Array.isArray(v5) ? v5.join('; ') : (v5 == null ? '' : /^[1-5]$/.test(String(v5)) ? Number(v5) : String(v5)); }
+          ks.push(o5); ghi('mh3d_thu_khaosat', ks); return { ok: true };
+        }
+        case 'khaoSatCuaToi': {
+          var p6 = Phien.lay(), c6 = (doc('mh3d_thu_khaosat') || []).filter(function (o) { return p6 && o.ten === p6.ten; })[0];
+          if (!c6) return { ok: true, daGui: false };
+          var tl6 = {}; for (var i6 = 1; i6 <= 10; i6++) tl6['c' + i6] = c6['c' + i6];
+          return { ok: true, daGui: true, thoiGian: c6.thoiGian, traLoi: tl6 };
+        }
+        case 'dsKhaoSat':
+          if (!laAdmin()) return { ok: false, loi: 'Không có quyền.' };
+          return { ok: true, ds: doc('mh3d_thu_khaosat') || [] };
       }
       return { ok: false, loi: 'Hành động không hợp lệ.' };
     },

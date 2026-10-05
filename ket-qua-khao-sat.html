@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kết quả khảo sát</title>
+<link rel="stylesheet" href="chung/giao-dien.css">
+<script src="chung/cau-hinh.js"></script>
+<script src="chung/dang-nhap.js" data-goc="./" data-vai-tro="admin"></script>
+<script src="chung/khao-sat.js"></script>
+<style>
+  .noi-dung { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+  .dau { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between; margin-bottom: 18px; }
+  h1 { margin: 0 0 4px; font-size: 28px; }
+  .mo-ta { margin: 0; color: var(--chu-phu); }
+  .nut-hang { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tab { display: flex; gap: 8px; margin-bottom: 18px; }
+  .tab button { min-height: 42px; padding: 6px 18px; border-radius: 99px; border: 1px solid var(--vien); background: #fff; font-weight: 700; cursor: pointer; color: var(--chu-phu); }
+  .tab button.bat { background: var(--chu); border-color: var(--chu); color: #fff; }
+  .tab button b { font-weight: 800; margin-left: 4px; }
+  .o-so { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .o-so .the { padding: 14px 18px; }
+  .o-so b { display: block; font-size: 30px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .o-so span { color: var(--chu-phu); font-size: 14px; font-weight: 600; }
+  .khoi { padding: 18px 20px; margin-bottom: 16px; }
+  .khoi h2 { margin: 0 0 4px; font-size: 18px; }
+  .khoi .phu { margin: 0 0 14px; color: var(--chu-phu); font-size: 14px; }
+  .chu-giai { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 14px; font-size: 13px; color: var(--chu-phu); font-weight: 600; }
+  .chu-giai i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .hang-cau { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 6px 18px; padding: 12px 0; border-top: 1px solid var(--vien); }
+  .hang-cau:first-of-type { border-top: 0; }
+  .hang-cau .nd { font-size: 15px; font-weight: 600; grid-column: 1 / -1; }
+  .hang-cau .nd small { color: var(--chu-phu); font-weight: 700; margin-right: 6px; }
+  .thanh-xep { display: flex; gap: 2px; height: 30px; align-items: stretch; }
+  .thanh-xep span { position: relative; display: grid; place-items: center; font-size: 12px; font-weight: 700; min-width: 0; cursor: default; }
+  .thanh-xep span:first-child { border-radius: 6px 0 0 6px; }
+  .thanh-xep span:last-child { border-radius: 0 6px 6px 0; }
+  .thanh-xep span:only-child { border-radius: 6px; }
+  .thanh-xep span:hover { filter: brightness(.95); outline: 2px solid var(--chu); outline-offset: -2px; z-index: 1; }
+  .so-lieu { text-align: right; font-size: 13px; color: var(--chu-phu); line-height: 1.35; font-variant-numeric: tabular-nums; }
+  .so-lieu b { display: block; font-size: 18px; color: var(--chu); }
+  .chon-hang { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr) 90px; gap: 10px; align-items: center; padding: 6px 0; font-size: 14px; }
+  .chon-hang .vach { height: 22px; background: var(--nen-2); border-radius: 6px; overflow: hidden; }
+  .chon-hang .vach i { display: block; height: 100%; background: #2451C7; border-radius: 0 6px 6px 0; }
+  .chon-hang .sl { text-align: right; color: var(--chu-phu); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .y-kien { list-style: none; margin: 0; padding: 0; }
+  .y-kien li { padding: 10px 12px; border-left: 3px solid var(--chinh); background: #F8FAFE; border-radius: 0 10px 10px 0; margin-bottom: 8px; font-size: 15px; white-space: pre-wrap; }
+  .y-kien li small { display: block; color: var(--chu-phu); font-size: 12px; font-weight: 600; margin-top: 4px; white-space: normal; }
+  .trong { color: var(--chu-phu); padding: 26px 0; text-align: center; }
+  details summary { cursor: pointer; font-weight: 700; }
+  .bang-ct { overflow-x: auto; margin-top: 12px; }
+  .bang-ct table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .bang-ct th, .bang-ct td { border-bottom: 1px solid var(--vien); padding: 7px 9px; text-align: left; vertical-align: top; }
+  .bang-ct th { background: #F8FAFE; color: var(--chu-phu); font-size: 12px; }
+  .bang-ct td.s { text-align: center; font-variant-numeric: tabular-nums; }
+  #meo { position: fixed; z-index: 80; pointer-events: none; background: var(--chu); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 8px; opacity: 0; transition: opacity .1s; max-width: 260px; }
+  @media (max-width: 700px) {
+    .o-so { grid-template-columns: 1fr 1fr; }
+    .hang-cau { grid-template-columns: 1fr; }
+    .so-lieu { text-align: left; }
+    .so-lieu b { display: inline; margin-right: 8px; }
+    .chon-hang { grid-template-columns: 1fr 70px; }
+    .chon-hang .vach { grid-column: 1 / -1; grid-row: 2; }
+  }
+</style>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<main class="noi-dung">
+  <div class="dau">
+    <div>
+      <h1>Kết quả khảo sát</h1>
+      <p class="mo-ta">Ý kiến của giáo viên và học sinh sau khi trải nghiệm GeoLab.</p>
+    </div>
+    <div class="nut-hang">
+      <a class="nut" href="khao-sat.html">Xem phiếu</a>
+      <button class="nut" id="nut-moi">Làm mới</button>
+      <button class="nut chinh" id="nut-xuat">Tải về Excel (CSV)</button>
+    </div>
+  </div>
+  <div class="tab" id="tab">
+    <button data-dt="giaovien" class="bat">Giáo viên <b id="n-gv">–</b></button>
+    <button data-dt="hocsinh">Học sinh <b id="n-hs">–</b></button>
+  </div>
+  <div id="kq"><p class="trong">Đang tải…</p></div>
+</main>
+<div id="meo"></div>
+
+<script>
+(function () {
+  var CH = window.CAU_HINH, KS = window.KHAO_SAT, thoat = GiaoDien.thoat, $ = function (id) { return document.getElementById(id); };
+  document.title = 'Kết quả khảo sát · ' + (CH.TEN_NGAN || CH.TEN_SAN_PHAM);
+  GiaoDien.thanhTren({ quayLai: 'quan-tri.html' });
+  // thang 1–5: hai đầu đỏ (không đồng ý) – xanh (đồng ý), giữa xám trung tính
+  var MAU = ['#B42318', '#F2A49B', '#D5DBE5', '#9DB7EF', '#2451C7'], CHU = ['#fff', '#5B1A12', '#334155', '#16213A', '#fff'];
+  var DS = [], dt = 'giaovien';
+  function so(x, le) { return x.toFixed(le == null ? 2 : le).replace('.', ','); }
+
+  function tai() {
+    $('kq').innerHTML = '<p class="trong">Đang tải…</p>';
+    API.goi('dsKhaoSat').then(function (kq) {
+      if (!kq.ok) {
+        $('kq').innerHTML = '<p class="trong">' + thoat(/không hợp lệ/i.test(kq.loi || '') ? 'Máy chủ Apps Script chưa được cập nhật chức năng khảo sát.' : kq.loi) + '</p>';
+        return;
+      }
+      DS = kq.ds || []; ve();
+    });
+  }
+  function ve() {
+    $('n-gv').textContent = DS.filter(function (o) { return o.vaiTro === 'giaovien'; }).length;
+    $('n-hs').textContent = DS.filter(function (o) { return o.vaiTro === 'hocsinh'; }).length;
+    document.querySelectorAll('#tab button').forEach(function (b) { b.classList.toggle('bat', b.dataset.dt === dt); });
+    var bo = KS[dt], ds = DS.filter(function (o) { return o.vaiTro === dt; });
+    var ten = dt === 'giaovien' ? 'giáo viên' : 'học sinh';
+    if (!ds.length) { $('kq').innerHTML = '<div class="the khoi"><p class="trong">Chưa có phiếu nào của ' + ten + '.</p></div>'; return; }
+
+    var thang = bo.cau.filter(function (c) { return c.loai === 'thang'; });
+    var tong = 0, dem = 0, dongY = 0;
+    var thongKe = thang.map(function (c) {
+      var n = [0, 0, 0, 0, 0];
+      ds.forEach(function (o) { var v = Number(o[c.ma]); if (v >= 1 && v <= 5) n[v - 1]++; });
+      var sl = n.reduce(function (a, b) { return a + b; }, 0), s = n.reduce(function (a, b, i) { return a + b * (i + 1); }, 0);
+      tong += s; dem += sl; dongY += n[3] + n[4];
+      return { c: c, n: n, sl: sl, tb: sl ? s / sl : 0, dy: sl ? (n[3] + n[4]) / sl : 0 };
+    });
+    var h = '<div class="o-so">' +
+      '<div class="the"><b>' + ds.length + '</b><span>Số phiếu ' + ten + '</span></div>' +
+      '<div class="the"><b>' + (dem ? so(tong / dem) : '–') + ' / 5</b><span>Điểm trung bình chung</span></div>' +
+      '<div class="the"><b>' + (dem ? so(100 * dongY / dem, 1) : '–') + '%</b><span>Ý kiến đồng ý (mức 4–5)</span></div></div>';
+
+    h += '<section class="the khoi"><h2>Mức độ đồng ý</h2><p class="phu">Mỗi thanh là 100% phiếu trả lời của một câu. Rê chuột lên từng đoạn để xem số phiếu.</p>' +
+         '<div class="chu-giai">' + KS.THANG.map(function (t, i) { return '<span><i style="background:' + MAU[i] + '"></i>' + (i + 1) + ' – ' + thoat(t) + '</span>'; }).join('') + '</div>';
+    thongKe.forEach(function (k, idx) {
+      var stt = bo.cau.indexOf(k.c) + 1;
+      h += '<div class="hang-cau"><div class="nd"><small>Câu ' + stt + '.</small>' + thoat(k.c.nd) + '</div><div class="thanh-xep">';
+      k.n.forEach(function (x, i) {
+        if (!x) return;
+        var pt = 100 * x / k.sl;
+        h += '<span style="flex:' + x + ' 1 0;background:' + MAU[i] + ';color:' + CHU[i] + '" data-meo="Mức ' + (i + 1) + ' – ' + thoat(KS.THANG[i]) + ': ' + x + ' phiếu (' + so(pt, 1) + '%)">' + (pt >= 9 ? Math.round(pt) + '%' : '') + '</span>';
+      });
+      h += '</div><div class="so-lieu"><b>' + so(k.tb) + '</b>điểm TB · ' + Math.round(100 * k.dy) + '% đồng ý</div></div>';
+    });
+    h += '</section>';
+
+    bo.cau.filter(function (c) { return c.loai === 'chon'; }).forEach(function (c) {
+      var stt = bo.cau.indexOf(c) + 1, dem2 = c.ds.map(function (x) { return { x: x, n: 0 }; });
+      ds.forEach(function (o) { String(o[c.ma] || '').split('; ').forEach(function (v) { dem2.forEach(function (d) { if (d.x === v) d.n++; }); }); });
+      dem2.sort(function (a, b) { return b.n - a.n; });
+      h += '<section class="the khoi"><h2>Câu ' + stt + '. ' + thoat(c.nd) + '</h2><p class="phu">Tỉ lệ trên ' + ds.length + ' phiếu (mỗi phiếu chọn được nhiều phương án).</p>';
+      dem2.forEach(function (d) {
+        var pt = 100 * d.n / ds.length;
+        h += '<div class="chon-hang"><span>' + thoat(d.x) + '</span><div class="vach"><i style="width:' + pt + '%"></i></div><span class="sl">' + d.n + ' · ' + Math.round(pt) + '%</span></div>';
+      });
+      h += '</section>';
+    });
+
+    bo.cau.filter(function (c) { return c.loai === 'mo'; }).forEach(function (c) {
+      var stt = bo.cau.indexOf(c) + 1, yk = ds.filter(function (o) { return String(o[c.ma] || '').trim(); });
+      h += '<section class="the khoi"><h2>Câu ' + stt + '. Góp ý (' + yk.length + ')</h2><p class="phu">' + thoat(c.nd) + '</p>';
+      h += yk.length ? '<ul class="y-kien">' + yk.map(function (o) {
+        return '<li>' + thoat(o[c.ma]) + '<small>' + (dt === 'hocsinh' ? 'Học sinh' + (o.lop ? ' lớp ' + thoat(o.lop) : '') : 'Giáo viên') + '</small></li>';
+      }).join('') + '</ul>' : '<p class="trong">Chưa có góp ý.</p>';
+      h += '</section>';
+    });
+
+    // bảng chi tiết từng phiếu
+    h += '<section class="the khoi"><details><summary>Bảng chi tiết ' + ds.length + ' phiếu</summary><div class="bang-ct"><table><thead><tr><th>Họ tên</th>' + (dt === 'hocsinh' ? '<th>Lớp</th>' : '') +
+         bo.cau.map(function (c, i) { return '<th>Câu ' + (i + 1) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+         ds.map(function (o) {
+           return '<tr><td>' + thoat(o.hoTen) + '</td>' + (dt === 'hocsinh' ? '<td>' + thoat(o.lop) + '</td>' : '') +
+             bo.cau.map(function (c) { return '<td' + (c.loai === 'thang' ? ' class="s"' : '') + '>' + thoat(o[c.ma]) + '</td>'; }).join('') + '</tr>';
+         }).join('') + '</tbody></table></div></details></section>';
+    $('kq').innerHTML = h;
+  }
+
+  // chú thích nổi khi rê chuột lên đoạn thanh
+  var meo = $('meo');
+  document.addEventListener('mousemove', function (e) {
+    var t = e.target.closest && e.target.closest('[data-meo]');
+    if (!t) { meo.style.opacity = 0; return; }
+    meo.textContent = t.dataset.meo; meo.style.opacity = 1;
+    meo.style.left = Math.min(e.clientX + 14, innerWidth - meo.offsetWidth - 8) + 'px'; meo.style.top = (e.clientY + 16) + 'px';
+  });
+
+  $('tab').onclick = function (e) { var b = e.target.closest('button'); if (b) { dt = b.dataset.dt; ve(); } };
+  $('nut-moi').onclick = tai;
+  $('nut-xuat').onclick = function () {
+    var hang = [];
+    ['giaovien', 'hocsinh'].forEach(function (d) {
+      var bo = KS[d], ds = DS.filter(function (o) { return o.vaiTro === d; });
+      if (!ds.length) return;
+      if (hang.length) hang.push([]);
+      hang.push([bo.tieuDe.toUpperCase()]);
+      hang.push(['Thời gian gửi', 'Tên đăng nhập', 'Họ tên', 'Lớp'].concat(bo.cau.map(function (c, i) { return 'Câu ' + (i + 1) + ': ' + c.nd; })));
+      ds.forEach(function (o) { hang.push([new Date(o.thoiGian).toLocaleString('vi-VN'), o.ten, o.hoTen, o.lop].concat(bo.cau.map(function (c) { return o[c.ma]; }))); });
+    });
+    if (!hang.length) { GiaoDien.thongBao('Chưa có phiếu nào để tải.', 'loi'); return; }
+    var csv = '﻿' + hang.map(function (r) { return r.map(function (o) { return '"' + String(o == null ? '' : o).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'ket-qua-khao-sat-geolab.csv'; document.body.appendChild(a); a.click(); a.remove();
+  };
+  tai();
+})();
+</script>
+</body>
+</html>

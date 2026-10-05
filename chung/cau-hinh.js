@@ -25,4 +25,7 @@ window.CAU_HINH = {
 
   // Phiên đăng nhập giữ trong bao nhiêu giờ
   GIO_PHIEN: 12,
+
+  // Khảo sát sau trải nghiệm: true = hiện lời mời làm khảo sát ở Thư viện; false = ẩn
+  KHAO_SAT_MO: true,
 };

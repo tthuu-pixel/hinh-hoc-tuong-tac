@@ -50,6 +50,14 @@
   .o-mh .sap { position: absolute; top: 10px; right: 10px; font-size: 11px; font-weight: 800; background: #E9EEF7; color: var(--chu-phu); padding: 2px 8px; border-radius: 99px; }
   .trong { text-align: center; color: var(--chu-phu); padding: 40px 0; }
   .chan { text-align: center; color: var(--chu-phu); font-size: 14px; line-height: 1.6; padding: 10px 20px 70px; }
+  .moi-ks { display: flex; align-items: center; gap: 16px; padding: 16px 20px; margin-bottom: 22px; border-color: #C7D5F7;
+    background: linear-gradient(120deg, #EEF3FE, #fff 70%); }
+  .moi-ks .bt { flex: none; width: 46px; height: 46px; border-radius: 12px; background: var(--chinh); display: grid; place-items: center; }
+  .moi-ks .bt svg { width: 26px; height: 26px; color: #fff; }
+  .moi-ks .nd { flex: 1; min-width: 0; }
+  .moi-ks b { display: block; font-size: 16px; }
+  .moi-ks span { color: var(--chu-phu); font-size: 14px; }
+  @media (max-width: 600px) { .moi-ks { flex-wrap: wrap; } .moi-ks .nut { width: 100%; } }
 </style>
 </head>
 <body>
@@ -65,6 +73,7 @@
       <input class="o-nhap" id="tim" placeholder="Tìm hình… (vd: lập phương)" autocomplete="off">
     </label>
   </div>
+  <div class="the moi-ks an" id="moi-ks"></div>
   <div class="loc" id="loc-nhom">
     <button data-nhom="" class="bat">Tất cả</button>
     <button data-nhom="khong-gian">Hình không gian</button>
@@ -91,6 +100,16 @@
   var nhom = {}; (CH.TAC_GIA || []).forEach(function (t) { (nhom[t.vaiTro] = nhom[t.vaiTro] || []).push(t.ten); });
   var tg = Object.keys(nhom).map(function (k) { return k + ': ' + nhom[k].join(', '); }).join(' · ');
   document.getElementById('chan').innerHTML = [CH.TEN_SAN_PHAM + (CH.SLOGAN ? ' · ' + CH.SLOGAN : ''), CH.DON_VI, tg].filter(Boolean).map(GiaoDien.thoat).join('<br>');
+
+  // Lời mời làm khảo sát sau trải nghiệm (bật/tắt bằng KHAO_SAT_MO trong cau-hinh.js)
+  if (CH.KHAO_SAT_MO) {
+    var hs = p.vaiTro === 'hocsinh', mk = document.getElementById('moi-ks');
+    mk.innerHTML = '<div class="bt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>' +
+      '<div class="nd"><b>' + (p.vaiTro === 'admin' ? 'Khảo sát sau trải nghiệm đang mở' : (hs ? 'Em đã trải nghiệm GeoLab? Cho nhóm nghiên cứu biết ý kiến nhé!' : 'Thầy/cô đã trải nghiệm GeoLab? Xin góp ý giúp nhóm nghiên cứu')) + '</b>' +
+      '<span>' + (p.vaiTro === 'admin' ? 'Xem trước phiếu hoặc theo dõi kết quả khảo sát giáo viên và học sinh.' : 'Phiếu khảo sát 8 câu, chỉ mất khoảng 2 phút.') + '</span></div>' +
+      (p.vaiTro === 'admin' ? '<a class="nut" href="khao-sat.html">Xem phiếu</a><a class="nut chinh" href="ket-qua-khao-sat.html">Xem kết quả</a>' : '<a class="nut chinh" href="khao-sat.html">Làm khảo sát</a>');
+    mk.classList.remove('an');
+  }
 
   var loc = { nhom: '', lop: '', tim: '' };
   try { var cu = JSON.parse(localStorage.getItem('mh3d_loc')); if (cu) { loc.nhom = cu.nhom || ''; loc.lop = cu.lop || ''; } } catch (e) {}

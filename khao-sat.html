@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Khảo sát sau trải nghiệm</title>
+<link rel="stylesheet" href="chung/giao-dien.css">
+<script src="chung/cau-hinh.js"></script>
+<script src="chung/dang-nhap.js" data-goc="./"></script>
+<script src="chung/khao-sat.js"></script>
+<style>
+  .noi-dung { max-width: 820px; margin: 0 auto; padding: 28px 20px 70px; }
+  .dau-ks { padding: 24px 26px; margin-bottom: 18px; background: linear-gradient(135deg, #2451C7, #3B6FE0); color: #fff; border: 0; }
+  .dau-ks .nhan { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,.18); padding: 3px 10px; border-radius: 99px; }
+  .dau-ks h1 { margin: 10px 0 6px; font-size: 26px; line-height: 1.25; }
+  .dau-ks p { margin: 0; opacity: .92; }
+  .trang-thai { margin-top: 14px; background: rgba(255,255,255,.16); border-radius: 10px; padding: 9px 12px; font-size: 14px; font-weight: 600; }
+  .xem-truoc { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; padding: 12px 14px; background: #FFF6E8; border: 1px solid #F3C98B; border-radius: 12px; color: #7A3E00; font-size: 14px; font-weight: 600; }
+  .xem-truoc .gian { flex: 1; }
+  .xem-truoc button.bat { background: var(--chu); color: #fff; border-color: var(--chu); }
+
+  .cau { padding: 18px 20px; margin-bottom: 12px; transition: border-color .15s, box-shadow .15s; }
+  .cau.thieu { border-color: #F2A3A3; box-shadow: 0 0 0 3px rgba(198,40,40,.1); }
+  .cau .de { display: flex; gap: 12px; font-weight: 700; font-size: 17px; line-height: 1.45; margin-bottom: 14px; }
+  .cau .so { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--chinh-nhat); color: var(--chinh); font-size: 14px; font-weight: 800; }
+  .cau.xong .so { background: var(--chinh); color: #fff; }
+  .cau .tuy-chon { font-weight: 500; color: var(--chu-phu); font-size: 14px; }
+
+  /* Thang 1–5 */
+  .thang { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .thang label { position: relative; cursor: pointer; }
+  .thang input { position: absolute; opacity: 0; pointer-events: none; }
+  .thang .o { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 78px; padding: 10px 6px; border: 1.5px solid var(--vien); border-radius: 12px; background: #fff; text-align: center; transition: all .12s; }
+  .thang .o b { font-size: 20px; line-height: 1.1; }
+  .thang .o span { font-size: 12px; line-height: 1.25; color: var(--chu-phu); font-weight: 600; }
+  .thang label:hover .o { border-color: #9FB4E6; background: #F8FAFE; }
+  .thang input:focus-visible + .o { box-shadow: 0 0 0 3px rgba(36,81,199,.25); }
+  .thang input:checked + .o { border-color: var(--chinh); background: var(--chinh); color: #fff; }
+  .thang input:checked + .o span { color: #fff; }
+
+  /* Chọn nhiều */
+  .chon { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chon label { cursor: pointer; }
+  .chon input { position: absolute; opacity: 0; pointer-events: none; }
+  .chon span { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1.5px solid var(--vien); border-radius: 99px; background: #fff; font-weight: 600; font-size: 15px; }
+  .chon span::before { content: ''; width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid #9AA6BF; flex: none; }
+  .chon input:checked + span { border-color: var(--chinh); background: var(--chinh-nhat); color: var(--chinh-dam); }
+  .chon input:checked + span::before { background: var(--chinh); border-color: var(--chinh); box-shadow: inset 0 0 0 3px #fff; }
+  .chon input:focus-visible + span { box-shadow: 0 0 0 3px rgba(36,81,199,.25); }
+
+  textarea.o-nhap { min-height: 96px; resize: vertical; }
+
+  .chan-ks { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 14px 16px; margin-top: 18px; background: rgba(255,255,255,.95); backdrop-filter: blur(6px); border: 1px solid var(--vien); border-radius: 14px; box-shadow: var(--bong); }
+  .tien-do { flex: 1; font-size: 14px; color: var(--chu-phu); font-weight: 600; }
+  .thanh { height: 6px; background: var(--nen-2); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .thanh i { display: block; height: 100%; width: 0; background: var(--chinh); border-radius: 99px; transition: width .25s; }
+  .loi-ks { color: var(--loi); font-size: 14px; font-weight: 600; margin-top: 10px; }
+
+  .cam-on { text-align: center; padding: 44px 26px; }
+  .cam-on .dau-tich { width: 72px; height: 72px; margin: 0 auto 14px; border-radius: 50%; background: #E3F5EE; display: grid; place-items: center; }
+  .cam-on .dau-tich svg { width: 38px; height: 38px; color: var(--tot); }
+  .cam-on h2 { margin: 0 0 6px; font-size: 24px; }
+  .cam-on p { margin: 0 0 20px; color: var(--chu-phu); }
+  .cam-on .nut-hang { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  @media (max-width: 620px) {
+    .thang { grid-template-columns: 1fr; }
+    .thang .o { flex-direction: row; min-height: 46px; justify-content: flex-start; gap: 12px; padding: 8px 14px; text-align: left; }
+    .thang .o b { width: 22px; font-size: 18px; }
+    .thang .o span { font-size: 14px; }
+    .dau-ks h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<main class="noi-dung" id="noi-dung">
+  <p style="color:var(--chu-phu)">Đang tải phiếu…</p>
+</main>
+
+<script>
+(function () {
+  var CH = window.CAU_HINH, KS = window.KHAO_SAT, thoat = GiaoDien.thoat, p = DangNhap.phien() || {};
+  document.title = 'Khảo sát · ' + (CH.TEN_NGAN || CH.TEN_SAN_PHAM);
+  GiaoDien.thanhTren({ quayLai: 'thu-vien.html' });
+  var laAdmin = p.vaiTro === 'admin';
+  var doiTuong = p.vaiTro === 'hocsinh' ? 'hocsinh' : 'giaovien';
+  var traLoi = {}, daGui = null, el = document.getElementById('noi-dung');
+
+  function batBuoc(c) { return c.loai === 'thang'; }
+  function ngay(s) {
+    var d = new Date(s); if (isNaN(d)) return '';
+    var z = function (n) { return (n < 10 ? '0' : '') + n; };
+    return z(d.getHours()) + ':' + z(d.getMinutes()) + ' ngày ' + z(d.getDate()) + '/' + z(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+
+  function ve() {
+    var bo = KS[doiTuong], h = '';
+    if (laAdmin) {
+      h += '<div class="xem-truoc">Chế độ xem trước (tài khoản quản trị không gửi phiếu):' +
+           '<button class="nut nho' + (doiTuong === 'giaovien' ? ' bat' : '') + '" data-dt="giaovien">Phiếu giáo viên</button>' +
+           '<button class="nut nho' + (doiTuong === 'hocsinh' ? ' bat' : '') + '" data-dt="hocsinh">Phiếu học sinh</button>' +
+           '<span class="gian"></span><a class="nut nho chinh" href="ket-qua-khao-sat.html">Xem kết quả khảo sát</a></div>';
+    }
+    h += '<section class="the dau-ks"><span class="nhan">Khảo sát sau trải nghiệm · ' + thoat(CH.TEN_NGAN || 'GeoLab') + '</span>' +
+         '<h1>' + thoat(bo.tieuDe) + '</h1><p>' + thoat(bo.loiDan) + '</p>' +
+         (daGui ? '<div class="trang-thai">✓ ' + (doiTuong === 'hocsinh' ? 'Em' : 'Thầy/cô') + ' đã gửi phiếu lúc ' + ngay(daGui) + '. Có thể sửa câu trả lời rồi gửi lại.</div>' : '') +
+         '</section>';
+    bo.cau.forEach(function (c, i) {
+      var v = traLoi[c.ma];
+      h += '<div class="the cau' + (daTraLoi(c) ? ' xong' : '') + '" id="cau-' + c.ma + '"><div class="de"><span class="so">' + (i + 1) + '</span><div>' + thoat(c.nd) +
+           (c.loai === 'mo' || c.loai === 'chon' ? ' <span class="tuy-chon">(không bắt buộc)</span>' : '') + '</div></div>';
+      if (c.loai === 'thang') {
+        h += '<div class="thang" role="radiogroup" aria-label="Câu ' + (i + 1) + '">';
+        KS.THANG.forEach(function (nhan, k) {
+          h += '<label><input type="radio" name="' + c.ma + '" value="' + (k + 1) + '"' + (String(v) === String(k + 1) ? ' checked' : '') + '><span class="o"><b>' + (k + 1) + '</b><span>' + thoat(nhan) + '</span></span></label>';
+        });
+        h += '</div>';
+      } else if (c.loai === 'chon') {
+        var chon = Array.isArray(v) ? v : String(v || '').split('; ').filter(Boolean);
+        h += '<div class="chon">' + c.ds.map(function (x) {
+          return '<label><input type="checkbox" name="' + c.ma + '" value="' + thoat(x) + '"' + (chon.indexOf(x) >= 0 ? ' checked' : '') + '><span>' + thoat(x) + '</span></label>';
+        }).join('') + '</div>';
+      } else {
+        h += '<textarea class="o-nhap" name="' + c.ma + '" maxlength="1000" placeholder="Nhập góp ý…">' + thoat(v || '') + '</textarea>';
+      }
+      h += '</div>';
+    });
+    h += '<div class="chan-ks"><div class="tien-do"><span id="dem"></span><div class="thanh"><i id="thanh"></i></div></div>' +
+         '<button class="nut chinh" id="nut-gui"' + (laAdmin ? ' disabled title="Chỉ xem trước"' : '') + '>' + (daGui ? 'Gửi lại phiếu' : 'Gửi phiếu') + '</button></div>' +
+         '<div class="loi-ks" id="loi-ks"></div>';
+    el.innerHTML = h;
+
+    el.querySelectorAll('[data-dt]').forEach(function (b) { b.onclick = function () { doiTuong = b.dataset.dt; traLoi = {}; ve(); }; });
+    el.querySelectorAll('input, textarea').forEach(function (inp) {
+      inp.addEventListener(inp.tagName === 'TEXTAREA' ? 'input' : 'change', function () { docForm(); capNhatTienDo(); if (!el.querySelector('.cau.thieu')) document.getElementById('loi-ks').textContent = ''; });
+    });
+    document.getElementById('nut-gui').onclick = gui;
+    capNhatTienDo();
+  }
+  function daTraLoi(c) { var v = traLoi[c.ma]; return Array.isArray(v) ? v.length > 0 : v != null && String(v).trim() !== ''; }
+  function docForm() {
+    KS[doiTuong].cau.forEach(function (c) {
+      if (c.loai === 'thang') { var r = el.querySelector('input[name="' + c.ma + '"]:checked'); traLoi[c.ma] = r ? Number(r.value) : null; }
+      else if (c.loai === 'chon') traLoi[c.ma] = [].map.call(el.querySelectorAll('input[name="' + c.ma + '"]:checked'), function (x) { return x.value; });
+      else traLoi[c.ma] = el.querySelector('textarea[name="' + c.ma + '"]').value;
+      var the = document.getElementById('cau-' + c.ma);
+      the.classList.toggle('xong', daTraLoi(c));
+      if (daTraLoi(c)) the.classList.remove('thieu');
+    });
+  }
+  function capNhatTienDo() {
+    var ds = KS[doiTuong].cau.filter(batBuoc), xong = ds.filter(daTraLoi).length;
+    document.getElementById('dem').textContent = 'Đã trả lời ' + xong + ' / ' + ds.length + ' câu bắt buộc';
+    document.getElementById('thanh').style.width = (100 * xong / ds.length) + '%';
+  }
+  function gui() {
+    docForm();
+    var thieu = KS[doiTuong].cau.filter(function (c) { return batBuoc(c) && !daTraLoi(c); });
+    var loi = document.getElementById('loi-ks');
+    if (thieu.length) {
+      thieu.forEach(function (c) { document.getElementById('cau-' + c.ma).classList.add('thieu'); });
+      loi.textContent = 'Còn ' + thieu.length + ' câu chưa chọn mức độ. Vui lòng trả lời đủ các câu được đánh dấu đỏ.';
+      document.getElementById('cau-' + thieu[0].ma).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    loi.textContent = '';
+    var nut = document.getElementById('nut-gui'); nut.disabled = true; nut.textContent = 'Đang gửi…';
+    API.goi('guiKhaoSat', { traLoi: traLoi }).then(function (kq) {
+      if (!kq.ok) {
+        nut.disabled = false; nut.textContent = 'Gửi phiếu';
+        loi.textContent = /không hợp lệ/i.test(kq.loi || '') ? 'Máy chủ chưa được cập nhật chức năng khảo sát. Vui lòng báo quản trị viên.' : (kq.loi || 'Không gửi được phiếu.');
+        return;
+      }
+      var hs = doiTuong === 'hocsinh';
+      el.innerHTML = '<section class="the cam-on"><div class="dau-tich"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>' +
+        '<h2>Cảm ơn ' + (hs ? 'em' : 'thầy/cô') + ' đã gửi phiếu!</h2><p>Ý kiến của ' + (hs ? 'em' : 'thầy/cô') + ' giúp nhóm nghiên cứu hoàn thiện GeoLab.</p>' +
+        '<div class="nut-hang"><a class="nut chinh" href="thu-vien.html">Về thư viện mô hình</a><button class="nut" id="nut-sua">Xem lại / sửa câu trả lời</button></div></section>';
+      daGui = new Date().toISOString();
+      document.getElementById('nut-sua').onclick = function () { ve(); window.scrollTo(0, 0); };
+      window.scrollTo(0, 0);
+    });
+  }
+
+  if (laAdmin) { ve(); return; }
+  API.goi('khaoSatCuaToi').then(function (kq) {
+    if (kq && kq.ok && kq.daGui) {
+      daGui = kq.thoiGian;
+      KS[doiTuong].cau.forEach(function (c) {
+        var v = kq.traLoi[c.ma];
+        traLoi[c.ma] = c.loai === 'chon' ? String(v || '').split('; ').filter(Boolean) : (v === '' ? null : v);
+      });
+    }
+    ve();
+  });
+})();
+</script>
+</body>
+</html>

@@ -58,6 +58,7 @@ window.DANH_MUC = [
   { id: 'l8-hinh-thoi', nhom: 'phang', lop: 8, ten: 'Hình thoi', moTa: 'Bốn cạnh bằng nhau, đường chéo vuông góc, phân giác', duongDan: 'phang/lop8/hinh-thoi.html', hinh: 'thoi', trangThai: 'san-sang' },
   { id: 'l8-hinh-vuong', nhom: 'phang', lop: 8, ten: 'Hình vuông', moTa: 'Vừa là hình chữ nhật vừa là hình thoi', duongDan: 'phang/lop8/hinh-vuong.html', hinh: 'vuong', trangThai: 'san-sang' },
   { id: 'thales', nhom: 'phang', lop: 8, ten: 'Định lí Thalès', moTa: 'Đoạn thẳng tỉ lệ', duongDan: 'phang/lop8/thales.html', hinh: 'thales', trangThai: 'san-sang' },
+  { id: 'l8-phan-giac', nhom: 'phang', lop: 8, ten: 'Tính chất đường phân giác', moTa: 'DB : DC = AB : AC, chứng minh, phân giác góc ngoài', duongDan: 'phang/lop8/tinh-chat-phan-giac.html', hinh: 'phanGiacTL', trangThai: 'san-sang' },
   { id: 'duong-trung-binh', nhom: 'phang', lop: 8, ten: 'Đường trung bình', moTa: 'Của tam giác', duongDan: 'phang/lop8/duong-trung-binh.html', hinh: 'trungBinh', trangThai: 'san-sang' },
   { id: 'dong-dang-ccc', nhom: 'phang', lop: 8, ten: 'Tam giác đồng dạng (c.c.c)', moTa: 'Tỉ số k, xoay, lật, gộp hình, hướng dẫn vẽ', duongDan: 'phang/lop8/dong-dang-ccc.html', hinh: 'dongDang', trangThai: 'san-sang' },
   { id: 'dong-dang-cgc', nhom: 'phang', lop: 8, ten: 'Tam giác đồng dạng (c.g.c)', moTa: 'Tỉ số k, xoay, lật, gộp hình, hướng dẫn vẽ', duongDan: 'phang/lop8/dong-dang-cgc.html', hinh: 'dongDang', trangThai: 'san-sang' },
@@ -141,6 +142,7 @@ window.DANH_MUC = [
     pythagore: p('M46 58 L46 38 L72 58 Z') + p('M46 58 L46 38 L26 38 L26 58 Z M46 58 L72 58 L72 84 L46 84 Z M46 38 L66 12 L92 32 L72 58'),
     tuGiac: p('M22 70 L38 20 L96 26 L104 72 Z') + p('M22 70 L96 26 M38 20 L104 72', K),
     thales: p('M20 80 L60 10 L104 80 Z') + p('M40 45 H82'),
+    phanGiacTL: p('M14 80 L44 12 L106 80 Z') + p('M44 12 L66 80', K) + p('M38 24 a12 12 0 0 0 10 1 M44 26 a14 14 0 0 0 9 -1', N),
     trungBinh: p('M20 80 L50 12 L104 80 Z') + p('M35 46 H77') + '<circle cx="35" cy="46" r="3" fill="currentColor"/><circle cx="77" cy="46" r="3" fill="currentColor"/>',
     dongDang: p('M10 80 L25 50 L36 80 Z M62 80 L92 20 L114 80 Z'),
   };

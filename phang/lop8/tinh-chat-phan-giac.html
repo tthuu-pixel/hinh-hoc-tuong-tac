@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tính chất đường phân giác của tam giác</title>
+<link rel="stylesheet" href="../../chung/giao-dien.css">
+<link rel="stylesheet" href="../../chung/khung-3d.css">
+<link rel="stylesheet" href="../../chung/khung-phang.css">
+<script src="../../chung/cau-hinh.js"></script>
+<script src="../../chung/dang-nhap.js" data-goc="../../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../../chung/khung-phang.js"></script>
+<script>
+/* =====================================================================
+   TÍNH CHẤT ĐƯỜNG PHÂN GIÁC CỦA TAM GIÁC — Toán 8
+   AD là phân giác của góc BAC (D thuộc BC) thì DB/DC = AB/AC.
+   Kéo A, B, C. Hoạt hình chứng minh (kẻ BE // AC) và thay đổi hình.
+   ===================================================================== */
+var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, M = KhungPhang.MAU;
+var MAU_PG = '#7C3AED', MAU_B = '#E0342F', MAU_C = '#1E6FE0', MAU_NG = '#0D9488', MAU_CM = '#D97706';
+
+// Hình tại thời điểm hiện tại (điểm A có thể đang chạy theo hoạt hình "doi")
+function hinh(P, tDoi) {
+  var A = P.A;
+  if (tDoi != null) { var s = Math.sin(tDoi * Math.PI * 2); A = H.cong(P.A, [2.6 * s, 0.9 * Math.sin(tDoi * Math.PI * 4)]); }
+  var B = P.B, C = P.C, c = H.dai(A, B), b = H.dai(A, C);
+  var D = H.lerp(B, C, c / (b + c));                        // DB : DC = AB : AC
+  var E = Math.abs(b - c) > 0.05 ? [(b * B[0] - c * C[0]) / (b - c), (b * B[1] - c * C[1]) / (b - c)] : null;   // chân phân giác ngoài trên đường BC
+  return { A: A, B: B, C: C, D: D, E: E, b: b, c: c, db: H.dai(D, B), dc: H.dai(D, C) };
+}
+function tenDinh(g, h) {
+  var G = H.trongTam(h.A, h.B, h.C);
+  [['A', h.A], ['B', h.B], ['C', h.C]].forEach(function (x) { var v = H.tru(x[1], G), l = Math.hypot(v[0], v[1]) || 1; g.diem(x[1], x[0], { huong: [v[0] / l, v[1] / l] }); });
+}
+function benNgoai(P1, P2, h) {   // nhãn của đoạn P1P2 đặt phía ngoài tam giác
+  var G = H.trongTam(h.A, h.B, h.C), u = H.tru(P2, P1), w = H.tru(G, P1);
+  return u[0] * w[1] - u[1] * w[0] < 0;
+}
+
+KhungPhang.tao({
+  ten: 'Tính chất đường phân giác của tam giác',
+  lop: 8,
+  diem: { A: [-1, 4.5], B: [-4, 0], C: [5, 0] },
+  buocLuoi: 0.5,
+  batDau: ['pg', 'db', 'ab'],
+
+  lamSang: [
+    { id: 'pg', nhan: 'Đường phân giác AD', mau: MAU_PG, ghiChu: function (P) { var h = hinh(P); return '$AD$ là tia phân giác của góc $BAC$: $\\widehat{BAD} = \\widehat{DAC} = ' + soL(H.gocDo(h.B, h.A, h.C) / 2, 1) + '^\\circ$; $D$ nằm trên cạnh $BC$.'; } },
+    { id: 'db', nhan: 'Hai đoạn DB và DC', mau: MAU_B, ghiChu: function (P) { var h = hinh(P); return 'Đường phân giác $AD$ chia cạnh $BC$ thành hai đoạn: $DB \\approx ' + soL(h.db) + '$, $DC \\approx ' + soL(h.dc) + '$ → $\\dfrac{DB}{DC} \\approx ' + soL(h.db / h.dc, 3) + '$.'; } },
+    { id: 'ab', nhan: 'Hai cạnh kề AB và AC', mau: MAU_C, ghiChu: function (P) { var h = hinh(P); return 'Hai cạnh kề của góc $A$: $AB \\approx ' + soL(h.c) + '$, $AC \\approx ' + soL(h.b) + '$ → $\\dfrac{AB}{AC} \\approx ' + soL(h.c / h.b, 3) + '$. <b>Hai tỉ số bằng nhau!</b>'; } },
+    { id: 'ngoai', nhan: 'Phân giác góc ngoài (mở rộng)', mau: MAU_NG, vuaKhung: true, ghiChu: function (P) {
+      var h = hinh(P);
+      if (!h.E) return 'Khi $AB = AC$, phân giác góc ngoài tại $A$ <b>song song</b> với $BC$ nên không cắt đường thẳng $BC$.';
+      return 'Phân giác góc ngoài tại $A$ cắt đường thẳng $BC$ tại $E$. Tính chất vẫn đúng: $\\dfrac{EB}{EC} = \\dfrac{AB}{AC}$ $(' + soL(H.dai(h.E, h.B) / H.dai(h.E, h.C), 3) + ')$.';
+    } },
+  ],
+
+  hoatHinh: [
+    { id: 'cm', nhan: 'Chứng minh (kẻ BE song song AC)', thoiGian: 14000, vuaKhung: function (P) { var h = hinh(P), E = diemE(h), xm = Math.max(h.B[0], h.C[0]); return [h.A, h.B, h.C, E, [xm + 6.5, Math.min(h.B[1], h.C[1]) - 3.2]]; },
+      ghiChu: function (P, ts, t) {
+        if (t < 0.18) return '<b>Bước 1.</b> Qua $B$ kẻ đường thẳng song song với $AC$, cắt tia $AD$ tại $E$.';
+        if (t < 0.42) return '<b>Bước 2.</b> $BE \\parallel AC$ nên $\\widehat{BEA} = \\widehat{EAC}$ (so le trong). Mà $\\widehat{EAC} = \\widehat{BAE}$ (vì $AD$ là phân giác) nên $\\widehat{BEA} = \\widehat{BAE}$.';
+        if (t < 0.62) return '<b>Bước 3.</b> Tam giác $ABE$ có hai góc bằng nhau nên <b>cân tại $B$</b> ⇒ $BE = AB$.';
+        if (t < 0.86) return '<b>Bước 4.</b> $BE \\parallel AC$ ⇒ $\\triangle DBE \\backsim \\triangle DCA$ (hệ quả định lí Thalès) ⇒ $\\dfrac{DB}{DC} = \\dfrac{BE}{CA}$.';
+        return '<b>Kết luận.</b> Thay $BE = AB$: <b>$\\dfrac{DB}{DC} = \\dfrac{AB}{AC}$</b>.';
+      } },
+    { id: 'doi', nhan: 'Thay đổi hình – tỉ số luôn bằng nhau', thoiGian: 10000, anDiem: true,
+      vuaKhung: function (P) { return [P.B, P.C, H.cong(P.A, [-2.8, 1]), H.cong(P.A, [2.8, -1])]; },
+      ghiChu: function (P, ts, t) { var h = hinh(P, t); return 'Điểm $A$ di chuyển: $\\dfrac{DB}{DC} \\approx ' + soL(h.db / h.dc, 3) + '$ và $\\dfrac{AB}{AC} \\approx ' + soL(h.c / h.b, 3) + '$ — <b>luôn bằng nhau</b>.'; } },
+  ],
+
+  ve: function (g, P) {
+    var tc = g.hoat('cm'), td = g.hoat('doi'), h = hinh(P, td), A = h.A, B = h.B, C = h.C, D = h.D;
+    var nua = H.gocDo(B, A, C) / 2;
+    g.daGiac([A, B, C], { rong: 2.6 });
+
+    if (tc !== null) { veChungMinh(g, h, tc); tenDinh(g, h); return; }
+
+    // phân giác góc ngoài (mở rộng)
+    if (g.bat('ngoai')) {
+      if (h.E) {
+        g.duongThang(B, C, { mau: '#94A3B8', rong: 1.4, dut: '6 5' });
+        g.doan(A, h.E, { sang: 'ngoai', rongSang: 4 });
+        var X = H.cong(A, H.tru(A, B));     // tia đối của AB
+        g.doan(A, H.lerp(A, X, 0.45), { mau: '#94A3B8', rong: 1.4, dut: '5 4' });
+        g.goc(h.E, A, H.lerp(A, X, 0.45), { mau: MAU_NG, r: 24, kyHieu: 2, nhan: false, doMoTo: 0.25 });
+        g.goc(C, A, h.E, { mau: MAU_NG, r: 24, kyHieu: 2, nhan: false, doMoTo: 0.25 });
+        g.diem(h.E, 'E', { mau: MAU_NG, huong: [0, -1] });
+        // nhãn EB, EC đặt dưới đường thẳng BC (phía không có A), EC nằm thấp hơn để không chồng
+        var trai = function (P1, P2) { var u = H.tru(P2, P1), w = H.tru(A, P1); return u[0] * w[1] - u[1] * w[0] < 0; };
+        g.doan(h.E, B, { mau: MAU_NG, rong: 2.5, dut: '2 0' });
+        g.nhanDo(h.E, B, 'EB ≈ ' + so(H.dai(h.E, B)), { mau: MAU_NG, kc: 24, benTrai: trai(h.E, B) });
+        g.nhanDo(h.E, C, 'EC ≈ ' + so(H.dai(h.E, C)), { mau: MAU_NG, kc: 54, benTrai: trai(h.E, C) });
+      } else g.duongThang(A, H.cong(A, H.tru(C, B)), { sang: 'ngoai', dut: '7 5' });
+    }
+    // hai cạnh kề AB (đỏ), AC (xanh)
+    if (g.bat('ab')) {
+      g.doan(A, B, { mau: MAU_B, rong: 5 }); g.doan(A, C, { mau: MAU_C, rong: 5 });
+      g.nhanDo(A, B, 'AB ≈ ' + so(h.c), { mau: MAU_B, kc: 'tu', benTrai: benNgoai(A, B, h) });
+      g.nhanDo(A, C, 'AC ≈ ' + so(h.b), { mau: MAU_C, kc: 'tu', benTrai: benNgoai(A, C, h) });
+    }
+    // hai đoạn DB (đỏ), DC (xanh) — cùng màu với cạnh kề tương ứng
+    if (g.bat('db')) {
+      g.doan(D, B, { mau: MAU_B, rong: 5, doMo: 0.85 }); g.doan(D, C, { mau: MAU_C, rong: 5, doMo: 0.85 });
+      g.nhanDo(B, D, 'DB ≈ ' + so(h.db), { mau: MAU_B, kc: 'tu', benTrai: benNgoai(B, D, h) });
+      g.nhanDo(D, C, 'DC ≈ ' + so(h.dc), { mau: MAU_C, kc: 'tu', benTrai: benNgoai(D, C, h) });
+    }
+    // đường phân giác AD và hai góc bằng nhau
+    var pgOn = g.bat('pg');
+    g.doan(A, D, pgOn ? { sang: 'pg', rongSang: 4.5 } : { mau: MAU_PG, rong: 3 });
+    g.goc(B, A, D, { mau: MAU_PG, r: 34, kyHieu: 1, doMoTo: pgOn ? 0.3 : 0.15, nhan: pgOn ? so(nua, 1) + '°' : false, xaNhan: Math.max(18, 900 / Math.max(nua, 10)) });
+    g.goc(D, A, C, { mau: MAU_PG, r: 34, kyHieu: 1, doMoTo: pgOn ? 0.3 : 0.15, nhan: pgOn ? so(nua, 1) + '°' : false, xaNhan: Math.max(18, 900 / Math.max(nua, 10)) });
+    g.diem(D, 'D', { mau: MAU_PG, huong: [0, -1] });
+    tenDinh(g, h);
+  },
+
+  congThuc: function (P, ts, C) {
+    var h = hinh(P);
+    return [
+      { id: 'pg', ten: 'Tính chất đường phân giác ($AD$ là phân giác của $\\widehat{BAC}$)', bt: '$\\dfrac{' + C.m('db', 'DB') + '}{' + C.m('db', 'DC') + '} = \\dfrac{' + C.m('ab', 'AB') + '}{' + C.m('ab', 'AC') + '}$ &nbsp;hay&nbsp; $\\dfrac{DB}{AB} = \\dfrac{DC}{AC}$' },
+      { id: null, ten: 'Với số đo hiện tại', bt: '$\\dfrac{' + soL(h.db) + '}{' + soL(h.dc) + '} \\approx ' + soL(h.db / h.dc, 3) + '$ &nbsp;;&nbsp; $\\dfrac{' + soL(h.c) + '}{' + soL(h.b) + '} \\approx ' + soL(h.c / h.b, 3) + '$' },
+      { id: 'db', ten: 'Tính độ dài khi biết ba cạnh', bt: '$DB = \\dfrac{AB}{AB + AC} \\cdot BC \\approx ' + soL(h.db) + '$ &nbsp;;&nbsp; $DC = \\dfrac{AC}{AB + AC} \\cdot BC \\approx ' + soL(h.dc) + '$' },
+    ];
+  },
+  nhanXet: function (P) {
+    var h = hinh(P), r1 = h.db / h.dc, r2 = h.c / h.b;
+    var td = function (x, s) { return '<td style="padding:2px 8px;text-align:center' + (s || '') + '">' + x + '</td>'; };
+    var bang = '<table style="border-collapse:collapse;margin-bottom:4px">' +
+      '<tr style="color:#475569;font-size:13px">' + td('') + td('<b>độ dài</b>') + td('<b>tỉ số</b>') + '</tr>' +
+      '<tr>' + td('<b>Đoạn trên BC</b>') + td('<span style="color:' + MAU_B + '">$DB \\approx ' + soL(h.db) + '$</span>, <span style="color:' + MAU_C + '">$DC \\approx ' + soL(h.dc) + '$</span>') + td('$\\dfrac{DB}{DC} \\approx \\mathbf{' + soL(r1, 3) + '}$') + '</tr>' +
+      '<tr>' + td('<b>Hai cạnh kề</b>') + td('<span style="color:' + MAU_B + '">$AB \\approx ' + soL(h.c) + '$</span>, <span style="color:' + MAU_C + '">$AC \\approx ' + soL(h.b) + '$</span>') + td('$\\dfrac{AB}{AC} \\approx \\mathbf{' + soL(r2, 3) + '}$') + '</tr></table>';
+    var them = Math.abs(h.c - h.b) < 0.05
+      ? '<span class="dung">$AB = AC$ (tam giác cân tại $A$): $DB = DC$, phân giác $AD$ cũng là <b>đường trung tuyến</b>.</span>'
+      : '<span class="dung">Đường phân giác của một góc trong tam giác chia cạnh đối diện thành hai đoạn <b>tỉ lệ với hai cạnh kề</b> hai đoạn ấy.</span>';
+    return bang + them + '<br><span style="color:#475569">Cạnh nào dài hơn thì đoạn kề với nó trên $BC$ cũng dài hơn. Kéo $A$, $B$, $C$ để kiểm tra.</span>';
+  },
+  khungNhin: function (P, ts, bat) {
+    var h = hinh(P), ds = [h.A, h.B, h.C];
+    if (bat && bat('ngoai') && h.E && H.dai(h.E, h.B) < 30) ds.push(h.E);
+    return ds;
+  },
+});
+
+// Điểm E: giao của đường thẳng qua B song song AC với đường thẳng AD
+function diemE(h) { return H.giao(h.B, H.cong(h.B, H.tru(h.C, h.A)), h.A, h.D) || h.D; }
+
+function veChungMinh(g, h, t) {
+  var A = h.A, B = h.B, C = h.C, D = h.D, E = diemE(h);
+  var e1 = H.em(H.doan(t, 0.02, 0.16));
+  // Bước 1: kéo dài AD tới E, kẻ BE song song AC
+  g.doan(A, D, { mau: MAU_PG, rong: 3.5 });
+  g.doan(D, H.lerp(D, E, e1), { mau: MAU_PG, rong: 2, dut: '6 4' });
+  g.doan(B, H.lerp(B, E, e1), { mau: MAU_CM, rong: 3 });
+  if (e1 > 0.95) { g.diem(E, 'E', { mau: MAU_CM, huong: H.tru(E, D) }); g.songSong(B, E, 1, MAU_CM, 0.55); g.songSong(A, C, 1, MAU_CM, 0.6); }
+  // Bước 2: ba góc bằng nhau
+  if (t >= 0.18) {
+    var hien = function (t0) { return t >= t0; };
+    g.goc(B, A, D, { mau: MAU_PG, r: 30, kyHieu: 1, nhan: false, doMoTo: 0.3 });
+    g.goc(D, A, C, { mau: MAU_PG, r: 30, kyHieu: 1, nhan: false, doMoTo: 0.3 });
+    if (hien(0.27)) g.goc(B, E, A, { mau: MAU_PG, r: 30, kyHieu: 1, nhan: false, doMoTo: 0.45 });
+  }
+  // Bước 3: tam giác ABE cân tại B
+  if (t >= 0.42) {
+    g.daGiac([A, B, E], { to: '#FDE68A', doMoTo: t < 0.62 ? 0.55 : 0.2, rong: 0 });
+    g.doan(A, B, { mau: MAU_B, rong: 4.5, kyHieu: 1 }); g.doan(B, E, { mau: MAU_B, rong: 4.5, kyHieu: 1 });
+    if (t >= 0.5) { var u = H.tru(E, B), w = H.tru(A, B); g.nhanDo(B, E, 'BE = AB ≈ ' + so(h.c), { mau: MAU_B, kc: 'tu', t: 0.72, benTrai: u[0] * w[1] - u[1] * w[0] < 0 }); }
+  }
+  // Bước 4: tam giác DBE đồng dạng tam giác DCA
+  if (t >= 0.62) {
+    var e4 = H.em(H.doan(t, 0.62, 0.72));
+    g.daGiac([D, B, E], { to: '#FCA5A5', doMoTo: 0.45 * e4, rong: 0 });
+    g.daGiac([D, C, A], { to: '#93C5FD', doMoTo: 0.45 * e4, rong: 0 });
+    g.doan(D, B, { mau: MAU_B, rong: 5 }); g.doan(D, C, { mau: MAU_C, rong: 5 }); g.doan(A, C, { mau: MAU_C, rong: 4.5 });
+    g.nhanDo(B, D, 'DB ≈ ' + so(h.db), { mau: MAU_B, kc: 'tu', benTrai: false });
+    g.nhanDo(D, C, 'DC ≈ ' + so(h.dc), { mau: MAU_C, kc: 'tu', benTrai: false });
+  }
+  if (t >= 0.86) {
+        g.latexKhung([Math.max(B[0], C[0]) + 0.6, Math.min(B[1], C[1]) - 0.4], ['\\dfrac{DB}{DC} = \\dfrac{BE}{CA} = \\dfrac{AB}{AC}', '\\dfrac{' + soL(h.db) + '}{' + soL(h.dc) + '} \\approx \\dfrac{' + soL(h.c) + '}{' + soL(h.b) + '} \\approx ' + soL(h.c / h.b, 3)], { mau: MAU_PG, tren: true, co: 19 });
+  }
+  g.diem(D, 'D', { mau: MAU_PG, huong: [0.4, -1] });
+}
+</script>
+</body>
+</html>

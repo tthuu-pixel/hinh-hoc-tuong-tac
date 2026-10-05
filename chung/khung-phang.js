@@ -188,6 +188,45 @@
     function an(o) { return o && o.chiKhiSang && !bat(o.sang); }
     function pts(ds) { return ds.map(function (p) { return X(p).toFixed(1) + ',' + Y(p).toFixed(1); }).join(' '); }
 
+    // ---- Trợ giúp vẽ dụng cụ ----
+    function chuoiDiem(ds) { return ds.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+    // Thu nhỏ đa giác lồi (toạ độ pixel) vào trong một khoảng d (các cạnh song song với cạnh cũ); trả về null nếu quá nhỏ
+    function thuNho(ds, d) {
+      var n = ds.length, S = 0, i; for (i = 0; i < n; i++) S += ds[i][0] * ds[(i + 1) % n][1] - ds[(i + 1) % n][0] * ds[i][1];
+      var sg = S > 0 ? 1 : -1, duong = [];
+      for (i = 0; i < n; i++) {
+        var A = ds[i], B = ds[(i + 1) % n], dx = B[0] - A[0], dy = B[1] - A[1], l = Math.hypot(dx, dy) || 1;
+        var nx = -dy / l * sg, ny = dx / l * sg;   // pháp tuyến hướng vào trong
+        duong.push([[A[0] + nx * d, A[1] + ny * d], [dx, dy]]);
+      }
+      var kq = [];
+      for (i = 0; i < n; i++) {
+        var L1 = duong[(i + n - 1) % n], L2 = duong[i], det = L1[1][0] * L2[1][1] - L1[1][1] * L2[1][0]; if (Math.abs(det) < 1e-9) return null;
+        var t = ((L2[0][0] - L1[0][0]) * L2[1][1] - (L2[0][1] - L1[0][1]) * L2[1][0]) / det;
+        kq.push([L1[0][0] + L1[1][0] * t, L1[0][1] + L1[1][1] * t]);
+      }
+      var S2 = 0; for (i = 0; i < n; i++) S2 += kq[i][0] * kq[(i + 1) % n][1] - kq[(i + 1) % n][0] * kq[i][1];
+      return S2 * S > 0 && Math.abs(S2) > Math.abs(S) * 0.06 ? kq : null;
+    }
+    // Chữ nằm dọc theo hướng goc (radian, toạ độ hình) nhưng luôn đứng xuôi (không lộn ngược)
+    function chuXoay(x, y, text, goc, o) {
+      var d = -goc * 180 / Math.PI; while (d > 90) d -= 180; while (d < -90) d += 180;
+      return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="' + (o.co || 11) + '" font-weight="700" fill="' + (o.mau || '#334155') + '" transform="rotate(' + d.toFixed(1) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" style="font-family:var(--phong-chu,system-ui)">' + text + '</text>';
+    }
+    // Màu chuyển, bóng đổ dùng chung cho các dụng cụ (đưa vào đầu mỗi lần vẽ)
+    var DEFS_DUNG_CU = '<defs>' +
+      '<filter id="dcBong" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.6" flood-color="#0F172A" flood-opacity="0.26"/></filter>' +
+      '<linearGradient id="dcEke" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E0F2FE" stop-opacity="0.82"/><stop offset="0.55" stop-color="#BAE6FD" stop-opacity="0.7"/><stop offset="1" stop-color="#7DD3FC" stop-opacity="0.72"/></linearGradient>' +
+      '<linearGradient id="dcThuoc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCD34D" stop-opacity="0.95"/><stop offset="0.2" stop-color="#FEF3C7" stop-opacity="0.93"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0.9"/></linearGradient>' +
+      '<linearGradient id="dcThuocNguoc" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FCD34D" stop-opacity="0.95"/><stop offset="0.2" stop-color="#FEF3C7" stop-opacity="0.93"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0.9"/></linearGradient>' +
+      '<radialGradient id="dcDoGoc" cx="0.5" cy="0.85" r="0.75"><stop offset="0" stop-color="#FFF7ED" stop-opacity="0.9"/><stop offset="0.7" stop-color="#FFEDD5" stop-opacity="0.82"/><stop offset="1" stop-color="#FDBA74" stop-opacity="0.75"/></radialGradient>' +
+      '<linearGradient id="dcKimLoai" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#475569"/><stop offset="0.3" stop-color="#CBD5E1"/><stop offset="0.45" stop-color="#F8FAFC"/><stop offset="0.72" stop-color="#94A3B8"/><stop offset="1" stop-color="#334155"/></linearGradient>' +
+      '<linearGradient id="dcButChi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706"/><stop offset="0.35" stop-color="#FCD34D"/><stop offset="0.65" stop-color="#FBBF24"/><stop offset="1" stop-color="#B45309"/></linearGradient>' +
+      '<linearGradient id="dcTayCam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E3A8A"/><stop offset="0.4" stop-color="#60A5FA"/><stop offset="0.7" stop-color="#2563EB"/><stop offset="1" stop-color="#1E3A8A"/></linearGradient>' +
+      '<radialGradient id="dcKhop" cx="0.38" cy="0.35" r="0.75"><stop offset="0" stop-color="#F8FAFC"/><stop offset="0.6" stop-color="#94A3B8"/><stop offset="1" stop-color="#475569"/></radialGradient>' +
+      '<linearGradient id="dcLuoiKeo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64748B"/><stop offset="0.35" stop-color="#E2E8F0"/><stop offset="0.5" stop-color="#F8FAFC"/><stop offset="0.8" stop-color="#94A3B8"/><stop offset="1" stop-color="#475569"/></linearGradient>' +
+      '<linearGradient id="dcTayKeo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F87171"/><stop offset="0.35" stop-color="#FCA5A5"/><stop offset="0.6" stop-color="#DC2626"/><stop offset="1" stop-color="#991B1B"/></linearGradient>' +
+      '</defs>';
     var g = {
       H: H, so: so, MAU: MAU,
       bat: bat,
@@ -350,6 +389,7 @@
           (o.tieuDe ? '<div style="font:700 13px/1.4 var(--phong-chu, system-ui);letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px">' + thoat(o.tieuDe) + '</div>' : '') +
           ds.join('') + '</div></div></foreignObject>');
       },
+      // ===================== DỤNG CỤ VẼ HÌNH (SVG, vẽ theo toạ độ pixel) =====================
       // Ê ke (thước tam giác) bằng nhựa trong. Đỉnh O đặt trên hình, cạnh thứ nhất theo hướng a0 (radian),
       // thân ê ke nằm về phía quay dau (+1 ngược chiều kim đồng hồ).
       //   o.loai = '60'   : góc 60° tại O (cạnh góc vuông ngắn theo a0, cạnh huyền nghiêng 60°) — ê ke 30°–60°
@@ -359,58 +399,77 @@
         o = o || {};
         var L = (o.dai || 3) * V.s, ox = X(O), oy = Y(O);
         var diemPx = function (goc, d) { return [ox + d * Math.cos(goc), oy - d * Math.sin(goc)]; };
-        var ds;
-        if (o.loai === 'vuong') ds = [[ox, oy], diemPx(a0, L), diemPx(a0 + dau * Math.PI / 2, L)];
-        else ds = [[ox, oy], diemPx(a0, L), diemPx(a0 + dau * Math.PI / 3, 2 * L)];
-        var tam = [(ds[0][0] + ds[1][0] + ds[2][0]) / 3, (ds[0][1] + ds[1][1] + ds[2][1]) / 3];
-        var trong = ds.map(function (p) { return [tam[0] + (p[0] - tam[0]) * 0.45, tam[1] + (p[1] - tam[1]) * 0.45]; });
-        var chuoi = function (d) { return d.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); };
-        var s2 = '<g opacity="' + (o.doMo == null ? 0.95 : o.doMo) + '" style="pointer-events:none">';
-        s2 += '<polygon points="' + chuoi(ds) + '" fill="#BAE6FD" fill-opacity="0.55" stroke="#0369A1" stroke-width="1.8" stroke-linejoin="round"/>';
-        s2 += '<polygon points="' + chuoi(trong) + '" fill="#F0F9FF" fill-opacity="0.75" stroke="#0369A1" stroke-width="1.2" stroke-linejoin="round"/>';
-        // vạch chia trên cạnh thứ nhất
+        var vuong = o.loai === 'vuong', a2 = a0 + dau * (vuong ? Math.PI / 2 : Math.PI / 3);
+        var ds = [[ox, oy], diemPx(a0, L), diemPx(a2, vuong ? L : 2 * L)];
+        // lỗ khoét bên trong: các cạnh song song, cách cạnh ngoài một khoảng đều
+        var trong = thuNho(ds, Math.max(14, Math.min(26, L * 0.13)));
+        var s2 = '<g opacity="' + (o.doMo == null ? 0.96 : o.doMo) + '" style="pointer-events:none">';
+        var vien = trong ? 'M' + chuoiDiem(ds) + 'Z M' + chuoiDiem(trong.slice().reverse()) + 'Z' : 'M' + chuoiDiem(ds) + 'Z';
+        s2 += '<path d="' + vien + '" fill="#0F172A" fill-opacity="0.13" fill-rule="evenodd" transform="translate(1.5,3)"/>';   // bóng đổ
+        s2 += '<path d="' + vien + '" fill="url(#dcEke)" fill-rule="evenodd" stroke="#0C4A6E" stroke-width="1.6" stroke-linejoin="round"/>';
+        if (trong) s2 += '<polygon points="' + chuoiDiem(trong) + '" fill="none" stroke="#0369A1" stroke-width="1.1" stroke-opacity="0.8"/>';
+        // ánh sáng chạy dọc cạnh huyền
+        s2 += '<line x1="' + ds[1][0].toFixed(1) + '" y1="' + ds[1][1].toFixed(1) + '" x2="' + ds[2][0].toFixed(1) + '" y2="' + ds[2][1].toFixed(1) + '" stroke="#FFFFFF" stroke-width="1.2" stroke-opacity="0.85"/>';
+        // thang chia cm – mm dọc cạnh thứ nhất (vạch 0 tại O)
         var ux = Math.cos(a0), uy = -Math.sin(a0), nx = Math.cos(a0 + dau * Math.PI / 2), ny = -Math.sin(a0 + dau * Math.PI / 2);
-        for (var t = 10, i = 1; t < L - 8; t += 8, i++) {
-          var h = i % 5 === 0 ? 9 : 5;
-          s2 += '<line x1="' + (ox + ux * t).toFixed(1) + '" y1="' + (oy + uy * t).toFixed(1) + '" x2="' + (ox + ux * t + nx * h).toFixed(1) + '" y2="' + (oy + uy * t + ny * h).toFixed(1) + '" stroke="#0369A1" stroke-width="1"/>';
+        var mm = V.s / 10, buoc = mm >= 3.2 ? 1 : mm * 5 >= 6 ? 5 : 10, gioiHan = L - (trong ? 4 : 10);
+        for (var k = 1; k * mm <= gioiHan; k++) {
+          if (k % buoc) continue;
+          var tt = k * mm, h = k % 10 === 0 ? 11 : k % 5 === 0 ? 7.5 : 4.5;
+          s2 += '<line x1="' + (ox + ux * tt).toFixed(1) + '" y1="' + (oy + uy * tt).toFixed(1) + '" x2="' + (ox + ux * tt + nx * h).toFixed(1) + '" y2="' + (oy + uy * tt + ny * h).toFixed(1) + '" stroke="#0C4A6E" stroke-width="' + (k % 10 === 0 ? 1.3 : 0.8) + '"/>';
+          if (k % 10 === 0 && V.s >= 26 && tt > 52 && tt < gioiHan - 30) s2 += chuXoay(ox + ux * tt + nx * 19, oy + uy * tt + ny * 19, String(k / 10), a0, { co: 10, mau: '#0C4A6E' });
         }
-        // ký hiệu góc tại đỉnh đặt
-        var r = 18;
-        if (o.loai === 'vuong') {
-          var p1 = diemPx(a0, r), p3 = diemPx(a0 + dau * Math.PI / 2, r), p2 = [p1[0] + p3[0] - ox, p1[1] + p3[1] - oy];
-          s2 += '<polyline points="' + chuoi([p1, p2, p3]) + '" fill="none" stroke="#DC2626" stroke-width="2"/>';
-        } else {
-          var cung = []; for (var k = 0; k <= 12; k++) cung.push(diemPx(a0 + dau * Math.PI / 3 * k / 12, r + 6));
-          s2 += '<polyline points="' + chuoi(cung) + '" fill="none" stroke="#DC2626" stroke-width="2"/>';
-          var am = diemPx(a0 + dau * Math.PI / 6, r + 22);
-          s2 += '<text x="' + am[0].toFixed(1) + '" y="' + (am[1] + 5).toFixed(1) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#DC2626">60°</text>';
+        // ký hiệu góc ở ba đỉnh
+        var kyHieuGoc = function (P0, P1, P2, nhan, r) {
+          var b1 = Math.atan2(P1[1] - P0[1], P1[0] - P0[0]), b2 = Math.atan2(P2[1] - P0[1], P2[0] - P0[0]);
+          var d = b2 - b1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+          var r2 = '';
+          if (nhan === '90°') {
+            var q1 = [P0[0] + Math.cos(b1) * r, P0[1] + Math.sin(b1) * r], q3 = [P0[0] + Math.cos(b2) * r, P0[1] + Math.sin(b2) * r];
+            r2 += '<polyline points="' + chuoiDiem([q1, [q1[0] + q3[0] - P0[0], q1[1] + q3[1] - P0[1]], q3]) + '" fill="none" stroke="#DC2626" stroke-width="2"/>';
+          } else {
+            var cg = []; for (var i = 0; i <= 14; i++) cg.push([P0[0] + Math.cos(b1 + d * i / 14) * r, P0[1] + Math.sin(b1 + d * i / 14) * r]);
+            r2 += '<polyline points="' + chuoiDiem(cg) + '" fill="none" stroke="#DC2626" stroke-width="2"/>';
+          }
+          var am = b1 + d / 2, rc = r + (Math.abs(d) < 0.7 ? 22 : 15);
+          r2 += '<text x="' + (P0[0] + Math.cos(am) * rc).toFixed(1) + '" y="' + (P0[1] + Math.sin(am) * rc + 4.5).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#B91C1C" style="font-family:var(--phong-chu,system-ui)">' + nhan + '</text>';
+          return r2;
+        };
+        s2 += kyHieuGoc(ds[0], ds[1], ds[2], vuong ? '90°' : '60°', 20);
+        if (L > 70) {
+          s2 += kyHieuGoc(ds[1], ds[2], ds[0], vuong ? '45°' : '90°', 13);
+          s2 += kyHieuGoc(ds[2], ds[0], ds[1], vuong ? '45°' : '30°', 17);
         }
         out.push(s2 + '</g>');
       },
-      // ---------- Dụng cụ vẽ hình (thước thẳng, bút chì, compa) — vẽ bằng SVG ----------
-      // Thước thẳng đặt dọc đoạn AB (o.ben = 1 | -1: thước nằm bên nào của đường)
+      // ---------- Thước thẳng đặt dọc đoạn AB (o.ben = 1 | -1: thân thước nằm bên nào của đường) ----------
+      //   o.chia: vạch 0 trùng A (dùng để đo/đặt độ dài), thước dài thêm o.them cm sau B
+      //   không có o.chia: thước dùng để kẻ, vạch 0 nằm gần đầu thước
       thuoc: function (A, B, o) {
         o = o || {};
         var ax = X(A), ay = Y(A), bx = X(B), by = Y(B), L = Math.hypot(bx - ax, by - ay); if (L < 1) return;
-        var ux = (bx - ax) / L, uy = (by - ay) / L, ben = o.ben || 1, nx = -uy * ben, ny = ux * ben, du = 26, day = 30;
-        var p = function (t, h) { return (ax + ux * t + nx * h).toFixed(1) + ',' + (ay + uy * t + ny * h).toFixed(1); };
-        var s2 = '<g opacity="' + (o.doMo == null ? 0.92 : o.doMo) + '" style="pointer-events:none">';
-        if (o.chia) {   // thước có vạch chia cm (vạch 0 tại A), dài thêm o.them cm
-          var cm = V.s, Lt = L + (o.them == null ? 1 : o.them) * cm, day2 = 34;
-          s2 += '<polygon points="' + p(-16, 1) + ' ' + p(Lt + 16, 1) + ' ' + p(Lt + 16, day2) + ' ' + p(-16, day2) + '" fill="#FEF3C7" fill-opacity="0.9" stroke="#B45309" stroke-width="1.6"/>';
-          var buoc = cm / 10 >= 4 ? 0.1 : cm / 2 >= 4 ? 0.5 : 1;
-          for (var v = 0; v * cm <= Lt + 0.5; v = Math.round((v + buoc) * 10) / 10) {
-            var tt = v * cm, lon = Math.abs(v - Math.round(v)) < 1e-6, vua = Math.abs(v * 2 - Math.round(v * 2)) < 1e-6, hh = lon ? 12 : vua ? 8 : 5;
-            s2 += '<line x1="' + (ax + ux * tt + nx * 1).toFixed(1) + '" y1="' + (ay + uy * tt + ny * 1).toFixed(1) + '" x2="' + (ax + ux * tt + nx * (1 + hh)).toFixed(1) + '" y2="' + (ay + uy * tt + ny * (1 + hh)).toFixed(1) + '" stroke="#92400E" stroke-width="' + (lon ? 1.4 : 0.9) + '"/>';
-            if (lon) s2 += '<text x="' + (ax + ux * tt + nx * 24).toFixed(1) + '" y="' + (ay + uy * tt + ny * 24 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#92400E">' + Math.round(v) + '</text>';
-          }
-          out.push(s2 + '</g>'); return;
+        var goc = Math.atan2(by - ay, bx - ax), ben = o.ben || 1, cm = V.s, mm = cm / 10;
+        var z, dau, cuoi;
+        if (o.chia) { z = 0; dau = -18; cuoi = L + (o.them == null ? 1 : o.them) * cm + 30; }
+        else { dau = -30; z = dau + 14; cuoi = L + 30; }
+        var day = 40, sx = ben;   // trục y cục bộ: thân thước theo hướng ben
+        var s2 = '<g opacity="' + (o.doMo == null ? 0.95 : o.doMo) + '" style="pointer-events:none" transform="translate(' + ax.toFixed(1) + ',' + ay.toFixed(1) + ') rotate(' + (goc * 180 / Math.PI).toFixed(2) + ')">';
+        var y0 = 0.5 * sx, y1 = (day + 0.5) * sx, yt = Math.min(y0, y1);
+        s2 += '<rect x="' + (dau + 1.5).toFixed(1) + '" y="' + (yt + 3).toFixed(1) + '" width="' + (cuoi - dau).toFixed(1) + '" height="' + day + '" rx="3" fill="#0F172A" fill-opacity="0.14"/>';   // bóng đổ
+        s2 += '<rect x="' + dau.toFixed(1) + '" y="' + yt.toFixed(1) + '" width="' + (cuoi - dau).toFixed(1) + '" height="' + day + '" rx="3" fill="url(#dcThuoc' + (sx > 0 ? '' : 'Nguoc') + ')" stroke="#92400E" stroke-width="1.4"/>';
+        s2 += '<line x1="' + (dau + 3) + '" y1="' + ((day - 3) * sx).toFixed(1) + '" x2="' + (cuoi - 3).toFixed(1) + '" y2="' + ((day - 3) * sx).toFixed(1) + '" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.7"/>';
+        s2 += '<line x1="' + dau + '" y1="' + y0.toFixed(1) + '" x2="' + cuoi.toFixed(1) + '" y2="' + y0.toFixed(1) + '" stroke="#78350F" stroke-width="1.6"/>';
+        var buoc = mm >= 3.2 ? 1 : mm * 5 >= 6 ? 5 : 10, soMoi = cm >= 24 ? 1 : cm >= 12 ? 2 : 5;
+        var ve = '', chu = '', lat = Math.cos(goc) < -1e-6;
+        for (var k = Math.ceil((dau + 5 - z) / mm); z + k * mm <= cuoi - 5; k++) {
+          if (k < 0 || k % buoc) continue;
+          var tt = z + k * mm, h = k % 10 === 0 ? 14 : k % 5 === 0 ? 9.5 : 5.5;
+          ve += 'M' + tt.toFixed(1) + ' ' + y0.toFixed(1) + 'V' + ((0.5 + h) * sx).toFixed(1);
+          if (k % (10 * soMoi) === 0 && tt < cuoi - 24) chu += '<text x="' + tt.toFixed(1) + '" y="' + (24 * sx).toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="#78350F"' + (lat ? ' transform="rotate(180 ' + tt.toFixed(1) + ' ' + (24 * sx).toFixed(1) + ')"' : '') + ' style="font-family:var(--phong-chu,system-ui)">' + (k / 10) + '</text>';
         }
-        s2 += '<polygon points="' + p(-du, 2) + ' ' + p(L + du, 2) + ' ' + p(L + du, day) + ' ' + p(-du, day) + '" fill="#FEF3C7" fill-opacity="0.82" stroke="#B45309" stroke-width="1.6"/>';
-        for (var t = -du + 6, i = 0; t < L + du - 4; t += 8, i++) {
-          var h = i % 5 === 0 ? 10 : 5;
-          s2 += '<line x1="' + (ax + ux * t + nx * 2).toFixed(1) + '" y1="' + (ay + uy * t + ny * 2).toFixed(1) + '" x2="' + (ax + ux * t + nx * (2 + h)).toFixed(1) + '" y2="' + (ay + uy * t + ny * (2 + h)).toFixed(1) + '" stroke="#92400E" stroke-width="1"/>';
-        }
+        s2 += '<path d="' + ve + '" stroke="#78350F" stroke-width="0.9" fill="none"/>' + chu;
+        var xCm = cuoi - 14;
+        s2 += '<text x="' + xCm.toFixed(1) + '" y="' + (33 * sx).toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="700" fill="#B45309"' + (lat ? ' transform="rotate(180 ' + xCm.toFixed(1) + ' ' + (33 * sx).toFixed(1) + ')"' : '') + ' style="font-family:var(--phong-chu,system-ui)">cm</text>';
         out.push(s2 + '</g>');
       },
       // Thước hai lề song song: một lề nằm trên đường AB, thân thước về phía điểm o.phia (hoặc o.ben = ±1)
@@ -446,42 +505,120 @@
         s2 += '<polygon points="' + p(122, w) + ' ' + p(134, w) + ' ' + p(134, -w) + ' ' + p(122, -w) + '" fill="#F472B6" stroke="#BE185D" stroke-width="1"/>';
         out.push(s2 + '</g>');
       },
-      // Compa: mũi kim tại O, đầu chì tại T (hai điểm trên hình)
+      // Thước đo góc (nửa hình tròn) tâm O, bán kính r (cm), vạch 0° theo hướng a0 (radian), chia độ theo chiều dau (+1 ngược kim đồng hồ).
+      // Hai thang số như thước thật: thang ngoài 0→180 theo chiều dau, thang trong 180→0.
+      thuocDoGoc: function (O, a0, dau, r, o) {
+        o = o || {};
+        var mo = o.doMo == null ? 1 : o.doMo; if (mo <= 0.01) return;
+        var ox = X(O), oy = Y(O), R = r * V.s;
+        var huong = function (dd) { var a = a0 + dau * dd * Math.PI / 180; return [Math.cos(a), -Math.sin(a)]; };
+        var pt = function (dd, rr) { var u = huong(dd); return [ox + u[0] * rr, oy + u[1] * rr]; };
+        var s2 = '<g opacity="' + (0.97 * mo).toFixed(3) + '" style="pointer-events:none">';
+        // thân: nửa hình tròn + dải đế nằm phía bên kia đường kính
+        var u0 = huong(0), nd = huong(-90), de = Math.max(9, R * 0.1), ra = R + 6;
+        var dauDe = [ox + u0[0] * ra + nd[0] * de, oy + u0[1] * ra + nd[1] * de], cuoiDe = [ox - u0[0] * ra + nd[0] * de, oy - u0[1] * ra + nd[1] * de];
+        var cung = [];
+        for (var i = 0; i <= 90; i++) cung.push(pt(i * 2, R));
+        var than = 'M' + chuoiDiem([dauDe, [ox + u0[0] * ra, oy + u0[1] * ra]]) + ' L' + chuoiDiem(cung) + ' L' + chuoiDiem([[ox - u0[0] * ra, oy - u0[1] * ra], cuoiDe]) + 'Z';
+        s2 += '<path d="' + than + '" fill="#0F172A" fill-opacity="0.13" transform="translate(1.5,3)"/>';   // bóng đổ
+        s2 += '<path d="' + than + '" fill="url(#dcDoGoc)" stroke="#9A3412" stroke-width="1.5" stroke-linejoin="round"/>';
+        // vành trong (đường tròn phụ) và đường chuẩn 0°–180°
+        var vanh = []; for (var j = 0; j <= 60; j++) vanh.push(pt(j * 3, R * 0.62));
+        s2 += '<polyline points="' + chuoiDiem(vanh) + '" fill="none" stroke="#C2410C" stroke-width="0.9" stroke-opacity="0.7"/>';
+        s2 += '<line x1="' + (ox + u0[0] * R).toFixed(1) + '" y1="' + (oy + u0[1] * R).toFixed(1) + '" x2="' + (ox - u0[0] * R).toFixed(1) + '" y2="' + (oy - u0[1] * R).toFixed(1) + '" stroke="#9A3412" stroke-width="1.3"/>';
+        // vạch chia độ
+        var moi1 = R * Math.PI / 180 >= 2.3, ve = '';
+        for (var d = 0; d <= 180; d++) {
+          if (!moi1 && d % 5) continue;
+          var dai = d % 10 === 0 ? Math.max(11, R * 0.11) : d % 5 === 0 ? Math.max(7, R * 0.07) : Math.max(4, R * 0.04);
+          var p1 = pt(d, R), p2 = pt(d, R - dai);
+          ve += 'M' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + 'L' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+          if (d % 10 === 0) { var p3 = pt(d, R * 0.62), p4 = pt(d, R * 0.62 + 6); ve += 'M' + p3[0].toFixed(1) + ' ' + p3[1].toFixed(1) + 'L' + p4[0].toFixed(1) + ' ' + p4[1].toFixed(1); }
+        }
+        s2 += '<path d="' + ve + '" stroke="#7C2D12" stroke-width="0.85" fill="none"/>';
+        // số: thang ngoài (đậm) và thang trong (nhạt), mỗi 10° (hoặc 30° khi thước nhỏ)
+        // khoảng cách số chọn theo độ dài cung để các số không chen nhau (số 3 chữ số rộng khoảng 1,9 lần cỡ chữ)
+        var coSo = Math.max(8.5, Math.min(12, R * 0.07)), rNgoai = R - Math.max(11, R * 0.11) - coSo * 1.1, rTrong = R * 0.62 - coSo * 1.05;
+        var chonBuoc = function (rr, co) { var b = [10, 20, 30, 90]; for (var i = 0; i < b.length; i++) if (rr * b[i] * Math.PI / 180 >= co * 2.2) return b[i]; return 90; };
+        var buocNgoai = chonBuoc(rNgoai, coSo), buocTrong = chonBuoc(rTrong, coSo * 0.82);
+        var font = ' style="font-family:var(--phong-chu,system-ui)"';
+        for (var d2 = 0; d2 <= 180; d2 += buocNgoai) {
+          var q1 = pt(d2, rNgoai);
+          s2 += '<text x="' + q1[0].toFixed(1) + '" y="' + q1[1].toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="' + coSo.toFixed(1) + '" font-weight="800" fill="#7C2D12"' + font + '>' + d2 + '</text>';
+        }
+        if (R >= 80) for (var d3 = 0; d3 <= 180; d3 += buocTrong) {
+          var q2 = pt(d3, rTrong);
+          s2 += '<text x="' + q2[0].toFixed(1) + '" y="' + q2[1].toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="' + (coSo * 0.82).toFixed(1) + '" font-weight="600" fill="#C2410C"' + font + '>' + (180 - d3) + '</text>';
+        }
+        // tâm thước: lỗ tròn và chữ thập
+        var c1 = pt(90, 9), c2 = pt(-90, Math.min(9, de - 1));
+        s2 += '<line x1="' + (ox - u0[0] * 12).toFixed(1) + '" y1="' + (oy - u0[1] * 12).toFixed(1) + '" x2="' + (ox + u0[0] * 12).toFixed(1) + '" y2="' + (oy + u0[1] * 12).toFixed(1) + '" stroke="#DC2626" stroke-width="1.4"/>';
+        s2 += '<line x1="' + c1[0].toFixed(1) + '" y1="' + c1[1].toFixed(1) + '" x2="' + c2[0].toFixed(1) + '" y2="' + c2[1].toFixed(1) + '" stroke="#DC2626" stroke-width="1.4"/>';
+        s2 += '<circle cx="' + ox.toFixed(1) + '" cy="' + oy.toFixed(1) + '" r="4" fill="#FFFFFF" fill-opacity="0.6" stroke="#DC2626" stroke-width="1.4"/>';
+        out.push(s2 + '</g>');
+      },
+      // ---------- Compa: mũi kim tại O, đầu chì tại T (hai điểm trên hình) ----------
       compa: function (O, T, o) {
         o = o || {};
         var ox = X(O), oy = Y(O), tx = X(T), ty = Y(T), d = Math.hypot(tx - ox, ty - oy);
-        var L = Math.max(d / 2 + 24, d * 0.72, 90), hh = Math.sqrt(Math.max(0, L * L - d * d / 4));
+        var L = Math.max(d / 2 + 30, d * 0.74, 128), hh = Math.sqrt(Math.max(0, L * L - d * d / 4));
         var mx = (ox + tx) / 2, my = (oy + ty) / 2, nx = d > 1 ? -(ty - oy) / d : 0, ny = d > 1 ? (tx - ox) / d : -1;
         if (ny > 0) { nx = -nx; ny = -ny; }                       // khớp compa luôn ở phía trên
         var hx = mx + nx * hh, hy = my + ny * hh;
-        var s2 = '<g style="pointer-events:none">';
+        var s2 = '<g style="pointer-events:none" filter="url(#dcBong)">';
+        // một chân compa vẽ trong hệ toạ độ riêng: gốc tại khớp, trục x dọc theo chân hướng xuống đầu chân
         var chan = function (x2, y2, laBut) {
-          var dx = x2 - hx, dy = y2 - hy, l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l, k = laBut ? 22 : 10;
-          var gx = x2 - ux * k, gy = y2 - uy * k;
-          var r = '<line x1="' + hx.toFixed(1) + '" y1="' + hy.toFixed(1) + '" x2="' + gx.toFixed(1) + '" y2="' + gy.toFixed(1) + '" stroke="#64748B" stroke-width="7" stroke-linecap="round"/>';
-          r += '<line x1="' + hx.toFixed(1) + '" y1="' + hy.toFixed(1) + '" x2="' + gx.toFixed(1) + '" y2="' + gy.toFixed(1) + '" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round"/>';
-          if (laBut) r += '<line x1="' + gx.toFixed(1) + '" y1="' + gy.toFixed(1) + '" x2="' + (x2 - ux * 5).toFixed(1) + '" y2="' + (y2 - uy * 5).toFixed(1) + '" stroke="#F59E0B" stroke-width="6" stroke-linecap="butt"/>' +
-            '<line x1="' + (x2 - ux * 6).toFixed(1) + '" y1="' + (y2 - uy * 6).toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>';
-          else r += '<line x1="' + gx.toFixed(1) + '" y1="' + gy.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#334155" stroke-width="2" stroke-linecap="round"/>';
-          return r;
+          var l = Math.hypot(x2 - hx, y2 - hy) || 1, goc = Math.atan2(y2 - hy, x2 - hx) * 180 / Math.PI;
+          var r = '<g transform="translate(' + hx.toFixed(1) + ',' + hy.toFixed(1) + ') rotate(' + goc.toFixed(2) + ')">';
+          if (!laBut) {
+            var kt = l - 15;   // chân kim: thân kim loại thon dần, đầu giữ kim, mũi kim
+            r += '<path d="M2 -6 L' + kt.toFixed(1) + ' -3.2 L' + kt.toFixed(1) + ' 3.2 L2 6 Z" fill="url(#dcKimLoai)" stroke="#334155" stroke-width="1"/>';
+            r += '<rect x="' + (kt - 1).toFixed(1) + '" y="-4" width="7" height="8" rx="1.5" fill="#334155"/>';
+            r += '<path d="M' + (kt + 6).toFixed(1) + ' -1.3 L' + l.toFixed(1) + ' 0 L' + (kt + 6).toFixed(1) + ' 1.3 Z" fill="#94A3B8" stroke="#1E293B" stroke-width="0.8"/>';
+          } else {
+            var kb = l - 40;   // chân chì: thân kim loại, kẹp có vít, bút chì vàng, phần gỗ, ngòi chì
+            r += '<path d="M2 -6 L' + kb.toFixed(1) + ' -3.6 L' + kb.toFixed(1) + ' 3.6 L2 6 Z" fill="url(#dcKimLoai)" stroke="#334155" stroke-width="1"/>';
+            r += '<rect x="' + (kb - 2).toFixed(1) + '" y="-7" width="11" height="14" rx="2.5" fill="url(#dcKimLoai)" stroke="#1E293B" stroke-width="1.1"/>';
+            r += '<circle cx="' + (kb + 3.5).toFixed(1) + '" cy="-8.5" r="3" fill="#475569" stroke="#1E293B" stroke-width="0.8"/>';
+            r += '<rect x="' + (kb + 9).toFixed(1) + '" y="-4.6" width="' + (l - kb - 21).toFixed(1) + '" height="9.2" fill="url(#dcButChi)" stroke="#B45309" stroke-width="0.9"/>';
+            r += '<path d="M' + (l - 12).toFixed(1) + ' -4.6 L' + (l - 3).toFixed(1) + ' -1.4 L' + (l - 3).toFixed(1) + ' 1.4 L' + (l - 12).toFixed(1) + ' 4.6 Z" fill="#F5D0A9" stroke="#B45309" stroke-width="0.9"/>';
+            r += '<path d="M' + (l - 3.5).toFixed(1) + ' -1.6 L' + l.toFixed(1) + ' 0 L' + (l - 3.5).toFixed(1) + ' 1.6 Z" fill="#1E293B"/>';
+          }
+          return r + '</g>';
         };
         s2 += chan(ox, oy, false) + chan(tx, ty, true);
-        s2 += '<line x1="' + hx.toFixed(1) + '" y1="' + hy.toFixed(1) + '" x2="' + (hx + nx * 22).toFixed(1) + '" y2="' + (hy + ny * 22).toFixed(1) + '" stroke="#1E293B" stroke-width="7" stroke-linecap="round"/>';
-        s2 += '<circle cx="' + hx.toFixed(1) + '" cy="' + hy.toFixed(1) + '" r="7.5" fill="#475569" stroke="#1E293B" stroke-width="1.5"/>';
+        // tay cầm phía trên khớp (có rãnh chống trơn) và khớp xoay
+        var gocTay = Math.atan2(ny, nx) * 180 / Math.PI;
+        s2 += '<g transform="translate(' + hx.toFixed(1) + ',' + hy.toFixed(1) + ') rotate(' + gocTay.toFixed(2) + ')">';
+        s2 += '<rect x="6" y="-5" width="10" height="10" fill="url(#dcKimLoai)" stroke="#334155" stroke-width="0.9"/>';
+        s2 += '<rect x="15" y="-6" width="30" height="12" rx="5" fill="url(#dcTayCam)" stroke="#1E3A8A" stroke-width="1.1"/>';
+        for (var i = 0; i < 6; i++) s2 += '<line x1="' + (19 + i * 4.4).toFixed(1) + '" y1="-5.4" x2="' + (19 + i * 4.4).toFixed(1) + '" y2="5.4" stroke="#1E3A8A" stroke-opacity="0.55" stroke-width="1"/>';
+        s2 += '</g>';
+        s2 += '<circle cx="' + hx.toFixed(1) + '" cy="' + hy.toFixed(1) + '" r="10.5" fill="url(#dcKhop)" stroke="#1E293B" stroke-width="1.4"/>';
+        s2 += '<circle cx="' + hx.toFixed(1) + '" cy="' + hy.toFixed(1) + '" r="3.6" fill="#E2E8F0" stroke="#334155" stroke-width="1"/>';
         out.push(s2 + '</g>');
       },
-      // Thước đo góc (nửa hình tròn) tâm O, vạch 0° theo hướng a0 (radian), chia độ theo chiều dau (+1 ngược kim đồng hồ)
-      thuocDoGoc: function (O, a0, dau, r, o) {
+      // ---------- Cây kéo: mũi cắt tại P, hướng cắt theo góc huong (radian, toạ độ hình); o.nhip: tiến độ cắt (để kéo nhấp mở – đóng) ----------
+      keo: function (Pt, huong, o) {
         o = o || {};
-        var mo = o.doMo == null ? 1 : o.doMo, ds = [O];
-        for (var i = 0; i <= 36; i++) { var a = a0 + dau * Math.PI * i / 36; ds.push([O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]); }
-        g.daGiac(ds, { to: '#FEF3C7', doMoTo: 0.8 * mo, mauNet: '#B45309', rong: 1.5 });
-        for (var d = 0; d <= 180; d += 10) {
-          var a2 = a0 + dau * d * Math.PI / 180, p = [O[0] + r * Math.cos(a2), O[1] + r * Math.sin(a2)], q = [O[0] + r * (d % 30 ? 0.92 : 0.86) * Math.cos(a2), O[1] + r * (d % 30 ? 0.92 : 0.86) * Math.sin(a2)];
-          g.doan(p, q, { mau: '#92400E', rong: 1.2, doMo: mo });
-          if (d % 30 === 0 && mo > 0.5) g.chu([O[0] + r * 0.74 * Math.cos(a2), O[1] + r * 0.74 * Math.sin(a2)], String(d), { nho: true, mau: '#92400E' });
-        }
-        g.diem(O, '', { r: 3, mau: '#B45309' });
+        var px = X(Pt), py = Y(Pt), goc = -huong * 180 / Math.PI, k = o.co || 1;
+        var mo = o.mo != null ? o.mo : 0.5 - 0.5 * Math.cos((o.nhip || 0) * Math.PI * 2 * (o.soNhat || 4));
+        var a = 4 + 20 * mo;   // độ mở (độ) của mỗi lưỡi
+        var s2 = '<g style="pointer-events:none" filter="url(#dcBong)" transform="translate(' + px.toFixed(1) + ',' + py.toFixed(1) + ') rotate(' + goc.toFixed(2) + ') scale(' + k + ') translate(-38,0)">';
+        // lưỡi trên + tay cầm dưới (cùng một nửa kéo), lưỡi dưới + tay cầm trên
+        var nua = function (tren) {
+          var sy = tren ? -1 : 1, r = '<g transform="rotate(' + (tren ? -a / 2 : a / 2).toFixed(2) + ')">';
+          r += '<path d="M-8 0 L-3 ' + (10 * sy) + ' Q26 ' + (12 * sy) + ' 58 ' + (6.5 * sy) + ' Q76 ' + (2.6 * sy) + ' 84 0 Z" fill="url(#dcLuoiKeo)" stroke="#334155" stroke-width="1.2" stroke-linejoin="round"/>';
+          r += '<path d="M2 ' + (3.5 * sy) + ' Q30 ' + (5.5 * sy) + ' 70 ' + (1.6 * sy) + '" fill="none" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="1.3"/>';
+          // tay cầm ở phía đối diện (qua chốt)
+          r += '<path d="M-4 ' + (-3 * sy) + ' L-26 ' + (-10 * sy) + ' L-28 ' + (-4 * sy) + ' L-6 ' + (2 * sy) + ' Z" fill="url(#dcTayKeo)" stroke="#7F1D1D" stroke-width="1"/>';
+          r += '<ellipse cx="-46" cy="' + (-17 * sy) + '" rx="' + (tren ? 19 : 16) + '" ry="' + (tren ? 12 : 10.5) + '" transform="rotate(' + (-14 * sy) + ' -46 ' + (-17 * sy) + ')" fill="none" stroke="url(#dcTayKeo)" stroke-width="8"/>';
+          r += '<ellipse cx="-46" cy="' + (-17 * sy) + '" rx="' + (tren ? 19 : 16) + '" ry="' + (tren ? 12 : 10.5) + '" transform="rotate(' + (-14 * sy) + ' -46 ' + (-17 * sy) + ')" fill="none" stroke="#7F1D1D" stroke-opacity="0.35" stroke-width="1"/>';
+          return r + '</g>';
+        };
+        s2 += nua(false) + nua(true);
+        s2 += '<circle cx="0" cy="0" r="6.5" fill="url(#dcKhop)" stroke="#1E293B" stroke-width="1.2"/><line x1="-3.8" y1="-1.8" x2="3.8" y2="1.8" stroke="#1E293B" stroke-width="1.4"/>';
+        out.push(s2 + '</g>');
       },
       // Nhãn số đo dạng viên thuốc bên cạnh đoạn AB (phía "ra" theo hướng vuông góc)
       nhanDo: function (A, B, text, o) {
@@ -516,7 +653,7 @@
       out.push('<g stroke-width="1">' + s + '</g>');
     }
     function ve() {
-      out = [];
+      out = [DEFS_DUNG_CU];
       veLuoi();
       cfg.ve(g, P, ts);
       // tay cầm các điểm kéo được
@@ -1256,7 +1393,7 @@
           phang(cfg.giu);
           if (eBo < 0.05) {
             g.doan(cfg.cat[0], H.lerp(cfg.cat[0], cfg.cat[1], eCat), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
-            if (eCat < 1) g.chu(H.lerp(cfg.cat[0], cfg.cat[1], eCat), '✂', { mau: '#DC2626', dx: 14 });
+            if (eCat < 1) g.keo(H.lerp(cfg.cat[0], cfg.cat[1], eCat), H.huong(cfg.cat[0], cfg.cat[1]), { nhip: eCat });
           }
           return n + 1 + (t >= mocBo ? 1 : 0);
         }

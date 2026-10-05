@@ -116,6 +116,8 @@ KhungPhang.tao({
       g.daGiac([q.Hc, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.6 });
       g.daGiac([q.A, q.Hc, q.D].map(function (x) { return [x[0] + dx * e, x[1]]; }), { to: '#F59E0B', doMoTo: 0.7 });
       g.doan(q.D, q.Hc, { mau: M.chieuCao, dut: '6 4' });
+      var ec = H.doan(t, 0.02, 0.2);
+      if (ec < 1) { g.doan(q.D, H.lerp(q.D, q.Hc, ec), { mau: '#DC2626', rong: 2.5, dut: '8 5' }); if (ec > 0) g.keo(H.lerp(q.D, q.Hc, ec), H.huong(q.D, q.Hc), { nhip: ec }); }
       g.diem(q.D, 'D', { huong: [-1, 1] }); g.diem(q.Hc, 'H', { huong: [0, -1] }); g.diem(q.B, 'B', { huong: [1, -1] }); g.diem(q.C, 'C', { huong: [1, 1] });
       return;
     }

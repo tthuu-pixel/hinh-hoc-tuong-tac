@@ -47,6 +47,7 @@ function veCat(g, P, t) {
   if (t < 0.22) [[0, 3], [1, 4], [2, 5]].forEach(function (c, i) {
     var e = Math.max(0, Math.min(1, eCat * 3 - i));
     if (e > 0) g.doan(d[c[0]], H.lerp(d[c[0]], d[c[1]], e), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+    if (e > 0 && e < 1) g.keo(H.lerp(d[c[0]], d[c[1]], e), H.huong(d[c[0]], d[c[1]]), { nhip: e });
   });
   if (t >= 0.97) {
     d.forEach(function (p, k) { g.kyHieu(p, d[(k + 1) % 6], 1, MAU_CANH); g.kyHieu(O, p, 1, MAU_CANH); });

@@ -99,7 +99,7 @@ function veGapCat(g, P, t) {
   if (t >= 0.42 && eBo < 1) {
     var d0 = H.cong(q.B, H.nhan(s.v, -0.35)), d1 = H.cong(q.C, H.nhan(s.v, 0.35));
     g.doan(d0, H.lerp(d0, d1, eCat), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
-    if (eCat < 1) g.chu(H.lerp(d0, d1, eCat), '✂', { mau: '#DC2626', dx: 16 });
+    if (eCat < 1) g.keo(H.lerp(d0, d1, eCat), H.huong(d0, d1), { nhip: eCat });
   }
   // Nếp gấp AC sau khi mở ra
   if (eMo > 0.05) g.doan(q.A, q.C, { mau: '#94A3B8', rong: 1.8, dut: '6 5' });
@@ -130,6 +130,8 @@ function veCatCheo(g, P, t) {
   if (t < 0.22) {   // đang cắt theo hai đường chéo
     g.doan(q.A, H.lerp(q.A, q.C, Math.min(1, eCat * 2)), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
     if (eCat > 0.5) g.doan(q.B, H.lerp(q.B, q.D, (eCat - 0.5) * 2), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+    if (eCat > 0 && eCat < 0.5) g.keo(H.lerp(q.A, q.C, eCat * 2), H.huong(q.A, q.C), { nhip: eCat * 2 });
+    else if (eCat >= 0.5 && eCat < 1) g.keo(H.lerp(q.B, q.D, (eCat - 0.5) * 2), H.huong(q.B, q.D), { nhip: (eCat - 0.5) * 2 });
   }
   if (t >= 0.97) {
     g.doan(q.A, q.C, { mau: MAU_CHEO, rong: 3 }); g.doan(q.B, q.D, { mau: MAU_CHEO, rong: 3 });

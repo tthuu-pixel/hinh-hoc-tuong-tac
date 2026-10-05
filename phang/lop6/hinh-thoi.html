@@ -135,6 +135,14 @@ KhungPhang.tao({
       g.daGiac([q.O, q.B, q.C], { to: '#FBBF24', doMoTo: 0.7 }); g.daGiac([q.O, q.C, q.D], { to: '#F59E0B', doMoTo: 0.7 });
       g.daGiac([q.O, q.A, q.B].map(function (x) { return H.cong(x, [p * e, -h * e]); }), { to: '#60A5FA', doMoTo: 0.7 });
       g.daGiac([q.O, q.D, q.A].map(function (x) { return H.cong(x, [p * e, h * e]); }), { to: '#93C5FD', doMoTo: 0.7 });
+      var ec = H.doan(t, 0.01, 0.17);
+      if (ec > 0 && ec < 1) {
+        var ec1 = Math.min(1, ec * 2), ec2 = Math.max(0, ec * 2 - 1);
+        g.doan(q.B, H.lerp(q.B, q.D, ec1), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+        if (ec2 > 0) g.doan(q.O, H.lerp(q.O, q.A, ec2), { mau: '#DC2626', rong: 2.5, dut: '8 5' });
+        if (ec1 < 1) g.keo(H.lerp(q.B, q.D, ec1), H.huong(q.B, q.D), { nhip: ec1 });
+        else g.keo(H.lerp(q.O, q.A, ec2), H.huong(q.O, q.A), { nhip: ec2 });
+      }
       return;
     }
     var hoat = DX.dangHoat(g), a = Math.hypot(q.p, q.q), gg = goc(P);

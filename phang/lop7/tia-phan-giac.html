@@ -78,11 +78,6 @@ function kbHaiLe(P) {
     D.hien(function (g) { g.diem(Mm, 'M', { r: 5, mau: '#DC2626', huong: H.nhan(nx, -1) }); }, { tg: 1, ghi: '<b>Bước 3.</b> Hai đường thẳng $a$ và $b$ cắt nhau tại $M$.' }),
     D.doan(O, dT, { ghi: '<b>Bước 4.</b> Dùng thước kẻ tia $OM$: $OM$ (tia $Ot$) là <b>tia phân giác</b> của $\\widehat{xOy}$.', net: { mau: M.duongCheo, rong: 4 },
       sau: function (g) { danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(ut, H.dai(O, dT) + 0.35)), 't', { nghieng: true, mau: M.duongCheo }); } }),
-    D.hien(function (g) {
-      var Kx = H.chan(Mm, O, P.x), Ky = H.chan(Mm, O, P.y), mk = { mau: '#DC2626', rong: 2, dut: '5 4' };
-      g.doan(Mm, Kx, mk); g.doan(Mm, Ky, mk); g.goc(Mm, Kx, O, { mau: '#DC2626', r: 10, to: false }); g.goc(Mm, Ky, O, { mau: '#DC2626', r: 10, to: false });
-      g.kyHieu(Mm, Kx, 2, '#DC2626'); g.kyHieu(Mm, Ky, 2, '#DC2626');
-    }, { tg: 2, ghi: '<b>Vì sao?</b> $M$ cách đều hai cạnh $Ox$, $Oy$ (đều bằng <b>bề rộng của thước</b>), nên $M$ nằm trên tia phân giác của $\\widehat{xOy}$.' }),
   ]);
 }
 // Vẽ bằng compa

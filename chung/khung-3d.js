@@ -854,7 +854,7 @@
         var nuoc = new T.Mesh(khoiLangTru(dn.day, 0, 1), new T.MeshLambertMaterial({ color: MAU_NUOC, transparent: true, opacity: 0.6, depthWrite: false }));
         nuoc.scale.y = 0.0001; nuoc.renderOrder = 2; nuoc.userData.laNuoc = true;
         nhomDonVi.add(nuoc);
-        var el = document.createElement('div'); el.className = 'nhan-do'; el.style.background = '#0369A1';
+        var el = document.createElement('div'); el.className = 'nhan-do giu'; el.style.background = '#0369A1';
         el.innerHTML = dn.ten || 'Bình chứa';
         var nh = new T.CSS2DObject(el); nh.position.set(0, dn.cao + 0.5 + DD.banKinh * 0.1, 0); nhomDonVi.add(nh);
         nhomDonVi.userData = { tong: 3, cao: dn.cao, nuoc: nuoc };
@@ -986,7 +986,8 @@
         '<label class="cong-tac">' + (DD.cong ? 'Tên điểm' : 'Tên đỉnh') + ' <input type="checkbox" id="hien-ten" checked></label>' +
         '<label class="cong-tac">Nét khuất (nét đứt) <input type="checkbox" id="hien-khuat" checked></label>' +
         '<label class="cong-tac">Tô màu các mặt <input type="checkbox" id="hien-mat" checked></label>' +
-        '<label class="cong-tac">Lưới nền <input type="checkbox" id="hien-luoi" checked></label>');
+        '<label class="cong-tac">Lưới nền <input type="checkbox" id="hien-luoi" checked></label>' +
+        '<label class="cong-tac">Số đo <input type="checkbox" id="hien-so" checked></label>');
       bang.innerHTML = h;
       ganSuKienBang();
     }
@@ -1047,6 +1048,7 @@
         document.getElementById('an-tren').addEventListener('change', function (e) { TT.anPhanTren = e.target.checked; capNhatCat(); });
       }
       document.getElementById('hien-ten').onchange = function (e) { TT.hienTenDinh = e.target.checked; apDungSang(); };
+      document.getElementById('hien-so').onchange = function (e) { var mh = document.getElementById('mh'); if (mh) mh.classList.toggle('an-so-do', !e.target.checked); };
       document.getElementById('hien-khuat').onchange = function (e) { TT.hienNetKhuat = e.target.checked; apDungSang(); };
       document.getElementById('hien-mat').onchange = function (e) { TT.toMat = e.target.checked; apDungSang(); };
       document.getElementById('hien-luoi').onchange = function (e) { TT.hienLuoi = e.target.checked; if (luoiNen) luoiNen.visible = TT.hienLuoi; };

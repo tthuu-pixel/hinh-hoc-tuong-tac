@@ -150,6 +150,7 @@ body.dang-chia .mh-canh, body.dang-chia .mh-bang { pointer-events: none; }
   white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.18); user-select: none; pointer-events: none;
 }
 .nhan-do i { font-style: italic; }
+.an-so-do .nhan-do:not(.giu) { visibility: hidden !important; }
 .nhan-dem {
   position: absolute; right: 16px; top: 14px; z-index: 5; font-weight: 800; font-size: 18px;
   background: #fff; border: 2px solid var(--mau, #0EA5A4); color: var(--chu); border-radius: 12px; padding: 6px 12px; box-shadow: var(--bong);

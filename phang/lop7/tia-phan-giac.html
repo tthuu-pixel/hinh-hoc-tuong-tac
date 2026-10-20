@@ -70,14 +70,21 @@ function kbHaiLe(P) {
       cu: function (g, e) { g.thuocHaiLe(c[0], c[1], { phia: H.cong(O, H.nhan(n, 5)), day: w * g.tiLe() }); g.but(H.lerp(l[0], l[1], e)); } };
   }
   var dT = H.cong(O, H.nhan(ut, Math.max(s.L, H.dai(O, Mm) + 1.2)));
+  var nT = vg(ut, uy);   // pháp tuyến của tia OM, hướng về phía Oy
   return KhungPhang.kichBan([
     datThuoc(ux, nx, '<b>Bước 1.</b> Đặt thước hai lề sao cho <b>một lề sát với cạnh $Ox$</b>, thân thước nằm trong góc $xOy$.'),
     keLe(ux, nx, la, 'a', 'Kẻ đường thẳng $a$ theo <b>lề còn lại</b> của thước.'),
     datThuoc(uy, ny, '<b>Bước 2.</b> Làm tương tự: đặt thước hai lề sao cho <b>một lề sát với cạnh $Oy$</b>.'),
     keLe(uy, ny, lb, 'b', 'Kẻ đường thẳng $b$ theo lề còn lại của thước.'),
     D.hien(function (g) { g.diem(Mm, 'M', { r: 5, mau: '#DC2626', huong: H.nhan(nx, -1) }); }, { tg: 1, ghi: '<b>Bước 3.</b> Hai đường thẳng $a$ và $b$ cắt nhau tại $M$.' }),
-    D.doan(O, dT, { ghi: '<b>Bước 4.</b> Dùng thước kẻ tia $OM$: $OM$ (tia $Ot$) là <b>tia phân giác</b> của $\\widehat{xOy}$.', net: { mau: M.duongCheo, rong: 4 },
-      sau: function (g) { danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(ut, H.dai(O, dT) + 0.35)), 't', { nghieng: true, mau: M.duongCheo }); } }),
+    { tg: 1.8, ghi: '<b>Bước 4.</b> Đặt một lề của thước đi qua $O$ và $M$, kẻ tia $OM$: $OM$ (tia $Ot$) là <b>tia phân giác</b> của $\\widehat{xOy}$.',
+      ve: function (g, e) { var k = H.doan(e, 0.4, 1); if (k > 0) g.doan(O, H.lerp(O, dT, k), { mau: M.duongCheo, rong: 4 }); },
+      xong: function (g) { g.doan(O, dT, { mau: M.duongCheo, rong: 4 }); danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(ut, H.dai(O, dT) + 0.35)), 't', { nghieng: true, mau: M.duongCheo }); },
+      cu: function (g, e) {   // cùng cây thước hai lề, thân thước nằm về phía cạnh Ox
+        var c0 = H.cong(O, H.nhan(ut, -0.4)), d = H.nhan(nT, -0.8 * (1 - H.doan(e, 0, 0.35)));
+        g.thuocHaiLe(H.cong(c0, d), H.cong(dT, d), { phia: H.cong(O, H.nhan(nT, -5)), day: w * g.tiLe(), doMo: 0.35 + 0.6 * Math.min(1, e * 3) });
+        if (e > 0.4) g.but(H.lerp(O, dT, H.doan(e, 0.4, 1)));
+      } },
   ]);
 }
 // Vẽ bằng compa

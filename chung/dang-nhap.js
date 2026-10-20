@@ -27,10 +27,16 @@
   var LA_TEP = location.protocol === 'file:';
   function maHoa(o) { return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o))))); }
   function giaiMa(s) { return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(s))))); }
-  if (LA_TEP) {
+  // Nhận phiên mang theo trên đường dẫn (#p=...): khi chuyển trang ở chế độ mở tệp,
+  // hoặc khi app GeoInk mở trang GeoLab bằng tài khoản đang đăng nhập (dùng chung một tài khoản)
+  {
     var mh = location.hash.match(/[#&]p=([^&]+)/);
     if (mh) {
-      try { var goi = giaiMa(mh[1]); if (goi.phien) ghi(KHOA_PHIEN, goi.phien); if (goi.thu) ghi('mh3d_thu_taikhoan', goi.thu); } catch (e) {}
+      try {
+        var goi = giaiMa(mh[1]);
+        if (goi.phien && goi.phien.token && goi.phien.hetHan > Date.now()) { ghi(KHOA_PHIEN, goi.phien); if (!LA_TEP) sessionStorage.setItem('mh3d_kiem_phien', '1'); }
+        if (goi.thu && LA_TEP) ghi('mh3d_thu_taikhoan', goi.thu);
+      } catch (e) {}
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     }
   }
@@ -213,6 +219,9 @@
     },
     veThuVien: veThuVien,
   };
+
+  // Phiên vừa nhận qua đường dẫn: hỏi máy chủ một lần cho chắc còn hợp lệ
+  try { if (sessionStorage.getItem('mh3d_kiem_phien')) { sessionStorage.removeItem('mh3d_kiem_phien'); setTimeout(function () { DangNhap.kiemTraMayChu(); }, 0); } } catch (e) {}
 
   /* ---------------- Bảo vệ trang ---------------- */
   (function baoVe() {

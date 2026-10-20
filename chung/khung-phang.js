@@ -223,6 +223,7 @@
       '<filter id="dcBong" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.6" flood-color="#0F172A" flood-opacity="0.26"/></filter>' +
       '<linearGradient id="dcEke" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E0F2FE" stop-opacity="0.82"/><stop offset="0.55" stop-color="#BAE6FD" stop-opacity="0.7"/><stop offset="1" stop-color="#7DD3FC" stop-opacity="0.72"/></linearGradient>' +
       '<linearGradient id="dcThuoc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCD34D" stop-opacity="0.95"/><stop offset="0.2" stop-color="#FEF3C7" stop-opacity="0.93"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0.9"/></linearGradient>' +
+      '<linearGradient id="dcHaiLe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93C5FD" stop-opacity="0.62"/><stop offset="0.18" stop-color="#DBEAFE" stop-opacity="0.55"/><stop offset="0.82" stop-color="#DBEAFE" stop-opacity="0.55"/><stop offset="1" stop-color="#93C5FD" stop-opacity="0.62"/></linearGradient>' +
       '<linearGradient id="dcThuocNguoc" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FCD34D" stop-opacity="0.95"/><stop offset="0.2" stop-color="#FEF3C7" stop-opacity="0.93"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0.9"/></linearGradient>' +
       '<radialGradient id="dcDoGoc" cx="0.5" cy="0.85" r="0.75"><stop offset="0" stop-color="#FFF7ED" stop-opacity="0.9"/><stop offset="0.7" stop-color="#FFEDD5" stop-opacity="0.82"/><stop offset="1" stop-color="#FDBA74" stop-opacity="0.75"/></radialGradient>' +
       '<linearGradient id="dcKimLoai" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#475569"/><stop offset="0.3" stop-color="#CBD5E1"/><stop offset="0.45" stop-color="#F8FAFC"/><stop offset="0.72" stop-color="#94A3B8"/><stop offset="1" stop-color="#334155"/></linearGradient>' +
@@ -486,17 +487,33 @@
         var ax = X(A), ay = Y(A), bx = X(B), by = Y(B), L = Math.hypot(bx - ax, by - ay); if (L < 1) return;
         var ux = (bx - ax) / L, uy = (by - ay) / L, ben = o.ben || 1;
         if (o.phia) { var px = X(o.phia) - ax, py = Y(o.phia) - ay; ben = (-uy * px + ux * py) >= 0 ? 1 : -1; }
-        var nx = -uy * ben, ny = ux * ben, du = 30, day = o.day || 44;
-        var p = function (t, h) { return (ax + ux * t + nx * h).toFixed(1) + ',' + (ay + uy * t + ny * h).toFixed(1); };
-        var s2 = '<g opacity="' + (o.doMo == null ? 0.93 : o.doMo) + '" style="pointer-events:none">';
-        s2 += '<polygon points="' + p(-du, 0) + ' ' + p(L + du, 0) + ' ' + p(L + du, day) + ' ' + p(-du, day) + '" fill="#C7D2FE" fill-opacity="0.6" stroke="none"/>';
-        s2 += '<line x1="' + p(-du, 0).split(',')[0] + '" y1="' + p(-du, 0).split(',')[1] + '" x2="' + p(L + du, 0).split(',')[0] + '" y2="' + p(L + du, 0).split(',')[1] + '" stroke="#3730A3" stroke-width="2.4"/>';
-        s2 += '<line x1="' + p(-du, day).split(',')[0] + '" y1="' + p(-du, day).split(',')[1] + '" x2="' + p(L + du, day).split(',')[0] + '" y2="' + p(L + du, day).split(',')[1] + '" stroke="#3730A3" stroke-width="2.4"/>';
-        for (var t = -du + 6, i = 0; t < L + du - 4; t += 8, i++) {
-          var h = i % 5 === 0 ? 9 : 5;
-          s2 += '<line x1="' + (ax + ux * t).toFixed(1) + '" y1="' + (ay + uy * t).toFixed(1) + '" x2="' + (ax + ux * t + nx * h).toFixed(1) + '" y2="' + (ay + uy * t + ny * h).toFixed(1) + '" stroke="#3730A3" stroke-width="1"/>';
-          s2 += '<line x1="' + (ax + ux * t + nx * day).toFixed(1) + '" y1="' + (ay + uy * t + ny * day).toFixed(1) + '" x2="' + (ax + ux * t + nx * (day - h)).toFixed(1) + '" y2="' + (ay + uy * t + ny * (day - h)).toFixed(1) + '" stroke="#3730A3" stroke-width="1"/>';
+        // Hệ trục cục bộ: x dọc lề thứ nhất (A → B), y hướng vào thân thước; thân thước từ y = 0 tới y = day
+        var goc = Math.atan2(uy, ux) * 180 / Math.PI, day = o.day || 44, sx = ben, du = 26, x0 = -du, x1 = L + du;
+        var Yl = function (y) { return (y * sx).toFixed(1); };
+        var s2 = '<g opacity="' + (o.doMo == null ? 0.96 : o.doMo) + '" style="pointer-events:none" transform="translate(' + ax.toFixed(1) + ',' + ay.toFixed(1) + ') rotate(' + goc.toFixed(2) + ')">';
+        var yt = Math.min(0, day * sx), w = x1 - x0;
+        // bóng đổ, thân nhựa trong, viền
+        s2 += '<rect x="' + (x0 + 2) + '" y="' + (yt + 3.5).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + day.toFixed(1) + '" rx="5" fill="#0F172A" fill-opacity="0.13"/>';
+        s2 += '<rect x="' + x0 + '" y="' + yt.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + day.toFixed(1) + '" rx="5" fill="url(#dcHaiLe)" stroke="#1E3A8A" stroke-opacity="0.55" stroke-width="1"/>';
+        // dải sáng dọc thân (ánh bóng mặt nhựa)
+        s2 += '<rect x="' + (x0 + 6) + '" y="' + Math.min(day * 0.62 * sx, day * 0.74 * sx).toFixed(1) + '" width="' + (w - 12).toFixed(1) + '" height="' + (day * 0.12).toFixed(1) + '" rx="2" fill="#FFFFFF" fill-opacity="0.45"/>';
+        // hai lề (cạnh thẳng song song) đậm
+        [0, day].forEach(function (y) { s2 += '<line x1="' + x0 + '" y1="' + Yl(y) + '" x2="' + x1.toFixed(1) + '" y2="' + Yl(y) + '" stroke="#1E3A8A" stroke-width="2.2"/>'; });
+        // vạch chia mm – cm ở cả hai lề, số cm dọc lề thứ nhất
+        var mm = V.s / 10, buoc = mm >= 3.2 ? 1 : mm * 5 >= 6 ? 5 : 10, soMoi = V.s >= 24 ? 1 : V.s >= 12 ? 2 : 5;
+        var lat = Math.cos(goc * Math.PI / 180) < -1e-6, ve = '', chu = '', z = x0 + 10, hMax = Math.min(12, day * 0.26);
+        for (var k = 0; z + k * mm <= x1 - 8; k++) {
+          if (k % buoc) continue;
+          var t = z + k * mm, h = k % 10 === 0 ? hMax : k % 5 === 0 ? hMax * 0.66 : hMax * 0.4;
+          ve += 'M' + t.toFixed(1) + ' 0V' + Yl(h) + 'M' + t.toFixed(1) + ' ' + Yl(day) + 'V' + Yl(day - h);
+          if (k % (10 * soMoi) === 0 && day >= 26 && t < x1 - 18) {
+            var yc = hMax + 8;
+            chu += '<text x="' + t.toFixed(1) + '" y="' + Yl(yc) + '" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="#1E3A8A"' + (lat ? ' transform="rotate(180 ' + t.toFixed(1) + ' ' + Yl(yc) + ')"' : '') + ' style="font-family:var(--phong-chu,system-ui)">' + (k / 10) + '</text>';
+          }
         }
+        s2 += '<path d="' + ve + '" stroke="#1E3A8A" stroke-width="0.9" fill="none"/>' + chu;
+        // nhãn nhỏ ở đầu thước
+        if (day >= 30) { var xn = x1 - 16, yn = day / 2; s2 += '<text x="' + xn.toFixed(1) + '" y="' + Yl(yn) + '" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" letter-spacing="0.5" fill="#1D4ED8" fill-opacity="0.7"' + (lat ? ' transform="rotate(180 ' + xn.toFixed(1) + ' ' + Yl(yn) + ')"' : '') + ' style="font-family:var(--phong-chu,system-ui)">cm</text>'; }
         out.push(s2 + '</g>');
       },
       // Bút chì: đầu chì tại P, thân nghiêng lên bên phải

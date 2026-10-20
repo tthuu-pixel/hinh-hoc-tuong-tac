@@ -79,6 +79,7 @@ KhungPhang.tao({
   ten: 'Góc',
   lop: 6,
   diem: { O: [0, 0], A: [R, 0], B: [R * Math.cos(DO(60)), R * Math.sin(DO(60))] },
+  nhapGoc: [{ id: 'xOy', ten: '\\widehat{xOy}', max: 180, lay: function (P) { return H.gocDo(P.A, P.O, P.B); }, dat: function (P, ts, d) { P.B = KhungPhang.goc.quay(P.O, P.A, P.B, d, R); } }],
   buocLuoi: 0.5,
   rangBuoc: { A: lenCanh, B: lenCanh },
   sauKeo: function (ten, P) { if (ten === 'O') { P.A = lenCanh(P.A, P); P.B = lenCanh(P.B, P); } },

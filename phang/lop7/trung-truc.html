@@ -81,6 +81,7 @@ KhungPhang.tao({
   ten: 'Đường trung trực',
   lop: 7,
   diem: { A: [-3, 0], B: [3, 0], C: [0.5, 4], M: [0, 3] },
+  nhapGoc: KhungPhang.goc.dsTamGiac(['A', 'B', 'C'], null, { hien: laTG }),
   buocLuoi: 0.5,
   rangBuoc: { M: function (p, P) { return chieuM(p, P); } },
   anTayCam: function (k, P, ts) { return ts.che === 'tg' ? k === 'M' : k === 'C' || (ts.che === 'thu' && k === 'M'); },

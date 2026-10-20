@@ -33,6 +33,12 @@ KhungPhang.tao({
   ten: 'Hình thang cân',
   lop: 8,
   diem: { A: [-3.5, 0], B: [3.5, 0], D: [-2, 3] },
+  nhapGoc: [
+    { id: 'A', ten: '\\widehat{A} = \\widehat{B}', min: 5, max: 89, lay: function (P) { return H.gocDo(P.D, P.A, P.B); },
+      dat: function (P, ts, d) { var D2 = KhungPhang.goc.quay(P.A, P.B, P.D, d); if (D2[0] > (P.A[0] + P.B[0]) / 2 - 0.25) return false; P.D = D2; } },
+    { id: 'D', ten: '\\widehat{C} = \\widehat{D}', min: 91, max: 175, lamTron: false, lay: function (P) { return 180 - H.gocDo(P.D, P.A, P.B); },
+      dat: function (P, ts, d) { var D2 = KhungPhang.goc.quay(P.A, P.B, P.D, 180 - d); if (D2[0] > (P.A[0] + P.B[0]) / 2 - 0.25) return false; P.D = D2; } },
+  ],
   coDinh: ['A'],
   buocLuoi: 0.5,
   rangBuoc: {

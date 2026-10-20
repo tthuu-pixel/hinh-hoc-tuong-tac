@@ -114,6 +114,12 @@ KhungPhang.tao({
   ten: 'Tính chất hai tiếp tuyến cắt nhau',
   lop: 9,
   diem: { M: [6, 0] },
+  nhapGoc: [
+    { id: 'AMB', ten: '\\widehat{AMB}', min: 5, max: 110, lay: function (P) { var q = tt(P.M); return H.gocDo(q.A, q.M, q.B); },
+      dat: function (P, ts, d) { P.M = [R / Math.sin(d * Math.PI / 360), 0]; } },
+    { id: 'AOB', ten: '\\widehat{AOB}', min: 70, max: 175, lamTron: false, lay: function (P) { var q = tt(P.M); return H.gocDo(q.A, O0, q.B); },
+      dat: function (P, ts, d) { P.M = [R / Math.sin((180 - d) * Math.PI / 360), 0]; } },
+  ],
   buocLuoi: 0.5,
   rangBuoc: { M: function (p) { return [Math.max(R + 0.5, p[0]), 0]; } },   // M chạy trên đường nằm ngang, ở ngoài (O)
   batDau: ['vg'],

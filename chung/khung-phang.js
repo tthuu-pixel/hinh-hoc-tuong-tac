@@ -843,7 +843,8 @@
             ts[l.khoa] = gt;
             nhom.querySelectorAll('button').forEach(function (x) { x.classList.toggle('bat', x === b); });
             dungHoat();
-            if (l.khiDoi) { l.khiDoi(gt, P, ts, API_TRANG); lamTronGoc(); }
+            if (l.khiDoi) l.khiDoi(gt, P, ts, API_TRANG);
+            lamTronGoc();
             if (l.vuaKhung) vuaKhung();
             capNhatBang(); capNhat();
           };
@@ -871,7 +872,7 @@
       });
       bang.querySelectorAll('.nut-sang').forEach(function (b) { b.onclick = function () { batTatSang(b.dataset.sang); }; });
       bang.querySelectorAll('[data-phu]').forEach(function (b) {
-        b.onclick = function () { cfg.nutPhu[+b.dataset.phu].bam(P, ts, API_TRANG); capNhatBang(); capNhat(); };
+        b.onclick = function () { cfg.nutPhu[+b.dataset.phu].bam(P, ts, API_TRANG); lamTronGoc(); capNhatBang(); capNhat(); };
       });
       var ctEl = document.getElementById('mh-cong-thuc');
       if (ctEl) ctEl.addEventListener('click', function (e) { var r = e.target.closest('[data-sang-ct]'); if (r) batTatSang(r.dataset.sangCt); });
@@ -1828,6 +1829,10 @@
         C: function (p, P) { return [P.A[0], Math.max(P.A[1] + 1, p[1])]; },
       } : null,
       coDinh: opt.th === 'vuong' ? ['A'] : [],
+      nhapGoc: opt.th === 'vuong' ? [
+        { id: 'B', ten: '\\widehat{B}', min: 5, max: 85, lay: function (P) { return H.gocDo(P.A, P.B, P.C); }, dat: function (P, ts, d) { P.C = [P.A[0], P.A[1] + (P.B[0] - P.A[0]) * Math.tan(d * Math.PI / 180)]; } },
+        { id: 'C', ten: '\\widehat{C}', min: 5, max: 85, lamTron: false, lay: function (P) { return H.gocDo(P.A, P.C, P.B); }, dat: function (P, ts, d) { P.C = [P.A[0], P.A[1] + (P.B[0] - P.A[0]) / Math.tan(d * Math.PI / 180)]; } },
+      ] : GOC.dsTamGiac(['B', 'C', 'A'], ['A', 'B', 'C']),
       luaChon: opt.th === 'vuong' ? [{ khoa: 'thv', gt: Object.keys(TH_VUONG)[0], nhan: 'Trường hợp', ds: Object.keys(TH_VUONG).map(function (k) { return { gt: k, nhan: TH_VUONG[k].nhan }; }),
         khiDoi: function (gt, P, ts, api) { api.dungHoat(); api.datSang(TH_VUONG[gt].yt); } }] : [],
       thamSo: [{ khoa: 'xoay', nhan: 'Xoay tam giác A′B′C′', min: 0, max: 345, buoc: 15, gt: 30, hienThi: function (ts) { return so(ts.xoay, 0) + '°'; } }]

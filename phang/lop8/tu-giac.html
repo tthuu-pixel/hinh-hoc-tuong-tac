@@ -97,6 +97,20 @@ KhungPhang.tao({
   ten: 'Tứ giác – Nhận biết tứ giác',
   lop: 8,
   diem: { A: [-3, -1.5], B: [3, -2], C: [2.5, 2.5], D: [-2, 2] },
+  nhapGoc: (function () {
+    var tuDo = function (P, ts) { return ts.dang === 'tuDo'; }, Q = KhungPhang.goc;
+    return [
+      { id: 'A', ten: '\\widehat{A}', max: 179, hien: tuDo, lay: function (P) { return H.gocDo(P.D, P.A, P.B); }, dat: function (P, ts, d) { P.D = Q.quay(P.A, P.B, P.D, d); } },
+      { id: 'B', ten: '\\widehat{B}', max: 179, hien: tuDo, lay: function (P) { return H.gocDo(P.A, P.B, P.C); }, dat: function (P, ts, d) { P.C = Q.quay(P.B, P.A, P.C, d); } },
+      { id: 'C', ten: '\\widehat{C}', max: 179, hien: tuDo, lay: function (P) { return H.gocDo(P.B, P.C, P.D); },
+        dat: function (P, ts, d) {   // D trượt trên tia AD (giữ góc A) để góc C đúng bằng d
+          var T = Q.quay(P.C, P.B, P.D, d, 1), M = H.giao(P.A, P.D, P.C, T);
+          if (!M || H.dai(M, P.A) < 0.5 || (M[0] - P.A[0]) * (P.D[0] - P.A[0]) + (M[1] - P.A[1]) * (P.D[1] - P.A[1]) <= 0 || H.dai(M, P.A) > 25) return false;
+          if ((T[0] - P.C[0]) * (M[0] - P.C[0]) + (T[1] - P.C[1]) * (M[1] - P.C[1]) <= 0) return false;
+          P.D = M;
+        } },
+    ];
+  })(),
   buocLuoi: 0.5,
   tieuDeLuaChon: 'Chọn dạng — kéo đỉnh vẫn giữ dạng đã chọn',
   luaChon: [{ khoa: 'dang', gt: 'tuDo', vuaKhung: true,

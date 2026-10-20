@@ -76,6 +76,10 @@ KhungPhang.tao({
   ten: 'Định lí Pythagore',
   lop: 8,
   diem: { A: [0, 0], B: [4, 0], C: [0, 3], Q: [1.5, 2.5] },
+  nhapGoc: [
+    { id: 'B', ten: '\\widehat{B}', min: 5, max: 85, hien: laThuan, lay: function (P) { return H.gocDo(P.A, P.B, P.C); }, dat: function (P, ts, d) { P.C = [0, P.B[0] * Math.tan(d * Math.PI / 180)]; } },
+    { id: 'C', ten: '\\widehat{C}', min: 5, max: 85, lamTron: false, hien: laThuan, lay: function (P) { return H.gocDo(P.A, P.C, P.B); }, dat: function (P, ts, d) { P.C = [0, P.B[0] / Math.tan(d * Math.PI / 180)]; } },
+  ],
   coDinh: ['A'],
   buocLuoi: 0.5,
   rangBuoc: {

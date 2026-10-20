@@ -32,6 +32,12 @@ KhungPhang.tao({
   ten: 'Hình thang',
   lop: 8,
   diem: { A: [-3, 0], B: [4, 0], C: [2, 3], D: [-1.5, 3] },
+  nhapGoc: [
+    { id: 'A', ten: '\\widehat{A}', min: 5, max: 175, lay: function (P) { var q = dinh(P); return H.gocDo(q.D, q.A, q.B); },
+      dat: function (P, ts, d) { var w = P.C[0] - P.D[0], D2 = KhungPhang.goc.quay(P.A, P.B, P.D, d); P.D = D2; P.C = [D2[0] + w, D2[1]]; } },
+    { id: 'B', ten: '\\widehat{B}', min: 5, max: 175, lay: function (P) { var q = dinh(P); return H.gocDo(q.A, q.B, q.C); },
+      dat: function (P, ts, d) { var h = P.D[1] - P.B[1], C2 = KhungPhang.goc.quay(P.B, P.A, [P.B[0], P.D[1]], d, h / Math.sin(d * Math.PI / 180)); if (C2[0] < P.D[0] + 0.5) return false; P.C = [C2[0], P.D[1]]; } },
+  ],
   coDinh: ['A'],
   buocLuoi: 0.5,
   rangBuoc: {

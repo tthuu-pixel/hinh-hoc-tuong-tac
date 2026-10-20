@@ -34,6 +34,10 @@ KhungPhang.tao({
   ten: 'Hình bình hành',
   lop: 8,
   diem: { A: [-3, -1.5], B: [2.5, -1.5], D: [-1.5, 2] },
+  nhapGoc: [
+    { id: 'A', ten: '\\widehat{A} = \\widehat{C}', min: 5, max: 175, lay: function (P) { return H.gocDo(P.D, P.A, P.B); }, dat: function (P, ts, d) { P.D = KhungPhang.goc.quay(P.A, P.B, P.D, d); } },
+    { id: 'B', ten: '\\widehat{B} = \\widehat{D}', min: 5, max: 175, lamTron: false, lay: function (P) { return 180 - H.gocDo(P.D, P.A, P.B); }, dat: function (P, ts, d) { P.D = KhungPhang.goc.quay(P.A, P.B, P.D, 180 - d); } },
+  ],
   coDinh: ['A'],
   buocLuoi: 0.5,
   rangBuoc: { B: lech, D: function (p, P) { if (H.dai(p, P.A) < 1) return null; var u = H.tru(P.B, P.A), v = H.tru(p, P.A); return Math.abs(u[0] * v[1] - u[1] * v[0]) < 0.5 ? null : p; } },

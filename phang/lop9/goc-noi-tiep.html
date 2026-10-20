@@ -44,6 +44,12 @@ KhungPhang.tao({
   ten: 'Góc nội tiếp',
   lop: 9,
   diem: { A: diemDT(O0, R, DO(110)), B: diemDT(O0, R, DO(210)), C: diemDT(O0, R, DO(330)) },
+  nhapGoc: [{ id: 'BAC', ten: '\\widehat{BAC}', max: 179, lay: function (P) { return H.gocDo(P.B, P.A, P.C); },
+    dat: function (P, ts, d) {   // C chạy trên đường tròn: cung BC không chứa A có số đo 2d
+      var a = gocCua(P.A), b = gocCua(P.B), k = cungChan(P), xuoi = Math.abs(ccw(k[0], b)) < 1e-6 || Math.abs(ccw(k[0], b) - 2 * Math.PI) < 1e-6, t = 2 * d * Math.PI / 180;
+      if ((xuoi ? ccw(b, a) : ccw(a, b)) <= t + 1e-6) return false;
+      P.C = diemDT(O0, R, b + (xuoi ? t : -t));
+    } }],
   buocLuoi: 0.5,
   rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R), C: lenDT(O0, R) },
   tieuDeNutPhu: 'Hệ quả',

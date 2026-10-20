@@ -85,6 +85,12 @@ KhungPhang.tao({
   ten: 'Hình thoi',
   lop: 6,
   diem: { A: [-3, 0], B: [0, 2] },
+  nhapGoc: [
+    { id: 'A', ten: '\\widehat{A} = \\widehat{C}', max: 175, lay: function (P) { return goc(P).A; },
+      dat: function (P, ts, d) { var q = dinh(P), c = Math.hypot(q.p, q.q), a = d * Math.PI / 360; P.A = [-c * Math.cos(a), 0]; P.B = [0, c * Math.sin(a)]; } },
+    { id: 'B', ten: '\\widehat{B} = \\widehat{D}', min: 5, max: 175, lamTron: false, lay: function (P) { return goc(P).B; },
+      dat: function (P, ts, d) { var q = dinh(P), c = Math.hypot(q.p, q.q), a = (180 - d) * Math.PI / 360; P.A = [-c * Math.cos(a), 0]; P.B = [0, c * Math.sin(a)]; } },
+  ],
   buocLuoi: 0.5,
   rangBuoc: {
     A: function (p) { return [Math.min(-0.5, p[0]), 0]; },

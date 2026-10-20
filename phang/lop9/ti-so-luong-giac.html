@@ -83,6 +83,10 @@ KhungPhang.tao({
   ten: 'Tỉ số lượng giác của góc nhọn',
   lop: 9,
   diem: { A: [4, 0], C: [4, 3] },
+  nhapGoc: [
+    { id: 'B', ten: '\\alpha = \\widehat{B}', min: 5, max: 85, lay: function (P) { return tg(P).goc; }, dat: function (P, ts, d) { P.C = [P.A[0], P.A[0] * Math.tan(d * Math.PI / 180)]; } },
+    { id: 'C', ten: '\\widehat{C}', min: 5, max: 85, lamTron: false, lay: function (P) { return 90 - tg(P).goc; }, dat: function (P, ts, d) { P.C = [P.A[0], P.A[0] / Math.tan(d * Math.PI / 180)]; } },
+  ],
   buocLuoi: 0.5,
   rangBuoc: {
     A: function (p) { return [Math.max(1, p[0]), 0]; },

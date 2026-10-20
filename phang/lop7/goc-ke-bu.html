@@ -31,6 +31,10 @@ KhungPhang.tao({
   ten: 'Hai góc kề bù',
   lop: 7,
   diem: { O: [0, 0], y: [1.6059, 3.444] },
+  nhapGoc: [
+    { id: 'xOy', ten: '\\widehat{xOy}', max: 179, lay: function (P) { return H.gocDo([4, 0], P.O, P.y); }, dat: function (P, ts, d) { P.y = KhungPhang.goc.quay(P.O, [4, 0], P.y, d); } },
+    { id: 'yOx2', ten: "\\widehat{yOx'}", max: 179, lamTron: false, lay: function (P) { return H.gocDo(P.y, P.O, [-4, 0]); }, dat: function (P, ts, d) { P.y = KhungPhang.goc.quay(P.O, [4, 0], P.y, 180 - d); } },
+  ],
   coDinh: ['O'],
   buocLuoi: 0.5,
   rangBuoc: { y: function (p, P) { return p[1] < 0.3 ? null : tronGoc(p, P.O, 1); } },

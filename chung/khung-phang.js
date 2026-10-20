@@ -25,6 +25,8 @@
   var MAU_NET = '#1B2540', MAU_TO = '#BFD3FA';
 
   /* ---------- Tiện ích số & hình học ---------- */
+  // Chữ trên hình có phải là số đo không (để ẩn khi tắt "Số đo"): có chữ số kèm °, cm, =, ≈ hoặc chỉ toàn số
+  function laSoDo(t) { t = String(t); return /\d/.test(t) && (/[°=≈]|cm|\\approx/.test(t) || /^[\s\d.,{}°−-]+$/.test(t)); }
   // Số dạng LaTeX: dấu phẩy thập phân không bị giãn cách
   function soL(x, le) { return so(x, le).replace(',', '{,}'); }
   function so(x, le) {
@@ -327,7 +329,8 @@
           for (var j = 0; j < (o.kyHieu || 1); j++) out.push('<polyline points="' + cung(r - j * 5) + '" fill="none" stroke="' + mau + '" stroke-width="' + (on ? 2.6 : 2) + '"/>');
         }
         var laVuong = o.vuong !== false && Math.abs(deg - 90) < 0.05 && !o.lon;
-        if (o.nhan !== false && (TT.hienSo || o.nhan) && !(laVuong && !o.nhanVuong && typeof o.nhan !== 'string')) {
+        var nhanSo = typeof o.nhan !== 'string' || laSoDo(o.nhan);   // nhãn là số đo (ẩn khi tắt "Số đo")
+        if (o.nhan !== false && (TT.hienSo || !nhanSo) && (TT.hienSo || o.nhan) && !(laVuong && !o.nhanVuong && typeof o.nhan !== 'string')) {
           var am = a0 + da / 2, rn = r + (o.xaNhan || 16);
           var chu = typeof o.nhan === 'string' ? o.nhan : so(deg, o.le == null ? 0 : o.le) + '°';
           out.push('<text class="chu" x="' + (ox + rn * Math.cos(am)).toFixed(1) + '" y="' + (oy - rn * Math.sin(am) + 6).toFixed(1) + '" text-anchor="middle" fill="' + mau + '">' + thoat(chu) + '</text>');
@@ -357,12 +360,14 @@
       },
       chu: function (Pt, text, o) {
         o = o || {}; if (an(o)) return;
+        if (!TT.hienSo && o.so !== false && (o.so || laSoDo(text))) return;
         var on = o.sang && bat(o.sang), mau = on ? mapSang[o.sang].mau : (o.mau || MAU_NET);
         out.push('<text class="' + (o.nho ? 'chu-nho' : 'chu') + '" x="' + (X(Pt) + (o.dx || 0)).toFixed(1) + '" y="' + (Y(Pt) + (o.dy || 0) + 6).toFixed(1) + '" text-anchor="' + (o.canh || 'middle') + '" fill="' + mau + '"' + (o.nghieng ? ' font-style="italic"' : '') + '>' + thoat(text) + '</text>');
       },
       // Công thức LaTeX đặt trên hình (foreignObject). o: co (cỡ chữ px), mau, canh ('middle' | 'start' | 'end')
       latex: function (Pt, tex, o) {
         o = o || {};
+        if (!TT.hienSo && o.so !== false && (o.so || laSoDo(tex))) return;
         var html = window.Latex ? texHTML(tex) : null;
         if (html === null) { if (window.Latex && !TT.choLatex) { TT.choLatex = true; window.Latex.khiXong(function () { capNhat(); }); } g.chu(Pt, tex.replace(/\\[a-zA-Z]+|[{}]/g, ''), { mau: o.mau }); return; }
         var W = 900, Hh = 200, canh = o.canh || 'middle', x = X(Pt) - (canh === 'middle' ? W / 2 : canh === 'end' ? W : 0), y = Y(Pt) - Hh / 2;

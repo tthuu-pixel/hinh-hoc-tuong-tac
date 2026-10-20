@@ -48,6 +48,38 @@ function kbThuoc(P) {
       sau: function (g) { danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(H.tru(s.t, O), 1.25)), 't', { nghieng: true, mau: M.duongCheo }); } }),
   ]);
 }
+// Vẽ bằng thước thẳng hai lề (bề rộng thước w)
+function kbHaiLe(P) {
+  var s = soDo(P), O = P.O, D = KhungPhang.dung, w = 1, MP = '#0891B2';
+  var ux = [Math.cos(s.a0), Math.sin(s.a0)], uy = [Math.cos(s.a0 + s.da), Math.sin(s.a0 + s.da)];
+  var vg = function (u, v) { var k = v[0] * u[0] + v[1] * u[1], n = [v[0] - k * u[0], v[1] - k * u[1]], L = Math.hypot(n[0], n[1]) || 1; return [n[0] / L, n[1] / L]; };
+  var nx = vg(ux, uy), ny = vg(uy, ux);                       // pháp tuyến hướng vào trong góc
+  var ut = [Math.cos(s.at), Math.sin(s.at)], Mm = H.cong(O, H.nhan(ut, w / Math.sin(s.deg * Math.PI / 360)));
+  var dai = Math.max(s.L, H.dai(O, Mm) * Math.cos(s.deg * Math.PI / 360) + 1.6);
+  function canhThuoc(u) { return [H.cong(O, H.nhan(u, -0.4)), H.cong(O, H.nhan(u, dai))]; }
+  function duong(u, n) { return [H.cong(H.cong(O, H.nhan(n, w)), H.nhan(u, -0.3)), H.cong(H.cong(O, H.nhan(n, w)), H.nhan(u, dai))]; }
+  var la = duong(ux, nx), lb = duong(uy, ny), net = { mau: MP, rong: 2.2 };
+  // đặt thước hai lề: một lề sát cạnh (u), thân thước nằm trong góc
+  function datThuoc(u, n, ghi) {
+    var c = canhThuoc(u);
+    return { tg: 1.6, ghi: ghi, cu: function (g, e) { var d = H.nhan(n, -0.8 * (1 - H.doan(e, 0, 0.8))); g.thuocHaiLe(H.cong(c[0], d), H.cong(c[1], d), { phia: H.cong(O, H.nhan(n, 5)), day: w * g.tiLe(), doMo: 0.35 + 0.6 * Math.min(1, e * 1.5) }); } };
+  }
+  function keLe(u, n, l, ten, ghi) {
+    var c = canhThuoc(u), xong = function (g) { g.doan(l[0], l[1], net); g.chu(H.cong(l[1], H.nhan(u, 0.35)), ten, { nghieng: true, mau: MP }); };
+    return { tg: 1.3, ghi: ghi, ve: function (g, e) { g.doan(l[0], H.lerp(l[0], l[1], e), net); }, xong: xong,
+      cu: function (g, e) { g.thuocHaiLe(c[0], c[1], { phia: H.cong(O, H.nhan(n, 5)), day: w * g.tiLe() }); g.but(H.lerp(l[0], l[1], e)); } };
+  }
+  var dT = H.cong(O, H.nhan(ut, Math.max(s.L, H.dai(O, Mm) + 1.2)));
+  return KhungPhang.kichBan([
+    datThuoc(ux, nx, '<b>Bước 1.</b> Đặt thước hai lề sao cho <b>một lề sát với cạnh $Ox$</b>, thân thước nằm trong góc $xOy$.'),
+    keLe(ux, nx, la, 'a', 'Kẻ đường thẳng $a$ theo <b>lề còn lại</b> của thước.'),
+    datThuoc(uy, ny, '<b>Bước 2.</b> Làm tương tự: đặt thước hai lề sao cho <b>một lề sát với cạnh $Oy$</b>.'),
+    keLe(uy, ny, lb, 'b', 'Kẻ đường thẳng $b$ theo lề còn lại của thước.'),
+    D.hien(function (g) { g.diem(Mm, 'M', { r: 5, mau: '#DC2626', huong: H.nhan(nx, -1) }); }, { tg: 1, ghi: '<b>Bước 3.</b> Hai đường thẳng $a$ và $b$ cắt nhau tại $M$.' }),
+    D.doan(O, dT, { ghi: '<b>Bước 4.</b> Dùng thước kẻ tia $OM$: $OM$ (tia $Ot$) là <b>tia phân giác</b> của $\\widehat{xOy}$.', net: { mau: M.duongCheo, rong: 4 },
+      sau: function (g) { danhPG(g, P, s, 40); g.chu(H.cong(O, H.nhan(ut, H.dai(O, dT) + 0.35)), 't', { nghieng: true, mau: M.duongCheo }); } }),
+  ]);
+}
 // Vẽ bằng compa
 function kbCompa(P) {
   var s = soDo(P), O = P.O, D = KhungPhang.dung, sg = Math.sign(s.da) || 1;
@@ -90,12 +122,14 @@ KhungPhang.tao({
       ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp tờ giấy hình góc $xOy$ sao cho cạnh $Ox$ trùng với cạnh $Oy$…' : 'Nếp gấp chính là <b>tia phân giác</b> $Ot$: hai góc $\\widehat{xOt}$ và $\\widehat{tOy}$ trùng khít nhau.'; } },
     { id: 'thuoc', nhan: 'Vẽ bằng thước đo góc', anDiem: true,
       thoiGian: function (P) { return kbThuoc(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbThuoc(P).ghi(t); } },
+    { id: 'haiLe', nhan: 'Vẽ bằng thước thẳng hai lề', anDiem: true,
+      thoiGian: function (P) { return kbHaiLe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbHaiLe(P).ghi(t); } },
     { id: 'compa', nhan: 'Vẽ bằng compa', anDiem: true,
       thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
   ],
 
   ve: function (g, P, ts) {
-    var O = P.O, s = soDo(P), tg = g.hoat('gap'), tt = g.hoat('thuoc'), tc = g.hoat('compa');
+    var O = P.O, s = soDo(P), tg = g.hoat('gap'), tt = g.hoat('thuoc'), tc = g.hoat('compa'), th = g.hoat('haiLe');
     function canh() {
       g.tia(O, P.x, { rong: 3 }); g.tia(O, P.y, { rong: 3 }); g.diem(O, 'O', { huong: [-0.6, -1] });
       g.chu(H.cong(O, H.nhan(H.tru(P.x, O), 1 + 1.4 / H.dai(O, P.x))), 'x', { nghieng: true });
@@ -107,6 +141,7 @@ KhungPhang.tao({
     }
     if (tt !== null) { canh(); kbThuoc(P).ve(g, tt); return; }
     if (tc !== null) { canh(); kbCompa(P).ve(g, tc); return; }
+    if (th !== null) { canh(); kbHaiLe(P).ve(g, th); return; }
     g.daGiac(quat(P), { to: '#93C5FD', doMoTo: 0.25, rong: 0 });
     if (g.bat('goc')) g.goc(P.x, O, P.y, { mau: '#475569', r: 64, doMoTo: 0.1 });
     if (g.bat('pg')) {

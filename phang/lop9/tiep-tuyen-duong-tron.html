@@ -21,7 +21,7 @@
    TIẾP TUYẾN CỦA ĐƯỜNG TRÒN — Toán 9
    Tính chất: tiếp tuyến vuông góc với bán kính tại tiếp điểm;
    khoảng cách từ tâm O đến tiếp tuyến bằng bán kính R.
-   Cách vẽ bằng thước thẳng: (1) tại một điểm A trên đường tròn;
+   Cách vẽ bằng thước thẳng: (1) tại một điểm M trên đường tròn;
    (2) từ một điểm M ở ngoài đường tròn.
    ===================================================================== */
 var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, D = KhungPhang.dung;
@@ -33,7 +33,7 @@ function laTren(P, ts) { return ts.che === 'tren'; }
 function laNgoai(P, ts) { return ts.che === 'ngoai'; }
 function keo(M, X, k) { return H.cong(M, H.nhan(H.tru(X, M), 1 + k / H.dai(M, X))); }
 
-// Trường hợp 1: tiếp tuyến tại điểm A trên đường tròn
+// Trường hợp 1: tiếp tuyến tại điểm M trên đường tròn (trong mã là P.A)
 function tai(A) {
   var u = H.nhan(A, 1 / R), v = [-u[1], u[0]], L = 3.6;
   return { A: A, u: u, v: v, d1: H.cong(A, H.nhan(v, L)), d2: H.cong(A, H.nhan(v, -L)) };
@@ -43,34 +43,35 @@ function tu(M) {
   var d = H.dai(M, O0), th = Math.atan2(M[1], M[0]), ph = Math.acos(R / d);
   return { M: M, d: d, A: diemDT(th + ph), B: diemDT(th - ph), dai: Math.sqrt(d * d - R * R) };
 }
-function huongNhan(P) { return H.nhan(P, 1); }
 
-/* ---------- Bước cuối chung: kí hiệu vuông góc, OA = R ---------- */
-function buocTinhChat(ds, ghiVg) {
-  // ds: [{ T: tiếp điểm, X: điểm trên tiếp tuyến, ten }]
-  return [
-    D.hien(function (g) { ds.forEach(function (o) { g.doan(O0, o.T, { mau: MV, rong: 2.4 }); g.goc(O0, o.T, o.X, { mau: MV, r: 13 }); }); }, { tg: 1.6, ghi: ghiVg }),
-    D.hien(function (g) { ds.forEach(function (o) { g.doan(O0, o.T, { mau: MR, rong: 4 }); g.nhanDo(O0, o.T, 'R', { mau: MR }); }); }, { tg: 1.6,
-      ghi: '<b>Khoảng cách từ tâm đến tiếp tuyến bằng bán kính:</b> $' + ds.map(function (o) { return 'O' + o.ten + ' = R'; }).join('$, $') + '$. Tiếp tuyến chỉ có <b>một điểm chung</b> với đường tròn.' }),
-  ];
+/* ---------- Bước cuối chung: kí hiệu vuông góc ---------- */
+function buocVuong(ds, ghi) {
+  // ds: [{ T: tiếp điểm, X: điểm trên tiếp tuyến }]
+  return [D.hien(function (g) { ds.forEach(function (o) { g.doan(O0, o.T, { mau: MV, rong: 2.4 }); g.goc(O0, o.T, o.X, { mau: MV, r: 13 }); }); }, { tg: 1.8, ghi: ghi })];
 }
 
-/* ---------- Cách vẽ 1: tiếp tuyến tại A (thước thẳng) ---------- */
+/* ---------- Cách vẽ 1: tiếp tuyến tại điểm M trên đường tròn (thước thẳng) ---------- */
 function kbTai(P) {
-  var q = tai(P.A), A = q.A, u = q.u, v = q.v;
-  // thân thước nằm phía ngoài đường tròn (không che hình)
-  var BEN = 1;
+  var q = tai(P.A), M = q.A, u = q.u, v = q.v, BEN = 1;   // thân thước nằm phía ngoài đường tròn
+  var ngan = 1.3, S1 = H.cong(M, H.nhan(v, ngan)), S2 = H.cong(M, H.nhan(v, -ngan));   // đoạn vuông góc kẻ trước
+  var T1 = H.cong(M, H.nhan(v, ngan + 0.9)), T2 = H.cong(M, H.nhan(v, -ngan - 0.9));   // thước ngắn đặt tại M
+  var net = { mau: MT, rong: 3.5 };
+  function chamM(g) { g.diem(M, 'M', { huong: H.cong(H.nhan(u, -0.5), H.nhan(v, -1)) }); }
   return KhungPhang.kichBan([
-    D.hien(function (g) { g.diem(A, 'A', { huong: H.cong(H.nhan(u, -0.5), H.nhan(v, -1)) }); }, { tg: 0.8, ghi: '<b>Bước 1.</b> Lấy điểm $A$ trên đường tròn $(O)$.' }),
-    D.doan(O0, A, { ghi: '<b>Bước 2.</b> Dùng thước kẻ <b>bán kính $OA$</b>.', net: { mau: MV, rong: 2.4 } }),
-    { tg: 2, ghi: '<b>Bước 3.</b> Đặt thước sao cho mép thước <b>đi qua $A$</b> và <b>vuông góc với $OA$</b> (thước chỉ chạm đường tròn tại $A$).',
-      ve: function (g, e) { if (e > 0.6) g.goc(O0, A, q.d1, { mau: MV, r: 13 }); },
-      cu: function (g, e) { var k = 1 - H.doan(e, 0, 0.6), d = H.nhan(u, 1.2 * k); g.thuoc(H.cong(q.d2, d), H.cong(q.d1, d), { ben: BEN, doMo: 0.4 + 0.55 * Math.min(1, e / 0.6) }); } },
-    { tg: 1.4, ghi: 'Giữ thước, kẻ đường thẳng $d$ theo mép thước: $d$ là <b>tiếp tuyến</b> của $(O)$ tại $A$.',
-      ve: function (g, e) { g.doan(q.d2, H.lerp(q.d2, q.d1, e), { mau: MT, rong: 3.5 }); },
-      xong: function (g) { g.doan(q.d2, q.d1, { mau: MT, rong: 3.5 }); g.chu(H.cong(q.d1, H.nhan(v, 0.35)), 'd', { mau: MT, nghieng: true }); },
-      cu: function (g, e) { g.thuoc(q.d2, q.d1, { ben: BEN }); g.but(H.lerp(q.d2, q.d1, e)); } },
-  ].concat(buocTinhChat([{ T: A, X: q.d1, ten: 'A' }], '<b>Bước 4. Kí hiệu vuông góc:</b> $d \\perp OA$ tại $A$ (đường thẳng đi qua $A$ và vuông góc với bán kính $OA$ là tiếp tuyến).')));
+    { tg: 1, ghi: '<b>Bước 1.</b> Xác định điểm $M$ thuộc đường tròn $(O)$.', ve: chamM, xong: chamM, cu: function (g) { g.but(M); } },
+    D.doan(O0, M, { ghi: '<b>Bước 2.</b> Dùng thước nối $O$ với $M$.', net: { mau: MV, rong: 2.4 }, sau: chamM }),
+    { tg: 1.8, ghi: '<b>Bước 3.</b> Đặt thước <b>vuông góc với $OM$</b> tại $M$ (mép thước đi qua $M$).',
+      ve: function (g, e) { if (e > 0.6) g.goc(O0, M, S1, { mau: MV, r: 13 }); },
+      cu: function (g, e) { var d = H.nhan(u, 1.2 * (1 - H.doan(e, 0, 0.6))); g.thuoc(H.cong(T2, d), H.cong(T1, d), { ben: BEN, doMo: 0.4 + 0.55 * Math.min(1, e / 0.6) }); } },
+    { tg: 1.2, ghi: 'Kẻ <b>đường vuông góc</b> với $OM$ tại $M$ theo mép thước.',
+      ve: function (g, e) { g.doan(S2, H.lerp(S2, S1, e), net); },
+      xong: function (g) { g.doan(S2, S1, net); },
+      cu: function (g, e) { g.thuoc(T2, T1, { ben: BEN }); g.but(H.lerp(S2, S1, e)); } },
+    { tg: 1.6, ghi: 'Dịch thước dọc theo đường vừa kẻ rồi <b>kéo dài</b> đường vuông góc về hai phía: được tiếp tuyến $d$ của $(O)$ tại $M$.',
+      ve: function (g, e) { var k = H.doan(e, 0.35, 1); g.doan(H.lerp(S2, q.d2, k), H.lerp(S1, q.d1, k), net); },
+      xong: function (g) { g.doan(q.d2, q.d1, net); g.chu(H.cong(q.d1, H.nhan(v, 0.35)), 'd', { mau: MT, nghieng: true }); },
+      cu: function (g, e) { var k = H.doan(e, 0, 0.35), k2 = H.doan(e, 0.35, 1); g.thuoc(H.lerp(T2, q.d2, k), H.lerp(T1, q.d1, k), { ben: BEN }); if (e > 0.35) g.but(H.lerp(S1, q.d1, k2)); } },
+  ].concat(buocVuong([{ T: M, X: q.d1 }], '<b>Bước 4.</b> Kí hiệu góc vuông: $d \\perp OM$ tại $M$. Đường thẳng đi qua $M$ và vuông góc với bán kính $OM$ là <b>tiếp tuyến</b>.')));
 }
 
 /* ---------- Cách vẽ 2: từ M ở ngoài, bằng thước thẳng ---------- */
@@ -93,14 +94,14 @@ function kbThuoc(P) {
       } };
   }
   return KhungPhang.kichBan([
-    { tg: 1, ghi: '<b>Bước 1.</b> Chấm một điểm $M$ ở ngoài đường tròn $(O)$.', ve: chamM, xong: chamM, cu: function (g) { g.but(M); } },
-    xoayThuoc(aA, -1, 1, '<b>Bước 2.</b> Đặt mép thước đi qua $M$, xoay thước từ từ về phía đường tròn cho tới khi mép thước <b>vừa chạm</b> đường tròn.'),
-    D.doan(M, keo(M, A, 1.2), { ben: 1, ghi: 'Giữ thước, kẻ đường thẳng đi qua $M$ sát mép thước: đường thẳng này <b>tiếp xúc</b> với $(O)$.', net: { mau: MT, rong: 3.5 } }),
+    { tg: 1, ghi: '<b>Bước 1.</b> Vẽ một điểm $M$ ở ngoài đường tròn $(O)$.', ve: chamM, xong: chamM, cu: function (g) { g.but(M); } },
+    xoayThuoc(aA, -1, 1, '<b>Bước 2.</b> Đặt thước đi qua $M$, xoay thước từ từ cho tới khi mép thước <b>vừa tiếp xúc</b> với đường tròn.'),
+    D.doan(M, keo(M, A, 1.2), { ben: 1, ghi: 'Giữ thước, vẽ tiếp tuyến đi qua $M$ theo mép thước.', net: { mau: MT, rong: 3.5 } }),
     xoayThuoc(aB, 1, -1, 'Làm tương tự ở phía dưới: xoay thước quanh $M$ tới khi mép thước vừa chạm đường tròn.'),
     D.doan(M, keo(M, B, 1.2), { ghi: 'Kẻ đường thẳng thứ hai: được <b>hai tiếp tuyến</b> của $(O)$ cùng đi qua $M$.', net: { mau: MT, rong: 3.5 } }),
-    timTiepDiem(A, 'A', -1, '<b>Bước 3.</b> Xác định tiếp điểm: đặt thước đi qua tâm $O$ và <b>vuông góc</b> với tiếp tuyến thứ nhất. Chỗ mép thước gặp tiếp tuyến là tiếp điểm — chấm điểm $A$.'),
+    timTiepDiem(A, 'A', -1, '<b>Bước 3.</b> Đặt thước đi qua tâm $O$ và <b>vuông góc</b> với tiếp tuyến thứ nhất để xác định tiếp điểm — chấm điểm $A$.'),
     timTiepDiem(B, 'B', 1, 'Đặt thước đi qua $O$ và vuông góc với tiếp tuyến thứ hai, chấm tiếp điểm $B$.'),
-  ].concat(buocTinhChat([{ T: A, X: M, ten: 'A' }, { T: B, X: M, ten: 'B' }], '<b>Bước 4. Kí hiệu vuông góc:</b> $MA \\perp OA$, $MB \\perp OB$ (tiếp tuyến vuông góc với bán kính đi qua tiếp điểm).')));
+  ].concat(buocVuong([{ T: A, X: M }, { T: B, X: M }], '<b>Bước 4.</b> Kí hiệu góc vuông: $MA \\perp OA$, $MB \\perp OB$ (tiếp tuyến vuông góc với bán kính đi qua tiếp điểm).')));
 }
 
 KhungPhang.tao({
@@ -113,21 +114,21 @@ KhungPhang.tao({
   rangBuoc: { A: lenDT, M: function (p) { return [Math.max(R + 0.5, p[0]), 0]; } },
   anTayCam: function (k, P, ts) { return k === 'A' ? !laTren(P, ts) : !laNgoai(P, ts); },
   luaChon: [{ khoa: 'che', gt: 'tren', nhan: 'Vẽ tiếp tuyến', vuaKhung: true,
-    ds: [{ gt: 'tren', nhan: 'Tại điểm A trên đường tròn' }, { gt: 'ngoai', nhan: 'Từ điểm M ở ngoài đường tròn' }] }],
+    ds: [{ gt: 'tren', nhan: 'Tại điểm M trên đường tròn' }, { gt: 'ngoai', nhan: 'Từ điểm M ở ngoài đường tròn' }] }],
   batDau: ['vg'],
 
   lamSang: [
     { id: 'vg', nhan: 'Tiếp tuyến ⊥ bán kính', mau: MV,
-      ghiChu: function (P, ts) { return laTren(P, ts) ? 'Tiếp tuyến $d$ <b>vuông góc với bán kính</b> $OA$ tại tiếp điểm $A$: $d \\perp OA$.' : 'Mỗi tiếp tuyến <b>vuông góc với bán kính</b> đi qua tiếp điểm: $MA \\perp OA$, $MB \\perp OB$.'; } },
+      ghiChu: function (P, ts) { return laTren(P, ts) ? 'Tiếp tuyến $d$ <b>vuông góc với bán kính</b> $OM$ tại tiếp điểm $M$: $d \\perp OM$.' : 'Mỗi tiếp tuyến <b>vuông góc với bán kính</b> đi qua tiếp điểm: $MA \\perp OA$, $MB \\perp OB$.'; } },
     { id: 'R', nhan: 'Khoảng cách từ O bằng R', mau: MR, lap: true,
-      ghiChu: function (P, ts) { return 'Khoảng cách từ tâm $O$ đến tiếp tuyến <b>bằng bán kính</b>: $' + (laTren(P, ts) ? 'OA' : 'OA = OB') + ' = R = ' + soL(R) + '$ cm. Mọi điểm $N$ khác trên tiếp tuyến đều có $ON > R$ (nằm ngoài đường tròn).'; } },
+      ghiChu: function (P, ts) { return 'Khoảng cách từ tâm $O$ đến tiếp tuyến <b>bằng bán kính</b>: $' + (laTren(P, ts) ? 'OM' : 'OA = OB') + ' = R = ' + soL(R) + '$ cm. Mọi điểm $N$ khác trên tiếp tuyến đều có $ON > R$ (nằm ngoài đường tròn).'; } },
     { id: 'dh', nhan: 'Dấu hiệu nhận biết', mau: MN, hien: laTren,
-      ghiChu: 'Nếu đường thẳng $d$ <b>đi qua điểm $A$ của đường tròn</b> và <b>vuông góc với bán kính $OA$</b> thì $d$ là tiếp tuyến của đường tròn tại $A$.' },
+      ghiChu: 'Nếu đường thẳng $d$ <b>đi qua điểm $M$ của đường tròn</b> và <b>vuông góc với bán kính $OM$</b> thì $d$ là tiếp tuyến của đường tròn tại $M$.' },
   ],
   hoatHinh: [
-    { id: 'tai', nhan: 'Vẽ tiếp tuyến tại A (thước thẳng)', anDiem: true, hien: laTren,
+    { id: 'tai', nhan: 'Vẽ tiếp tuyến tại điểm M trên đường tròn', anDiem: true, hien: laTren,
       thoiGian: function (P) { return kbTai(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbTai(P).ghi(t); } },
-    { id: 'thuoc', nhan: 'Vẽ tiếp tuyến từ M (thước thẳng)', anDiem: true, hien: laNgoai,
+    { id: 'thuoc', nhan: 'Vẽ tiếp tuyến từ điểm M ở ngoài đường tròn', anDiem: true, hien: laNgoai,
       thoiGian: function (P) { return kbThuoc(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbThuoc(P).ghi(t); } },
   ],
 
@@ -139,7 +140,7 @@ KhungPhang.tao({
     if (hth !== null) { kbThuoc(P).ve(g, hth); nhanO(); return; }
 
     var ds;   // các tiếp tuyến: { T: tiếp điểm, X, Y: hai đầu đoạn vẽ, ten }
-    if (laTren(P, ts)) { var q = tai(P.A); ds = [{ T: q.A, X: q.d1, Y: q.d2, ten: 'A', v: q.v }]; }
+    if (laTren(P, ts)) { var q = tai(P.A); ds = [{ T: q.A, X: q.d1, Y: q.d2, ten: 'M', v: q.v }]; }
     else { var w = tu(P.M); ds = [{ T: w.A, X: w.M, Y: keo(w.M, w.A, 1.2), ten: 'A' }, { T: w.B, X: w.M, Y: keo(w.M, w.B, 1.2), ten: 'B' }]; }
     var oVg = g.bat('vg'), oR = g.bat('R'), oDh = g.bat('dh');
     ds.forEach(function (o) { g.doan(o.X, o.Y, { mau: MT, rong: 3 }); });
@@ -162,14 +163,14 @@ KhungPhang.tao({
     nhanO();
   },
   nhanXet: function (P, ts) {
-    if (laTren(P, ts)) return 'Đường thẳng $d$ là <b>tiếp tuyến</b> của $(O)$ tại $A$ ⇔ $d$ đi qua $A \\in (O)$ và $d \\perp OA$.<br>' +
-      'Khoảng cách từ $O$ đến $d$: $OA = R = ' + soL(R) + '$ cm.<br><span class="dung">Kéo điểm $A$ trên đường tròn: $d$ luôn vuông góc với $OA$.</span>';
+    if (laTren(P, ts)) return 'Đường thẳng $d$ là <b>tiếp tuyến</b> của $(O)$ tại $M$ ⇔ $d$ đi qua $M \\in (O)$ và $d \\perp OM$.<br>' +
+      'Khoảng cách từ $O$ đến $d$: $OM = R = ' + soL(R) + '$ cm.<br><span class="dung">Kéo điểm $M$ trên đường tròn: $d$ luôn vuông góc với $OM$.</span>';
     var q = tu(P.M);
     return 'Từ $M$ ở ngoài $(O)$ kẻ được <b>hai tiếp tuyến</b> $MA$, $MB$.<br>$OA = OB = R = ' + soL(R) + '$; $OM = ' + soL(q.d) + '$; $MA = MB \\approx ' + soL(q.dai) + '$<br>' +
       '<span class="dung">Kéo $M$ trên đường nằm ngang: $MA \\perp OA$ và $MB \\perp OB$ luôn đúng.</span>';
   },
   congThuc: function (P, ts, C) {
-    return [{ id: 'vg', ten: 'Tính chất tiếp tuyến', bt: laTren(P, ts) ? '$' + C.m('vg', 'd \\perp OA') + '$ ; $' + C.m('R', 'OA = R') + '$' : '$' + C.m('vg', 'MA \\perp OA,\\ MB \\perp OB') + '$ ; $' + C.m('R', 'OA = OB = R') + '$' }];
+    return [{ id: 'vg', ten: 'Tính chất tiếp tuyến', bt: laTren(P, ts) ? '$' + C.m('vg', 'd \\perp OM') + '$ ; $' + C.m('R', 'OM = R') + '$' : '$' + C.m('vg', 'MA \\perp OA,\\ MB \\perp OB') + '$ ; $' + C.m('R', 'OA = OB = R') + '$' }];
   },
   khungNhin: function (P, ts) {
     var ds = [[-R - 0.5, -R - 0.5], [R + 0.5, R + 0.5]];

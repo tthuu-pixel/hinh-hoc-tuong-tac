@@ -20,6 +20,19 @@
 .nhan-xet b { color: var(--chinh-dam); }
 .nhan-xet .dung { color: var(--tot); font-weight: 700; }
 .nhan-xet .sai { color: #9AA3B5; }
+/* Ô nhập số đo góc (mục Nhận xét) */
+.nhap-goc { margin-bottom: 10px; padding: 8px 10px; border: 1px dashed #A5B8E3; border-radius: 10px; background: #FBFCFF; }
+.nhap-goc-tieu-de { font-size: 13px; font-weight: 700; color: var(--chu-phu); margin-bottom: 6px; }
+.nhap-goc-ds { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.o-goc { display: inline-flex; align-items: center; gap: 4px; font-size: 16px; white-space: nowrap; }
+.o-goc input {
+  width: 62px; height: 34px; padding: 0 6px; border: 1.5px solid var(--vien); border-radius: 8px; background: #fff;
+  font: 700 17px var(--phong-toan); text-align: center; color: var(--chu); -moz-appearance: textfield;
+}
+.o-goc input::-webkit-inner-spin-button, .o-goc input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+.o-goc input:focus { outline: none; border-color: var(--chinh); box-shadow: 0 0 0 3px var(--chinh-nhat); }
+.o-goc input.loi { border-color: #DC2626; animation: rung-o .35s; }
+@keyframes rung-o { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .hoat-hinh .nut { margin: 0 6px 8px 0; }
 .hoat-hinh .nut.dang-chay { background: var(--chinh); border-color: var(--chinh); color: #fff; }
 @media (max-width: 900px) {

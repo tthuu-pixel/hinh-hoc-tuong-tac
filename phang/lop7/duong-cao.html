@@ -47,6 +47,57 @@ function veMot(g, d, o) {   // vẽ đường cao d: đoạn đỉnh–chân, k�
 }
 function datHinh(A, B, C) { return function (P, ts, api) { P.A = A; P.B = B; P.C = C; api.vuaKhung(); }; }
 
+/* ---------- Vẽ đường cao bằng thước và ê ke ---------- */
+var DG = KhungPhang.dung;
+// Các bước vẽ đường cao d (từ đỉnh d.dinh xuống đường thẳng XY) bằng ê ke
+function buocEke(d, so, tenCanh) {
+  var V = d.dinh, K = d.chan, X = d.X, Y = d.Y, mau = MAU_T[d.id], ds = [];
+  var hV = H.dai(V, K); if (hV < 1e-6) return ds;
+  // cạnh góc vuông thứ nhất nằm trên XY, hướng về đầu mút xa chân đường cao hơn (ê ke nằm gọn trong tam giác)
+  var Q = H.dai(K, X) > H.dai(K, Y) ? X : Y;
+  var a0 = H.huong(K, Q), u = [Math.cos(a0), Math.sin(a0)];
+  var dau = (u[0] * (V[1] - K[1]) - u[1] * (V[0] - K[0])) >= 0 ? 1 : -1;
+  var L = Math.max(2.6, hV + 0.9), dich = 2.4;
+  var ngoai = d.t < 0 ? X : d.t > 1 ? Y : null;
+  if (ngoai) ds.push(DG.doan(ngoai, H.cong(K, H.nhan(H.tru(K, ngoai), 0.6 / Math.max(1e-6, H.dai(K, ngoai)))), { tg: 1,
+    ghi: '<b>Bước ' + so + '.</b> Chân đường cao nằm ngoài cạnh $' + tenCanh + '$: dùng thước <b>kéo dài</b> cạnh $' + tenCanh + '$.', net: { mau: '#94A3B8', rong: 1.6, dut: '5 4' } }));
+  ds.push({ tg: 2, ghi: (ngoai ? '' : '<b>Bước ' + so + '.</b> ') + 'Đặt một cạnh góc vuông của ê ke <b>nằm trên đường thẳng $' + tenCanh + '$</b>, trượt ê ke cho đến khi cạnh góc vuông còn lại <b>đi qua $' + d.dinh.ten + '$</b>.',
+    cu: function (g, e) { var k = 1 - H.doan(e, 0, 0.85); g.eke(H.cong(K, H.nhan(u, dich * k)), a0, dau, { loai: 'vuong', dai: L, doMo: 0.45 + 0.5 * Math.min(1, e * 2) }); } });
+  ds.push({ tg: 1.3, ghi: 'Giữ ê ke, kẻ theo cạnh góc vuông từ $' + d.dinh.ten + '$ xuống tới $' + tenCanh + '$, được chân đường cao $' + d.ten + '$.',
+    ve: function (g, e) { g.doan(V, H.lerp(V, K, e), { mau: mau, rong: 4 }); },
+    xong: function (g) { veMot(g, d, { mau: mau, rong: 4, mauGoc: mau }); g.diem(K, d.ten, { r: 4, mau: mau, huong: H.tru(K, V) }); },
+    cu: function (g, e) { g.eke(K, a0, dau, { loai: 'vuong', dai: L }); g.but(H.lerp(V, K, e)); } });
+  return ds;
+}
+function kbAD(P) {
+  var q = dc(P); q.ds[0].dinh = Object.assign(P.A.slice(), { ten: 'A' });
+  return KhungPhang.kichBan(buocEke(q.ds[0], 1, 'BC').concat([
+    DG.hien(function () {}, { tg: 1, ghi: '$AD \\perp BC$ tại $D$: $AD$ là <b>đường cao</b> của tam giác $ABC$ xuất phát từ đỉnh $A$.' }),
+  ]));
+}
+function kbTrucTam(P) {
+  var q = dc(P), Ht = q.Ht, d1 = q.ds[0], d2 = q.ds[1];
+  d1.dinh = Object.assign(P.A.slice(), { ten: 'A' }); d2.dinh = Object.assign(P.B.slice(), { ten: 'B' });
+  var ds = buocEke(d1, 1, 'BC').concat(buocEke(d2, 2, 'CA'));
+  // tam giác tù: kéo dài hai đường cao cho đến khi chúng cắt nhau
+  [d1, d2].forEach(function (d) {
+    var v = H.tru(d.chan, d.dinh), L2 = v[0] * v[0] + v[1] * v[1]; if (L2 < 1e-9) return;
+    var tH = ((Ht[0] - d.dinh[0]) * v[0] + (Ht[1] - d.dinh[1]) * v[1]) / L2;
+    if (tH > 1.001) ds.push(DG.doan(d.chan, Ht, { tg: 0.9, ghi: 'Hai đường cao chưa cắt nhau: dùng thước <b>kéo dài</b> chúng (nét đứt).', net: { mau: MAU_T[d.id], rong: 1.8, dut: '4 4' } }));
+    if (tH < -0.001) ds.push(DG.doan(d.dinh, Ht, { tg: 0.9, ghi: 'Hai đường cao chưa cắt nhau: dùng thước <b>kéo dài</b> chúng (nét đứt).', net: { mau: MAU_T[d.id], rong: 1.8, dut: '4 4' } }));
+  });
+  ds.push(DG.hien(function (g) { g.diem(Ht, 'H', { r: 6, mau: MH, huong: [0.9, 0.6] }); }, { tg: 1.4,
+    ghi: '<b>Bước 3.</b> Hai đường cao $AD$ và $BE$ cắt nhau tại $H$: $H$ là <b>trực tâm</b> của tam giác $ABC$.' }));
+  var d3 = q.ds[2];
+  if (H.dai(d3.dinh, d3.chan) > 1e-6) ds.push({ tg: 1.6, ghi: '<b>Kiểm tra:</b> đường cao thứ ba $CF$ cũng đi qua $H$ — ba đường cao cùng đi qua một điểm, nên chỉ cần vẽ <b>hai</b> đường cao là xác định được trực tâm.',
+    ve: function (g, e) { g.doan(d3.dinh, H.lerp(d3.dinh, d3.chan, e), { mau: MAU_T.CF, rong: 2.4, dut: '7 5' }); },
+    xong: function (g) { veMot(g, d3, { mau: MAU_T.CF, rong: 2.4, dut: '7 5', mauGoc: MAU_T.CF }); g.diem(d3.chan, 'F', { r: 3.5, mau: MAU_T.CF, huong: H.tru(d3.chan, d3.dinh) });
+      var v = H.tru(d3.chan, d3.dinh), L2 = v[0] * v[0] + v[1] * v[1], tH = ((Ht[0] - d3.dinh[0]) * v[0] + (Ht[1] - d3.dinh[1]) * v[1]) / L2;
+      if (tH > 1.001) g.doan(d3.chan, Ht, { mau: MAU_T.CF, dut: '4 4', rong: 1.8 }); if (tH < -0.001) g.doan(d3.dinh, Ht, { mau: MAU_T.CF, dut: '4 4', rong: 1.8 });
+      g.diem(Ht, 'H', { r: 6, mau: MH, huong: [0.9, 0.6] }); } });
+  return KhungPhang.kichBan(ds);
+}
+
 KhungPhang.tao({
   ten: 'Đường cao – Trực tâm',
   lop: 7,
@@ -73,11 +124,10 @@ KhungPhang.tao({
   ],
 
   hoatHinh: [
-    { id: 'eke', nhan: 'Vẽ đường cao AD bằng ê ke', thoiGian: 6000, anDiem: true,
-      ghiChu: function (P, ts, t) {
-        if (t < 0.65) return '<b>Bước 1.</b> Đặt một cạnh góc vuông của ê ke trùng với đường thẳng $BC$, trượt ê ke cho đến khi cạnh góc vuông còn lại đi qua $A$.';
-        return '<b>Bước 2.</b> Kẻ đoạn thẳng theo cạnh ê ke từ $A$ đến $D$ trên $BC$: $AD$ là đường cao.';
-      } },
+    { id: 'eke', nhan: 'Vẽ đường cao AD bằng ê ke', anDiem: true,
+      thoiGian: function (P) { return kbAD(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbAD(P).ghi(t); } },
+    { id: 'trucTam', nhan: 'Vẽ hai đường cao, xác định trực tâm H', anDiem: true,
+      thoiGian: function (P) { return kbTrucTam(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbTrucTam(P).ghi(t); } },
   ],
 
   ve: function (g, P) {
@@ -85,18 +135,9 @@ KhungPhang.tao({
     g.daGiac([A, B, C], { to: '#93C5FD', doMoTo: 0.22, rong: 2.8 });
     function nhan() { g.diem(A, 'A', { huong: H.tru(A, H.trongTam(A, B, C)) }); g.diem(B, 'B', { huong: H.tru(B, H.trongTam(A, B, C)) }); g.diem(C, 'C', { huong: H.tru(C, H.trongTam(A, B, C)) }); }
 
-    if (te !== null) {
-      var d = q.ds[0], u = H.tru(C, B), L = Math.hypot(u[0], u[1]); u = [u[0] / L, u[1] / L];
-      var n = H.tru(A, d.chan), hA = Math.hypot(n[0], n[1]); n = [n[0] / hA, n[1] / hA];
-      var e = H.em(H.doan(te, 0.05, 0.6)), K = H.cong(d.chan, H.nhan(u, -3 * (1 - e)));
-      var dai1 = 2.4, dai2 = Math.max(2.5, hA + 0.8);
-      if (d.t < 0 || d.t > 1) g.doan(d.chan, d.t < 0 ? B : C, { mau: '#94A3B8', dut: '5 4', rong: 1.6 });
-      if (te < 0.95) g.daGiac([K, H.cong(K, H.nhan(u, dai1)), H.cong(K, H.nhan(n, dai2))], { to: '#FDE68A', doMoTo: 0.65, mauNet: '#B45309', rong: 2 });
-      var e2 = H.em(H.doan(te, 0.66, 0.92));
-      if (e2 > 0) { g.doan(A, H.lerp(A, d.chan, e2), { mau: MAU_T.AD, rong: 4 }); if (e2 < 1) g.but(H.lerp(A, d.chan, e2)); }
-      if (te > 0.92) { g.goc(A, d.chan, H.dai(d.chan, C) > 1e-6 ? C : B, { mau: MAU_T.AD, r: 12, to: false }); g.diem(d.chan, 'D', { huong: [0, -1], mau: MAU_T.AD }); }
-      nhan(); return;
-    }
+    var tt = g.hoat('trucTam');
+    if (te !== null) { kbAD(P).ve(g, te); nhan(); return; }
+    if (tt !== null) { kbTrucTam(P).ve(g, tt); nhan(); return; }
 
     var onH = g.bat('Ht');
     q.ds.forEach(function (d) {

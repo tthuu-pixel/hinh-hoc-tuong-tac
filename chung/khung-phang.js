@@ -9,6 +9,9 @@
      hoatHinh  : [{ id, nhan, thoiGian }]  — trong ve() dùng g.hoat('id') để lấy tiến độ 0..1
      ve(g, P, ts)       : vẽ hình bằng các lệnh g.doan, g.daGiac, g.goc ...
      congThuc(P, ts, C) : các dòng công thức · nhanXet(P, ts): khung nhận xét tự cập nhật
+     nhapGoc   : [{ id, ten, lay(P, ts), dat(P, ts, do), min, max, hien(P, ts) }] (hoặc hàm (P, ts) trả về mảng)
+                 ô nhập số đo góc trong mục Nhận xét; khi mở / đặt lại, các góc được làm tròn
+                 thành số nguyên theo đúng thứ tự trong mảng (dat trả về false nếu không dựng được)
    ===================================================================== */
 (function () {
   'use strict';
@@ -667,7 +670,7 @@
     }
     var canVe = true;
     function capNhat() { canVe = true; }
-    function capNhatBang() { capNhatHien(); capNhatCongThuc(); capNhatNhanXet(); capNhatGhiChu(); }
+    function capNhatBang() { capNhatHien(); capNhatCongThuc(); capNhatNhapGoc(); capNhatNhanXet(); capNhatGhiChu(); }
     function capNhatHien() {   // nút có hàm hien(P, ts) chỉ hiện khi phù hợp (ví dụ theo chế độ đang chọn)
       if (!bang) return;
       bang.querySelectorAll('.nut-sang').forEach(function (b) {
@@ -784,7 +787,7 @@
     function hienGiaTri(p) { return p.hienThi ? p.hienThi(ts, P) : so(ts[p.khoa]) + ' ' + (p.donVi || ''); }
     function veBang() {
       var h = '';
-      if (cfg.nhanXet) h += muc('Nhận xét', '<div class="nhan-xet" id="nhan-xet"></div>');
+      if (cfg.nhanXet || cfg.nhapGoc) h += muc('Nhận xét', (cfg.nhapGoc ? '<div class="nhap-goc" id="nhap-goc"></div>' : '') + (cfg.nhanXet ? '<div class="nhan-xet" id="nhan-xet"></div>' : ''));
       if ((cfg.luaChon && cfg.luaChon.length) || (cfg.hopChon && cfg.hopChon.length) || (cfg.thamSo && cfg.thamSo.length)) {
         var s = '';
         (cfg.luaChon || []).forEach(function (l) {
@@ -840,7 +843,7 @@
             ts[l.khoa] = gt;
             nhom.querySelectorAll('button').forEach(function (x) { x.classList.toggle('bat', x === b); });
             dungHoat();
-            if (l.khiDoi) l.khiDoi(gt, P, ts, API_TRANG);
+            if (l.khiDoi) { l.khiDoi(gt, P, ts, API_TRANG); lamTronGoc(); }
             if (l.vuaKhung) vuaKhung();
             capNhatBang(); capNhat();
           };
@@ -977,7 +980,63 @@
         return '<div class="ct' + (on ? ' bat' : '') + (r.id && mapSang[r.id] ? ' bam-duoc" data-sang-ct="' + r.id + '" title="Bấm để nhấn mạnh trên hình' : '') + '" style="--mau:' + mau + '"><div class="ten">' + r.ten + '</div><div class="bt">' + r.bt + '</div></div>';
       }).join(''));
     }
-    function capNhatNhanXet() { var el = document.getElementById('nhan-xet'); if (el) datHTML(el, cfg.nhanXet(P, ts, CT)); }
+    function capNhatNhanXet() { var el = document.getElementById('nhan-xet'); if (el && cfg.nhanXet) datHTML(el, cfg.nhanXet(P, ts, CT)); }
+
+    /* ---------- Ô nhập số đo góc (mục Nhận xét) ---------- */
+    function dsNhapGoc() {
+      var ds = typeof cfg.nhapGoc === 'function' ? cfg.nhapGoc(P, ts) : (cfg.nhapGoc || []);
+      return ds.filter(function (o) { return o && (!o.hien || o.hien(P, ts)); });
+    }
+    function capNhatNhapGoc() {
+      var el = document.getElementById('nhap-goc'); if (!el) return;
+      var ds = TT.hoat ? [] : dsNhapGoc(), khoa = ds.map(function (o) { return o.id; }).join('|');
+      el.style.display = ds.length ? '' : 'none';
+      if (el._khoa !== khoa) {
+        el._khoa = khoa;
+        el.innerHTML = '<div class="nhap-goc-tieu-de">Nhập số đo góc (độ) rồi bấm Enter:</div><div class="nhap-goc-ds">' + ds.map(function (o) {
+          return '<label class="o-goc"><span class="o-goc-ten">$' + o.ten + ' =$</span><input type="number" inputmode="numeric" step="1" min="' + (o.min || 1) + '" max="' + (o.max || 179) + '" data-nhap-goc="' + o.id + '"><span>°</span></label>';
+        }).join('') + '</div>';
+        if (window.Latex) window.Latex.ve(el);
+        el.querySelectorAll('input').forEach(function (inp) {
+          inp.addEventListener('change', function () { nhapGoc(inp); });
+          inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); nhapGoc(inp); } });
+        });
+      }
+      ds.forEach(function (o) {
+        var inp = el.querySelector('[data-nhap-goc="' + o.id + '"]');
+        if (inp && document.activeElement !== inp) inp.value = Math.round(o.lay(P, ts));
+      });
+    }
+    function nhapGoc(inp) {
+      var o = dsNhapGoc().filter(function (x) { return x.id === inp.dataset.nhapGoc; })[0]; if (!o) return;
+      var d = parseFloat(String(inp.value).replace(',', '.')), min = o.min || 1, max = o.max || 179, ok = false;
+      if (isFinite(d)) {
+        d = Math.max(min, Math.min(max, Math.round(d)));
+        var cu = {}; Object.keys(P).forEach(function (k) { cu[k] = P[k].slice(); });
+        ok = o.dat(P, ts, d) !== false;
+        if (!ok) Object.keys(cu).forEach(function (k) { P[k] = cu[k]; });
+      }
+      inp.classList.remove('loi'); void inp.offsetWidth;
+      if (!ok) inp.classList.add('loi');
+      inp.value = Math.round(o.lay(P, ts));
+      if (ok) { if (!ngoaiKhung()) capNhat(); else vuaKhung(); }
+      capNhatBang(); capNhat();
+    }
+    function ngoaiKhung() {   // có điểm nào ra ngoài vùng đang nhìn?
+      return Object.keys(P).some(function (k) { var x = X(P[k]), y = Y(P[k]); return x < 20 || y < 90 || x > V.W - 20 || y > V.H - 90; });
+    }
+    // Làm tròn các góc thành số nguyên (khi mở hình, khi đặt lại)
+    function lamTronGoc() {
+      if (!cfg.nhapGoc || cfg.lamTronGoc === false) return;
+      dsNhapGoc().forEach(function (o) {
+        if (o.lamTron === false) return;
+        var d = o.lay(P, ts), r = Math.round(d);
+        if (Math.abs(d - r) > 1e-7) {
+          var cu = {}; Object.keys(P).forEach(function (k) { cu[k] = P[k].slice(); });
+          if (o.dat(P, ts, r) === false) Object.keys(cu).forEach(function (k) { P[k] = cu[k]; });
+        }
+      });
+    }
     function capNhatGhiChu() {
       var ghi = null, mau = 'var(--chinh)';
       if (TT.hoat) {
@@ -1022,6 +1081,7 @@
       (cfg.thamSo || []).forEach(function (p) { ts[p.khoa] = p.gt; var i = document.getElementById('ts-' + p.khoa); if (i) { i.value = p.gt; document.getElementById('gt-' + p.khoa).innerHTML = hienGiaTri(p); } });
       TT.dangSang = []; dungHoat(); capNhatNutSang();
       if (cfg.khiDatLai) cfg.khiDatLai(P, ts);
+      lamTronGoc();
       capNhatBang(); vuaKhung(); capNhat();
     }
 
@@ -1056,6 +1116,7 @@
     /* ---------- Khởi động ---------- */
     veBang(); veCongCu(); doiKichThuoc();
     if (cfg.khiDatLai) cfg.khiDatLai(P, ts);
+    lamTronGoc();
     if (cfg.batDau) { TT.dangSang = cfg.batDau.slice(); capNhatNutSang(); }
     vuaKhung(true);
     capNhatBang();
@@ -1892,5 +1953,39 @@
     },
   };
 
-  window.KhungPhang = { tao: tao, MAU: MAU, H: H, so: so, soL: soL, kichBan: kichBan, dung: DUNG, gocLech: gocLech, doiXung: DX, chuVi: CV, haiTamGiac: haiTamGiac, tuGiac: TG };
+  /* ---------- Dựng lại hình theo số đo góc nhập vào (dùng cho nhapGoc) ---------- */
+  var RAD = Math.PI / 180;
+  function cheoDau(O, A, X) { var c = (A[0] - O[0]) * (X[1] - O[1]) - (A[1] - O[1]) * (X[0] - O[0]); return c < 0 ? -1 : 1; }
+  var GOC = {
+    // Điểm X mới sao cho góc AOX = do, giữ độ dài OX và giữ X ở cùng phía với tia OA
+    quay: function (O, A, X, d, dai) {
+      var a = H.huong(O, A) + cheoDau(O, A, X) * d * RAD, r = dai == null ? H.dai(O, X) : dai;
+      return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)];
+    },
+    // Tam giác t = ['A','B','C']: đặt góc tại đỉnh v bằng do. Giữ cạnh đáy t[0]t[1], chỉ đỉnh t[2] di chuyển.
+    // Góc còn lại được giữ nguyên nếu được; không thì giữ góc ở đỉnh thứ ba. Trả về false nếu không dựng được.
+    tamGiac: function (P, t, v, d) {
+      var A = P[t[0]], B = P[t[1]], C = P[t[2]];
+      var g = [H.gocDo(B, A, C), H.gocDo(A, B, C), H.gocDo(A, C, B)], i = t.indexOf(v), ga, gb;
+      if (i === 2) { ga = g[0]; gb = 180 - d - ga; if (gb < 0.5) { gb = g[1]; ga = 180 - d - gb; } }
+      else if (i === 0) { ga = d; gb = g[1]; if (d + gb > 179.5) gb = 180 - d - g[2]; }
+      else { gb = d; ga = g[0]; if (d + ga > 179.5) ga = 180 - d - g[2]; }
+      if (!(ga > 0.4 && gb > 0.4 && ga + gb < 179.6)) return false;
+      var s = cheoDau(A, B, C), ua = H.huong(A, B) + s * ga * RAD, ub = H.huong(B, A) - s * gb * RAD;
+      var M = H.giao(A, [A[0] + Math.cos(ua), A[1] + Math.sin(ua)], B, [B[0] + Math.cos(ub), B[1] + Math.sin(ub)]);
+      if (!M) return false;
+      P[t[2]] = M; return true;
+    },
+    // Các ô nhập cho tam giác t = ['A','B','C'] (chi: chỉ lấy một số đỉnh, ví dụ ['A','B'])
+    dsTamGiac: function (t, chi, them) {
+      return (chi || t).map(function (v) {
+        var i = t.indexOf(v), x = t[(i + 1) % 3], y = t[(i + 2) % 3];
+        var o = { id: 'g' + v, ten: '\\widehat{' + v + '}', max: 176, lay: function (P) { return H.gocDo(P[x], P[v], P[y]); }, dat: function (P, ts, d) { return GOC.tamGiac(P, t, v, d); } };
+        if (them) Object.keys(them).forEach(function (k) { o[k] = them[k]; });
+        return o;
+      });
+    },
+  };
+
+  window.KhungPhang = { goc: GOC, tao: tao, MAU: MAU, H: H, so: so, soL: soL, kichBan: kichBan, dung: DUNG, gocLech: gocLech, doiXung: DX, chuVi: CV, haiTamGiac: haiTamGiac, tuGiac: TG };
 })();

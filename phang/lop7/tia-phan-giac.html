@@ -14,6 +14,7 @@
 <div id="thanh-tren"></div>
 <div id="mo-hinh"></div>
 
+<script src="../../chung/thanh-chia.js"></script>
 <script src="../../chung/khung-phang.js"></script>
 <script>
 /* =====================================================================
@@ -73,6 +74,7 @@ KhungPhang.tao({
   ten: 'Tia phân giác của một góc',
   lop: 7,
   diem: { O: [0, 0], x: [4.5, 0], y: [1.5391, 4.2286] },
+  nhapGoc: [{ id: 'xOy', ten: '\\widehat{xOy}', min: 10, max: 179, lay: function (P) { return H.gocDo(P.x, P.O, P.y); }, dat: function (P, ts, d) { P.y = KhungPhang.goc.quay(P.O, P.x, P.y, d); } }],
   coDinh: ['O'],
   buocLuoi: 0.5,
   rangBuoc: { x: xa, y: xa },

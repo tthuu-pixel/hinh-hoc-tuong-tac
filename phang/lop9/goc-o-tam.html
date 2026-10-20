@@ -14,6 +14,7 @@
 <div id="thanh-tren"></div>
 <div id="mo-hinh"></div>
 
+<script src="../../chung/thanh-chia.js"></script>
 <script src="../../chung/khung-phang.js"></script>
 <script>
 var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
@@ -44,6 +45,7 @@ KhungPhang.tao({
   ten: 'Góc ở tâm – Số đo cung',
   lop: 9,
   diem: { A: diemDT(O0, R, DO(20)), B: diemDT(O0, R, DO(110)) },
+  nhapGoc: [{ id: 'AOB', ten: '\\widehat{AOB}', max: 180, lay: function (P) { return H.gocDo(P.A, O0, P.B); }, dat: function (P, ts, d) { P.B = KhungPhang.goc.quay(O0, P.A, P.B, d, R); } }],
   buocLuoi: 0.5,
   rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R) },
   batDau: ['goc'],

@@ -3,7 +3,8 @@
    ===================================================================== */
 body.trang-mo-hinh { overflow: hidden; }
 .mh {
-  display: grid; grid-template-columns: minmax(0, 1fr) 372px;
+  position: relative;
+  display: grid; grid-template-columns: minmax(0, 1fr) var(--rong-bang, 372px);
   height: calc(100vh - 60px); height: calc(100dvh - 60px);
 }
 .mh-canh {
@@ -50,8 +51,26 @@ body.trang-mo-hinh { overflow: hidden; }
 .cc:hover { background: var(--nen-2); }
 .cc.bat { background: var(--chinh-nhat); color: var(--chinh); }
 
+/* Thanh chia kéo được giữa khung hình và bảng (chung/thanh-chia.js) */
+.mh-chia {
+  position: absolute; top: 0; bottom: 0; right: var(--rong-bang, 372px); width: 14px; margin-right: -7px; z-index: 30;
+  cursor: col-resize; touch-action: none; display: flex; align-items: center; justify-content: center;
+}
+.mh-chia::before { content: ''; position: absolute; top: 0; bottom: 0; left: 6px; width: 2px; background: transparent; transition: background .15s; }
+.mh-chia-nam {
+  position: relative; width: 10px; height: 46px; border-radius: 99px; background: #fff; border: 1px solid var(--vien);
+  box-shadow: 0 1px 4px rgba(22,33,58,.15);
+  background-image: radial-gradient(circle, #94A3B8 1.2px, transparent 1.5px); background-size: 4px 6px; background-position: center; background-repeat: repeat-y;
+}
+.mh-chia:hover::before, .mh-chia:focus-visible::before, .dang-chia .mh-chia::before { background: var(--chinh); }
+.mh-chia:hover .mh-chia-nam, .dang-chia .mh-chia-nam { border-color: var(--chinh); }
+.mh-chia:focus-visible { outline: none; }
+body.dang-chia { cursor: col-resize; user-select: none; }
+body.dang-chia .mh-canh, body.dang-chia .mh-bang { pointer-events: none; }
+
 /* Bảng điều khiển bên phải */
 .mh-bang {
+  container: bang / inline-size;
   overflow-y: auto; background: var(--the); border-left: 1px solid var(--vien);
   padding: 14px 16px 90px;
 }
@@ -146,6 +165,7 @@ body.trang-mo-hinh { overflow: hidden; }
   .mh-tieu-de { display: none; }
   .mh-cong-cu { bottom: 8px; padding: 4px; }
   .mh-bang { border-left: 0; border-top: 1px solid var(--vien); padding-bottom: 40px; }
+  .mh-chia { display: none; }
   .mh-tieu-de { font-size: 18px; }
   .mh-ghi-chu { font-size: 13px; line-height: 1.4; top: 8px; left: 8px; right: 8px; max-width: none; padding: 6px 10px; }
   .nhan-dem { top: auto; bottom: 70px; right: 8px; font-size: 14px; padding: 4px 10px; }
@@ -154,6 +174,20 @@ body.trang-mo-hinh { overflow: hidden; }
 @media (max-width: 420px) {
   .luoi-sang { grid-template-columns: 1fr; }
 }
+/* Bảng bên phải bị kéo hẹp: các ô xếp thẳng hàng thành một cột */
+@container bang (max-width: 330px) {
+  .luoi-sang { grid-template-columns: 1fr; }
+  .tham-so .dong { flex-wrap: wrap; gap: 2px 8px; }
+  .tham-so .gia-tri { margin-left: auto; }
+}
+@container bang (max-width: 400px) {
+  .nhan-xet table, .nhan-xet tbody, .nhan-xet tr, .nhan-xet td { display: block; }
+  .nhan-xet tr { padding: 4px 0; }
+  .nhan-xet tr + tr { border-top: 1px dashed #C7D2E6; }
+  .nhan-xet td { text-align: left !important; padding: 1px 0 !important; }
+  .nhan-xet td:empty { display: none; }
+}
+.nhan-xet { overflow-x: auto; }
 
 /* ---------- Công thức LaTeX (KaTeX) ---------- */
 .ct .bt .katex { font-size: 0.92em; }

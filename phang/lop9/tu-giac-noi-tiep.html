@@ -14,6 +14,7 @@
 <div id="thanh-tren"></div>
 <div id="mo-hinh"></div>
 
+<script src="../../chung/thanh-chia.js"></script>
 <script src="../../chung/khung-phang.js"></script>
 <script>
 var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
@@ -42,6 +43,19 @@ KhungPhang.tao({
   ten: 'Tứ giác nội tiếp',
   lop: 9,
   diem: { A: diemDT(O0, R, DO(205)), B: diemDT(O0, R, DO(300)), C: diemDT(O0, R, DO(30)), D: diemDT(O0, R, DO(125)) },
+  nhapGoc: (function () {
+    var nt = function (P, ts) { return ts.che === 'nt'; }, T = Math.PI / 180;
+    // đặt điểm X sao cho cung từ U (qua V) tới X có số đo 2d, X phải nằm giữa V và W
+    function dichCung(P, U, V, W, X, d) {
+      var u = gocCua(P[U]), xuoi = ccw(u, gocCua(P[V])) < ccw(u, gocCua(P[X])), kc = function (p) { return xuoi ? ccw(u, gocCua(p)) : ccw(gocCua(p), u); }, t = 2 * d * T;
+      if (t <= kc(P[V]) + 1e-6 || t >= kc(P[W]) - 1e-6) return false;
+      P[X] = diemDT(O0, R, u + (xuoi ? t : -t));
+    }
+    return [
+      { id: 'A', ten: '\\widehat{A}', max: 179, hien: nt, lay: function (P) { return H.gocDo(P.D, P.A, P.B); }, dat: function (P, ts, d) { return dichCung(P, 'B', 'C', 'A', 'D', d); } },
+      { id: 'B', ten: '\\widehat{B}', max: 179, hien: nt, lay: function (P) { return H.gocDo(P.A, P.B, P.C); }, dat: function (P, ts, d) { return dichCung(P, 'A', 'D', 'B', 'C', d); } },
+    ];
+  })(),
   buocLuoi: 0.5,
   rangBuoc: { A: lenDT(O0, R), B: lenDT(O0, R), C: lenDT(O0, R), D: tren },
   luaChon: [{ khoa: 'che', gt: 'nt', nhan: 'Chế độ', ds: [{ gt: 'nt', nhan: 'D trên đường tròn' }, { gt: 'kt', nhan: 'Kéo D tự do (kiểm tra)' }],

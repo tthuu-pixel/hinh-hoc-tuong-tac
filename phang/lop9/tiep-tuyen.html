@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tiếp tuyến của đường tròn</title>
+<title>Tính chất hai tiếp tuyến cắt nhau</title>
 <link rel="stylesheet" href="../../chung/giao-dien.css">
 <link rel="stylesheet" href="../../chung/khung-3d.css">
 <link rel="stylesheet" href="../../chung/khung-phang.css">
@@ -14,6 +14,7 @@
 <div id="thanh-tren"></div>
 <div id="mo-hinh"></div>
 
+<script src="../../chung/thanh-chia.js"></script>
 <script src="../../chung/khung-phang.js"></script>
 <script>
 var H = KhungPhang.H, so = KhungPhang.so, M = KhungPhang.MAU, DX = KhungPhang.doiXung;
@@ -26,10 +27,11 @@ function ccw(a0, a1) { var d = a1 - a0; while (d < 0) d += 2 * Math.PI; while (d
 var GACH = '<hr style="border:none;border-top:1px dashed #CBD5E1;margin:8px 0">';
 var soL = KhungPhang.soL;
 /* =====================================================================
-   TIẾP TUYẾN – TÍNH CHẤT HAI TIẾP TUYẾN CẮT NHAU — Toán 9
-   Đường tròn (O; 2,5). Kéo điểm M ở ngoài đường tròn; MA, MB là hai tiếp tuyến.
+   TÍNH CHẤT HAI TIẾP TUYẾN CẮT NHAU — Toán 9
+   Đường tròn (O; 2,5). Điểm M nằm trên đường thẳng nằm ngang qua O,
+   ở ngoài đường tròn (kéo M sang trái/phải). MA, MB là hai tiếp tuyến.
    ===================================================================== */
-var R = 2.5, MT = '#1E6FE0', MV = '#16A34A', MM = '#E0342F', MP = '#F59E0B', MQ = '#7C3AED';
+var R = 2.5, MT = '#1E6FE0', MV = '#16A34A', MM = '#E0342F', MP = '#F59E0B', MQ = '#7C3AED', MI = '#0D9488';
 function tt(M) {
   var d = H.dai(M, O0), th = gocCua(M), ph = Math.acos(R / d);
   var A = diemDT(O0, R, th + ph), B = diemDT(O0, R, th - ph);
@@ -37,26 +39,89 @@ function tt(M) {
 }
 function keo(M, X, k) { return H.cong(M, H.nhan(H.tru(X, M), 1 + k / H.dai(M, X))); }
 
-// Vẽ hai tiếp tuyến qua M bằng thước và compa — từng thao tác
+// Vẽ hai tiếp tuyến bằng thước và compa — theo cách dạy trên lớp
 function kbVe(P) {
-  var q = tt(P.M), M = q.M, A = q.A, B = q.B, I = H.trung(O0, M), D = KhungPhang.dung, a0 = Math.PI + gocCua(M);
+  var q = tt(P.M), M = q.M, A = q.A, B = q.B, I = H.trung(O0, M), r = q.d / 2, D = KhungPhang.dung;
+  var cuoi = [M[0] + 1.3, 0];   // đường thẳng nằm ngang kéo dài qua M
   return KhungPhang.kichBan([
-    D.doan(O0, M, { ghi: '<b>Bước 1.</b> Nối $OM$.', net: { rong: 2 } }),
-    D.hien(function (g) { g.diem(I, 'I', { r: 4, mau: '#0D9488', huong: [0, -1] }); g.kyHieu(O0, I, 1, '#0D9488'); g.kyHieu(I, M, 1, '#0D9488'); }, { tg: 0.8, ghi: 'Lấy trung điểm $I$ của $OM$.' }),
-    D.doCompa(I, O0, { ghi: '<b>Bước 2.</b> Đặt mũi kim compa tại $I$, mở compa bán kính $IO$.' }),
-    D.cung(I, q.d / 2, a0, a0 + 2 * Math.PI, { tg: 2, ghi: 'Vẽ đường tròn tâm $I$ bán kính $IO$, cắt $(O)$ tại $A$ và $B$ (khi đó $\\widehat{OAM} = 90^\\circ$ vì chắn nửa đường tròn).', net: { mau: '#0D9488', rong: 2, dut: '6 5' },
-      sau: function (g) { g.diem(A, 'A', { mau: '#0D9488', huong: A }); g.diem(B, 'B', { mau: '#0D9488', huong: B }); } }),
-    D.doan(M, keo(M, A, 1.2), { ghi: '<b>Bước 3.</b> Dùng thước kẻ đường thẳng $MA$.', net: { mau: MT, rong: 3.5 }, sau: function (g) { g.goc(O0, A, M, { mau: MV, r: 12 }); g.doan(O0, A, { mau: MV, rong: 1.6, dut: '5 4', kyHieu: 2 }); g.kyHieu(M, A, 1, MM); } }),
-    D.doan(M, keo(M, B, 1.2), { ghi: 'Kẻ đường thẳng $MB$: $MA$, $MB$ là hai tiếp tuyến của $(O)$ đi qua $M$.', net: { mau: MT, rong: 3.5 }, sau: function (g) { g.goc(O0, B, M, { mau: MV, r: 12 }); g.doan(O0, B, { mau: MV, rong: 1.6, dut: '5 4', kyHieu: 2 }); g.kyHieu(M, B, 1, MM); } }),
-  ]);
+    D.doan(O0, cuoi, { ghi: '<b>Bước 1.</b> Từ tâm $O$ dùng thước kẻ một đường thẳng <b>nằm ngang</b> sang bên phải.', net: { mau: '#475569', rong: 2 } }),
+    D.hien(function (g) { g.diem(I, 'I', { r: 4, mau: MI, huong: [0, -1] }); }, { tg: 0.9,
+      ghi: '<b>Bước 2.</b> Trên đường thẳng nằm ngang, chọn điểm $I$ cách $O$ một khoảng <b>lớn hơn bán kính một chút</b> ($OI \\approx ' + soL(r) + '$ cm, $R = ' + soL(R) + '$ cm).' }),
+    D.doCompa(I, O0, { tg: 1.4, ghi: 'Đặt <b>mũi kim compa</b> tại $I$ (trên đường nằm ngang), mở compa để <b>đầu bút chì</b> đặt đúng tâm $O$.' }),
+    D.cung(I, r, Math.PI, 3 * Math.PI, { tg: 2.4,
+      ghi: 'Quay compa vẽ đường tròn mờ tâm $I$ bán kính $IO$. Đường tròn này cắt ở <b>3 chỗ</b>: hai điểm $A$, $B$ trên đường tròn $(O)$ và một điểm $M$ trên đường nằm ngang, ở ngoài $(O)$.',
+      net: { mau: MI, rong: 1.6, dut: '6 5' },
+      sau: function (g) { g.diem(A, 'A', { mau: MI, huong: A }); g.diem(B, 'B', { mau: MI, huong: B }); g.diem(M, 'M', { mau: MI, huong: [0.4, 1] }); } }),
+    D.doan(M, keo(M, A, 1.2), { ghi: '<b>Bước 3.</b> Dùng thước nối $M$ với $A$ và kéo dài.', net: { mau: MT, rong: 3.5 } }),
+    D.doan(M, keo(M, B, 1.2), { ghi: 'Nối $M$ với $B$ và kéo dài: $MA$, $MB$ là <b>hai tiếp tuyến</b> của $(O)$ cắt nhau tại $M$.', net: { mau: MT, rong: 3.5 } }),
+  ].concat(cacTinhChat(q, 'vì $\\widehat{OAM}$, $\\widehat{OBM}$ là góc nội tiếp chắn nửa đường tròn $(I)$')));
+}
+
+// Bước cuối chung cho hai cách vẽ: kí hiệu vuông góc và 3 tính chất
+function cacTinhChat(q, lyDo) {
+  var M = q.M, A = q.A, B = q.B, D = KhungPhang.dung;
+  function banKinh(g) { g.doan(O0, A, { mau: MV, rong: 2 }); g.doan(O0, B, { mau: MV, rong: 2 }); }
+  return [
+    D.hien(function (g) { banKinh(g); g.goc(O0, A, M, { mau: MV, r: 13 }); g.goc(O0, B, M, { mau: MV, r: 13 }); }, { tg: 1.6,
+      ghi: '<b>Kí hiệu vuông góc:</b> $MA \\perp OA$ tại $A$, $MB \\perp OB$ tại $B$ (' + lyDo + ').' }),
+    D.hien(function (g) { g.doan(M, A, { mau: MM, rong: 4.5, kyHieu: 1 }); g.doan(M, B, { mau: MM, rong: 4.5, kyHieu: 1 }); }, { tg: 1.6,
+      ghi: '<b>Tính chất 1.</b> $MA = MB$ (điểm $M$ cách đều hai tiếp điểm).' }),
+    D.hien(function (g) { g.goc(A, M, O0, { mau: MP, r: 48, doMoTo: 0.35 }); g.goc(O0, M, B, { mau: MP, r: 48, doMoTo: 0.35 }); }, { tg: 1.6,
+      ghi: '<b>Tính chất 2.</b> $MO$ là tia phân giác của $\\widehat{AMB}$: $\\widehat{AMO} = \\widehat{BMO}$.' }),
+    D.hien(function (g) { g.goc(A, O0, M, { mau: MQ, r: 34, kyHieu: 2, doMoTo: 0.35 }); g.goc(M, O0, B, { mau: MQ, r: 34, kyHieu: 2, doMoTo: 0.35 }); }, { tg: 1.8,
+      ghi: '<b>Tính chất 3.</b> $OM$ là tia phân giác của $\\widehat{AOB}$: $\\widehat{AOM} = \\widehat{BOM}$.' }),
+  ];
+}
+
+// Vẽ hai tiếp tuyến chỉ bằng thước thẳng
+function kbThuoc(P) {
+  var q = tt(P.M), M = q.M, A = q.A, B = q.B, D = KhungPhang.dung, L = q.dai + 1.4;
+  var aA = Math.atan2(A[1] - M[1], A[0] - M[0]), aB = Math.atan2(B[1] - M[1], B[0] - M[0]), lech = 0.4;
+  function theoGoc(a) { return [M[0] + L * Math.cos(a), M[1] + L * Math.sin(a)]; }
+  function chamM(g) { g.diem(M, 'M', { huong: [0.4, 1] }); }
+  // Thước xoay quanh M (phía ngoài đường tròn) cho tới khi mép thước vừa chạm đường tròn
+  function xoayThuoc(a, huong, ben, ghi) {
+    return { tg: 1.6, ghi: ghi, cu: function (g, e) { g.thuoc(M, theoGoc(a + huong * lech * (1 - e)), { ben: ben }); } };
+  }
+  // Đặt thước đi qua O, vuông góc với tiếp tuyến; chấm tiếp điểm T
+  function timTiepDiem(T, ten, ben, ghi) {
+    var u = H.nhan(H.tru(T, O0), 1 / R), cuoi = H.cong(T, H.nhan(u, 0.9)), v = [-u[1], u[0]], d0 = 1.2;
+    var cham = function (g) { g.diem(T, ten, { huong: T }); };
+    return { tg: 2.2, ghi: ghi,
+      ve: function (g, e) { if (e > 0.6) { g.goc(O0, T, M, { mau: MV, r: 13 }); cham(g); } },
+      xong: cham,
+      cu: function (g, e) {
+        var k = Math.max(0, 1 - e / 0.5), d = H.nhan(v, d0 * k * -ben);
+        g.thuoc(H.cong(O0, d), H.cong(cuoi, d), { ben: ben, doMo: 0.4 + 0.55 * Math.min(1, e / 0.5) });
+        if (e > 0.6) g.but(T);
+      } };
+  }
+  return KhungPhang.kichBan([
+    { tg: 1, ghi: '<b>Bước 1.</b> Chấm một điểm $M$ ở ngoài đường tròn $(O)$.', ve: chamM, xong: chamM, cu: function (g) { g.but(M); } },
+    xoayThuoc(aA, -1, 1, '<b>Bước 2.</b> Đặt mép thước đi qua $M$, xoay thước từ từ về phía đường tròn cho tới khi mép thước <b>vừa chạm</b> đường tròn (chỉ chạm một điểm).'),
+    D.doan(M, keo(M, A, 1.2), { ben: 1, ghi: 'Giữ thước, kẻ đường thẳng đi qua $M$ sát mép thước: đường thẳng này <b>tiếp xúc</b> với $(O)$.', net: { mau: MT, rong: 3.5 } }),
+    xoayThuoc(aB, 1, -1, 'Làm tương tự ở phía dưới: xoay thước quanh $M$ tới khi mép thước vừa chạm đường tròn.'),
+    D.doan(M, keo(M, B, 1.2), { ghi: 'Kẻ đường thẳng thứ hai: được <b>hai tiếp tuyến</b> của $(O)$ cùng đi qua $M$.', net: { mau: MT, rong: 3.5 } }),
+    timTiepDiem(A, 'A', -1, '<b>Bước 3.</b> Xác định tiếp điểm: đặt thước đi qua tâm $O$ và <b>vuông góc</b> với tiếp tuyến thứ nhất. Chỗ mép thước gặp tiếp tuyến là tiếp điểm — chấm điểm $A$.'),
+    timTiepDiem(B, 'B', 1, 'Đặt thước đi qua $O$ và vuông góc với tiếp tuyến thứ hai, chấm tiếp điểm $B$.'),
+  ].concat(cacTinhChat(q, 'tiếp tuyến vuông góc với bán kính đi qua tiếp điểm').map(function (b, i) {
+    if (i === 0) b.ghi = '<b>Bước 4.</b> ' + b.ghi;
+    return b;
+  })));
 }
 
 KhungPhang.tao({
-  ten: 'Tiếp tuyến của đường tròn',
+  ten: 'Tính chất hai tiếp tuyến cắt nhau',
   lop: 9,
-  diem: { M: [6, 1] },
+  diem: { M: [6, 0] },
+  nhapGoc: [
+    { id: 'AMB', ten: '\\widehat{AMB}', min: 5, max: 110, lay: function (P) { var q = tt(P.M); return H.gocDo(q.A, q.M, q.B); },
+      dat: function (P, ts, d) { P.M = [R / Math.sin(d * Math.PI / 360), 0]; } },
+    { id: 'AOB', ten: '\\widehat{AOB}', min: 70, max: 175, lamTron: false, lay: function (P) { var q = tt(P.M); return H.gocDo(q.A, O0, q.B); },
+      dat: function (P, ts, d) { P.M = [R / Math.sin((180 - d) * Math.PI / 360), 0]; } },
+  ],
   buocLuoi: 0.5,
-  rangBuoc: { M: function (p) { var d = H.dai(p, O0); return d < R + 0.5 ? null : p; } },
+  rangBuoc: { M: function (p) { return [Math.max(R + 0.5, p[0]), 0]; } },   // M chạy trên đường nằm ngang, ở ngoài (O)
   batDau: ['vg'],
 
   lamSang: [
@@ -66,14 +131,17 @@ KhungPhang.tao({
     { id: 'pgO', nhan: 'OM là phân giác góc AOB', mau: MQ, ghiChu: 'Tia $OM$ là <b>tia phân giác</b> của góc tạo bởi hai bán kính đi qua hai tiếp điểm: $\\widehat{AOM} = \\widehat{BOM}$.' },
   ],
   hoatHinh: [
-    { id: 've', nhan: 'Vẽ tiếp tuyến qua M', anDiem: true,
+    { id: 've', nhan: 'Vẽ bằng thước và compa', anDiem: true,
       thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } },
+    { id: 'thuoc', nhan: 'Vẽ bằng thước thẳng', anDiem: true,
+      thoiGian: function (P) { return kbThuoc(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbThuoc(P).ghi(t); } },
   ],
 
   ve: function (g, P) {
-    var q = tt(P.M), M = q.M, A = q.A, B = q.B, tv = g.hoat('ve');
+    var q = tt(P.M), M = q.M, A = q.A, B = q.B, tv = g.hoat('ve'), tth = g.hoat('thuoc');
     g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.2, rong: 2.8 });
-    if (tv !== null) { kbVe(P).ve(g, tv); g.diem(M, 'M', { huong: H.nhan(M, 1) }); g.diem(O0, 'O', { r: 4, huong: H.nhan(M, -1) }); return; }
+    if (tv !== null) { kbVe(P).ve(g, tv); g.diem(O0, 'O', { r: 4, huong: [-0.4, 1] }); return; }
+    if (tth !== null) { kbThuoc(P).ve(g, tth); g.diem(O0, 'O', { r: 4, huong: [-0.4, 1] }); return; }
     g.doan(M, keo(M, A, 1.2), { mau: MT, rong: 3 }); g.doan(M, keo(M, B, 1.2), { mau: MT, rong: 3 });
     if (g.bat('MA')) { g.doan(M, A, { mau: MM, rong: 5, kyHieu: 1 }); g.doan(M, B, { mau: MM, rong: 5, kyHieu: 1 }); if (g.hienSo()) g.nhanDo(M, A, so(q.dai), { mau: MM }); }
     var oVg = g.bat('vg'), oPO = g.bat('pgO');
@@ -83,14 +151,14 @@ KhungPhang.tao({
     if (g.bat('pgM')) { g.goc(A, M, O0, { mau: MP, r: 48, doMoTo: 0.35 }); g.goc(O0, M, B, { mau: MP, r: 48, doMoTo: 0.35 }); }
     if (oPO) { g.goc(A, O0, M, { mau: MQ, r: 34, kyHieu: 2, doMoTo: 0.35 }); g.goc(M, O0, B, { mau: MQ, r: 34, kyHieu: 2, doMoTo: 0.35 }); }
     g.diem(A, 'A', { huong: A }); g.diem(B, 'B', { huong: B });
-    g.diem(M, 'M', { huong: H.nhan(M, 1) }); g.diem(O0, 'O', { r: 4, huong: H.nhan(M, -1) });
+    g.diem(M, 'M', { huong: [0.4, 1] }); g.diem(O0, 'O', { r: 4, huong: [-0.4, 1] });
   },
   nhanXet: function (P) {
     var q = tt(P.M);
     return '$OM = ' + soL(q.d) + '$; $MA = MB = \\sqrt{OM^2 - R^2} \\approx \\mathbf{' + soL(q.dai) + '}$<br>$\\widehat{AMB} \\approx ' + soL(H.gocDo(q.A, q.M, q.B), 1) + '^\\circ$, $\\widehat{AOB} \\approx ' + soL(H.gocDo(q.A, O0, q.B), 1) + '^\\circ$ (tổng $180^\\circ$)';
   },
   congThuc: function (P, ts, C) { return [{ id: 'MA', ten: 'Tính chất hai tiếp tuyến cắt nhau', bt: '$' + C.m('MA', 'MA = MB') + '$; $' + C.m('pgM', '\\widehat{AMO} = \\widehat{BMO}') + '$; $' + C.m('pgO', '\\widehat{AOM} = \\widehat{BOM}') + '$' }]; },
-  khungNhin: function (P) { return [[-R - 0.5, -R - 0.5], [R + 0.5, R + 0.5], P.M]; },
+  khungNhin: function (P) { return [[-R - 0.5, -R - 0.5], [R + 0.5, R + 0.5], [P.M[0] + 1.4, 0]]; },
 });
 </script>
 </body>

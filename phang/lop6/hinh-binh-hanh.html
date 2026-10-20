@@ -14,6 +14,7 @@
 <div id="thanh-tren"></div>
 <div id="mo-hinh"></div>
 
+<script src="../../chung/thanh-chia.js"></script>
 <script src="../../chung/khung-phang.js"></script>
 <script>
 /* =====================================================================
@@ -68,6 +69,10 @@ KhungPhang.tao({
   ten: 'Hình bình hành',
   lop: 6,
   diem: { A: [0, 0], B: [5, 0], D: [2, 3] },
+  nhapGoc: [
+    { id: 'A', ten: '\\widehat{A}', max: 175, lay: function (P) { return goc(P).A; }, dat: function (P, ts, d) { P.D = KhungPhang.goc.quay(P.A, P.B, P.D, d); } },
+    { id: 'B', ten: '\\widehat{B}', min: 5, max: 175, lamTron: false, lay: function (P) { return goc(P).B; }, dat: function (P, ts, d) { P.D = KhungPhang.goc.quay(P.A, P.B, P.D, 180 - d); } },
+  ],
   coDinh: ['A'],
   buocLuoi: 0.5,
   rangBuoc: {

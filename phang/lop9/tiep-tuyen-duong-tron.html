@@ -21,12 +21,12 @@
    TIẾP TUYẾN CỦA ĐƯỜNG TRÒN — Toán 9
    Tính chất: tiếp tuyến vuông góc với bán kính tại tiếp điểm;
    khoảng cách từ tâm O đến tiếp tuyến bằng bán kính R.
-   Cách vẽ: (1) qua một điểm A trên đường tròn; (2) qua một điểm M ở ngoài
-   đường tròn (bằng compa và thước, hoặc chỉ bằng thước thẳng).
+   Cách vẽ bằng thước thẳng: (1) tại một điểm A trên đường tròn;
+   (2) từ một điểm M ở ngoài đường tròn.
    ===================================================================== */
 var H = KhungPhang.H, so = KhungPhang.so, soL = KhungPhang.soL, D = KhungPhang.dung;
 var O0 = [0, 0], R = 2.5, RAD = Math.PI / 180;
-var MT = '#1E6FE0', MV = '#16A34A', MR = '#E0342F', MI = '#0D9488', MN = '#7C3AED';
+var MT = '#1E6FE0', MV = '#16A34A', MR = '#E0342F', MN = '#7C3AED';
 function diemDT(a) { return [R * Math.cos(a), R * Math.sin(a)]; }
 function lenDT(p) { var d = H.dai(p, O0); if (d < 1e-6) return null; var a = Math.round(Math.atan2(p[1], p[0]) / RAD) * RAD; return diemDT(a); }
 function laTren(P, ts) { return ts.che === 'tren'; }
@@ -55,53 +55,25 @@ function buocTinhChat(ds, ghiVg) {
   ];
 }
 
-/* ---------- Cách vẽ 1: tiếp tuyến tại A (compa và thước) ---------- */
+/* ---------- Cách vẽ 1: tiếp tuyến tại A (thước thẳng) ---------- */
 function kbTai(P) {
-  var q = tai(P.A), A = q.A, u = q.u, v = q.v, r1 = 1.1, r2 = 1.9;
-  var E = H.cong(A, H.nhan(u, -r1)), F = H.cong(A, H.nhan(u, r1)), h = Math.sqrt(r2 * r2 - r1 * r1);
-  var P1 = H.cong(A, H.nhan(v, h)), P2 = H.cong(A, H.nhan(v, -h));
-  var aE = Math.atan2(u[1], u[0]) + Math.PI, aF = aE - Math.PI;
-  var bE1 = H.huong(E, P1), bE2 = H.huong(E, P2), bF1 = H.huong(F, P1), bF2 = H.huong(F, P2), w = 0.32;
-  var chamEF = function (g) { g.diem(E, 'E', { r: 3.5, mau: MI, huong: H.cong(H.nhan(v, -1), H.nhan(u, -0.3)) }); g.diem(F, 'F', { r: 3.5, mau: MI, huong: H.cong(H.nhan(v, -1), H.nhan(u, 0.3)) }); };
-  var net = { mau: MI, rong: 1.8 };
+  var q = tai(P.A), A = q.A, u = q.u, v = q.v;
+  // thân thước nằm phía ngoài đường tròn (không che hình)
+  var BEN = 1;
   return KhungPhang.kichBan([
-    D.hien(function (g) { g.diem(A, 'A', { huong: H.cong(u, H.nhan(v, -0.6)) }); }, { tg: 0.8, ghi: '<b>Bước 1.</b> Lấy điểm $A$ trên đường tròn $(O)$.' }),
-    D.doan(O0, H.cong(A, H.nhan(u, 2)), { ghi: 'Dùng thước kẻ <b>tia $OA$</b> (kéo dài bán kính $OA$ ra ngoài đường tròn).', net: { mau: '#475569', rong: 2 } }),
-    D.doCompa(A, E, { ghi: '<b>Bước 2.</b> Đặt mũi kim compa tại $A$, mở compa một khoảng nhỏ.' }),
-    D.cung(A, r1, aE - 0.3, aE + 0.3, { tg: 0.8, ghi: 'Vạch cung cắt tia $OA$ tại $E$ (phía trong đường tròn)…', net: net }),
-    D.xoayCompa(A, r1, aE + 0.3, aF - 0.3, { tg: 0.7 }),
-    D.cung(A, r1, aF - 0.3, aF + 0.3, { tg: 0.8, ghi: '…và tại $F$ (phía ngoài): $AE = AF$.', net: net, sau: chamEF }),
-    D.chuyenCompa(A, H.cong(A, H.nhan(u, r1)), E, H.cong(E, [r2 * Math.cos(bE1), r2 * Math.sin(bE1)]), { ghi: '<b>Bước 3.</b> Mở compa rộng hơn $AE$, đặt mũi kim tại $E$.' }),
-    D.cung(E, r2, bE1 - w, bE1 + w, { tg: 0.7, ghi: 'Vạch một cung về phía trên…', net: net }),
-    D.xoayCompa(E, r2, bE1 + w, bE2 - w, { tg: 0.6 }),
-    D.cung(E, r2, bE2 - w, bE2 + w, { tg: 0.7, ghi: '…và một cung về phía dưới.', net: net }),
-    D.chuyenCompa(E, H.cong(E, [r2 * Math.cos(bE2), r2 * Math.sin(bE2)]), F, H.cong(F, [r2 * Math.cos(bF1), r2 * Math.sin(bF1)]), { ghi: 'Giữ nguyên độ mở, chuyển mũi kim sang $F$.' }),
-    D.cung(F, r2, bF1 - w, bF1 + w, { tg: 0.7, ghi: 'Vạch hai cung cắt hai cung trước tại $P$ và $Q$.', net: net }),
-    D.xoayCompa(F, r2, bF1 + w, bF2 - w, { tg: 0.6 }),
-    D.cung(F, r2, bF2 - w, bF2 + w, { tg: 0.7, net: net,
-      sau: function (g) { g.diem(P1, 'P', { r: 3.5, mau: MI, huong: v }); g.diem(P2, 'Q', { r: 3.5, mau: MI, huong: H.nhan(v, -1) }); } }),
-    D.doan(q.d2, q.d1, { tg: 1.4, ghi: '<b>Bước 4.</b> Dùng thước kẻ đường thẳng $PQ$ (đi qua $A$): đó là <b>tiếp tuyến</b> $d$ của $(O)$ tại $A$.', net: { mau: MT, rong: 3.5 },
-      sau: function (g) { g.chu(H.cong(q.d1, H.nhan(v, 0.35)), 'd', { mau: MT, nghieng: true }); } }),
-  ].concat(buocTinhChat([{ T: A, X: q.d1, ten: 'A' }], '<b>Kí hiệu vuông góc:</b> $d \\perp OA$ tại $A$ (vì $PQ$ là đường trung trực của $EF$).')));
+    D.hien(function (g) { g.diem(A, 'A', { huong: H.cong(H.nhan(u, -0.5), H.nhan(v, -1)) }); }, { tg: 0.8, ghi: '<b>Bước 1.</b> Lấy điểm $A$ trên đường tròn $(O)$.' }),
+    D.doan(O0, A, { ghi: '<b>Bước 2.</b> Dùng thước kẻ <b>bán kính $OA$</b>.', net: { mau: MV, rong: 2.4 } }),
+    { tg: 2, ghi: '<b>Bước 3.</b> Đặt thước sao cho mép thước <b>đi qua $A$</b> và <b>vuông góc với $OA$</b> (thước chỉ chạm đường tròn tại $A$).',
+      ve: function (g, e) { if (e > 0.6) g.goc(O0, A, q.d1, { mau: MV, r: 13 }); },
+      cu: function (g, e) { var k = 1 - H.doan(e, 0, 0.6), d = H.nhan(u, 1.2 * k); g.thuoc(H.cong(q.d2, d), H.cong(q.d1, d), { ben: BEN, doMo: 0.4 + 0.55 * Math.min(1, e / 0.6) }); } },
+    { tg: 1.4, ghi: 'Giữ thước, kẻ đường thẳng $d$ theo mép thước: $d$ là <b>tiếp tuyến</b> của $(O)$ tại $A$.',
+      ve: function (g, e) { g.doan(q.d2, H.lerp(q.d2, q.d1, e), { mau: MT, rong: 3.5 }); },
+      xong: function (g) { g.doan(q.d2, q.d1, { mau: MT, rong: 3.5 }); g.chu(H.cong(q.d1, H.nhan(v, 0.35)), 'd', { mau: MT, nghieng: true }); },
+      cu: function (g, e) { g.thuoc(q.d2, q.d1, { ben: BEN }); g.but(H.lerp(q.d2, q.d1, e)); } },
+  ].concat(buocTinhChat([{ T: A, X: q.d1, ten: 'A' }], '<b>Bước 4. Kí hiệu vuông góc:</b> $d \\perp OA$ tại $A$ (đường thẳng đi qua $A$ và vuông góc với bán kính $OA$ là tiếp tuyến).')));
 }
 
-/* ---------- Cách vẽ 2a: từ M ở ngoài, bằng compa và thước ---------- */
-function kbCompa(P) {
-  var q = tu(P.M), M = q.M, A = q.A, B = q.B, I = H.trung(O0, M), r = q.d / 2;
-  return KhungPhang.kichBan([
-    D.hien(function (g) { g.diem(M, 'M', { huong: [0.4, 1] }); }, { tg: 0.8, ghi: '<b>Bước 1.</b> Điểm $M$ nằm ngoài đường tròn $(O)$.' }),
-    D.doan(O0, [M[0] + 1.3, 0], { ghi: 'Từ tâm $O$ dùng thước kẻ đường thẳng <b>nằm ngang</b> đi qua $M$.', net: { mau: '#475569', rong: 2 } }),
-    D.hien(function (g) { g.diem(I, 'I', { r: 4, mau: MI, huong: [0, -1] }); }, { tg: 0.9, ghi: '<b>Bước 2.</b> Lấy trung điểm $I$ của $OM$ ($OI = IM \\approx ' + soL(r) + '$ cm, lớn hơn bán kính một chút).' }),
-    D.doCompa(I, O0, { tg: 1.3, ghi: 'Đặt <b>mũi kim compa</b> tại $I$, <b>đầu bút chì</b> đặt đúng tâm $O$.' }),
-    D.cung(I, r, Math.PI, 3 * Math.PI, { tg: 2.4, ghi: 'Quay compa vẽ đường tròn mờ tâm $I$ bán kính $IO$ (đi qua $O$ và $M$). Đường tròn này cắt $(O)$ tại hai điểm $A$ và $B$.',
-      net: { mau: MI, rong: 1.6, dut: '6 5' }, sau: function (g) { g.diem(A, 'A', { mau: MI, huong: A }); g.diem(B, 'B', { mau: MI, huong: B }); } }),
-    D.doan(M, keo(M, A, 1.2), { ghi: '<b>Bước 3.</b> Dùng thước nối $M$ với $A$ và kéo dài: $MA$ là tiếp tuyến.', net: { mau: MT, rong: 3.5 } }),
-    D.doan(M, keo(M, B, 1.2), { ghi: 'Nối $M$ với $B$: từ $M$ kẻ được <b>hai tiếp tuyến</b> $MA$, $MB$.', net: { mau: MT, rong: 3.5 } }),
-  ].concat(buocTinhChat([{ T: A, X: M, ten: 'A' }, { T: B, X: M, ten: 'B' }],
-    '<b>Kí hiệu vuông góc:</b> $MA \\perp OA$, $MB \\perp OB$ (vì $\\widehat{OAM}$, $\\widehat{OBM}$ là góc nội tiếp chắn nửa đường tròn $(I)$).')));
-}
-
-/* ---------- Cách vẽ 2b: từ M ở ngoài, chỉ bằng thước thẳng ---------- */
+/* ---------- Cách vẽ 2: từ M ở ngoài, bằng thước thẳng ---------- */
 function kbThuoc(P) {
   var q = tu(P.M), M = q.M, A = q.A, B = q.B, L = q.dai + 1.4, lech = 0.4;
   var aA = H.huong(M, A), aB = H.huong(M, B);
@@ -153,20 +125,17 @@ KhungPhang.tao({
       ghiChu: 'Nếu đường thẳng $d$ <b>đi qua điểm $A$ của đường tròn</b> và <b>vuông góc với bán kính $OA$</b> thì $d$ là tiếp tuyến của đường tròn tại $A$.' },
   ],
   hoatHinh: [
-    { id: 'tai', nhan: 'Vẽ tiếp tuyến tại A (compa và thước)', anDiem: true, hien: laTren,
+    { id: 'tai', nhan: 'Vẽ tiếp tuyến tại A (thước thẳng)', anDiem: true, hien: laTren,
       thoiGian: function (P) { return kbTai(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbTai(P).ghi(t); } },
-    { id: 'compa', nhan: 'Vẽ tiếp tuyến từ M (compa và thước)', anDiem: true, hien: laNgoai,
-      thoiGian: function (P) { return kbCompa(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbCompa(P).ghi(t); } },
-    { id: 'thuoc', nhan: 'Vẽ tiếp tuyến từ M (chỉ bằng thước thẳng)', anDiem: true, hien: laNgoai,
+    { id: 'thuoc', nhan: 'Vẽ tiếp tuyến từ M (thước thẳng)', anDiem: true, hien: laNgoai,
       thoiGian: function (P) { return kbThuoc(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbThuoc(P).ghi(t); } },
   ],
 
   ve: function (g, P, ts) {
     g.duongTron(O0, R, { to: '#93C5FD', doMoTo: 0.2, rong: 2.8 });
     var nhanO = function () { g.diem(O0, 'O', { r: 4, huong: laTren(P, ts) ? H.nhan(P.A, -1) : [-0.4, 1] }); };
-    var ht = g.hoat('tai'), hc = g.hoat('compa'), hth = g.hoat('thuoc');
+    var ht = g.hoat('tai'), hth = g.hoat('thuoc');
     if (ht !== null) { kbTai(P).ve(g, ht); nhanO(); return; }
-    if (hc !== null) { kbCompa(P).ve(g, hc); nhanO(); return; }
     if (hth !== null) { kbThuoc(P).ve(g, hth); nhanO(); return; }
 
     var ds;   // các tiếp tuyến: { T: tiếp điểm, X, Y: hai đầu đoạn vẽ, ten }

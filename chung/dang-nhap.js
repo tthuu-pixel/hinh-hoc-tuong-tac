@@ -81,25 +81,32 @@
         ];
         ghi(KHOA_THU, ds);
       }
+      // tài khoản cũ chưa có hạn sử dụng: đặt 12 tháng (trừ quản trị)
+      var doi = false;
+      ds.forEach(function (t) { if (t.hetHanSD === undefined) { t.hetHanSD = t.vaiTro === 'admin' ? '' : new Date(Date.now() + 365 * 864e5).toISOString(); doi = true; } });
+      if (doi) ghi(KHOA_THU, ds);
       return ds;
     },
     luu: function (ds) { ghi(KHOA_THU, ds); },
     congKhai: function (tk) {
-      return { ten: tk.ten, hoTen: tk.hoTen, vaiTro: tk.vaiTro, lop: tk.lop, trangThai: tk.trangThai, ngayTao: tk.ngayTao, lanCuoi: tk.lanCuoi, soLan: tk.soLan };
+      return { ten: tk.ten, hoTen: tk.hoTen, vaiTro: tk.vaiTro, lop: tk.lop, trangThai: tk.trangThai, ngayTao: tk.ngayTao, lanCuoi: tk.lanCuoi, soLan: tk.soLan, hetHanSD: tk.hetHanSD || '' };
     },
     xuLy: function (hd, d) {
       var ds = this.ds();
       var tim = function (ten) { return ds.filter(function (t) { return t.ten === ten; })[0]; };
       var laAdmin = function () { var p = Phien.lay(); return p && p.vaiTro === 'admin'; };
+      var hetHan = function (t) { return t && t.vaiTro !== 'admin' && t.hetHanSD && new Date(t.hetHanSD).getTime() < Date.now(); };
+      var MSG_HET = 'Tài khoản đã hết thời hạn sử dụng. Hãy liên hệ quản trị viên để gia hạn.';
       switch (hd) {
         case 'dangNhap': {
           var tk = tim(String(d.ten || '').trim().toLowerCase());
           if (!tk || tk.mk !== d.matKhau) return { ok: false, loi: 'Sai tên đăng nhập hoặc mật khẩu.' };
           if (tk.trangThai === 'khoa') return { ok: false, loi: 'Tài khoản đang bị khoá. Hãy liên hệ quản trị viên.' };
+          if (hetHan(tk)) return { ok: false, hetHanSD: true, loi: MSG_HET };
           tk.lanCuoi = new Date().toISOString(); tk.soLan = (tk.soLan || 0) + 1; this.luu(ds);
           return { ok: true, token: 'thu-' + Math.random().toString(36).slice(2), hoTen: tk.hoTen, vaiTro: tk.vaiTro, lop: tk.lop, ten: tk.ten };
         }
-        case 'kiemTra': return { ok: true };
+        case 'kiemTra': { var pk = Phien.lay(), tkk = pk && tim(pk.ten); if (hetHan(tkk)) return { ok: false, hetPhien: true, hetHanSD: true, loi: MSG_HET }; return { ok: true }; }
         case 'dangXuat': return { ok: true };
         case 'doiMatKhau': {
           var p = Phien.lay(); var t2 = p && tim(p.ten);
@@ -111,13 +118,14 @@
           return { ok: true, ds: ds.map(this.congKhai) };
         case 'themTaiKhoan': {
           if (!laAdmin()) return { ok: false, loi: 'Không có quyền.' };
-          var ketQua = [], loi = [];
+          var ketQua = [], loi = [], soNgay = Math.round(Number(d.soNgay)) > 0 ? Math.min(Math.round(Number(d.soNgay)), 3650) : 365;
+          var hanMoi = new Date(Date.now() + soNgay * 864e5).toISOString();
           (d.ds || []).forEach(function (m) {
             var ten = String(m.ten || '').trim().toLowerCase();
             if (!/^[a-z0-9._-]{2,40}$/.test(ten)) { loi.push(ten + ': tên không hợp lệ'); return; }
             if (tim(ten)) { loi.push(ten + ': đã tồn tại'); return; }
             var mk = m.matKhau || taoMatKhau();
-            ds.push({ ten: ten, hoTen: m.hoTen || ten, vaiTro: m.vaiTro || 'hocsinh', lop: m.lop || '', mk: mk, trangThai: 'hoat-dong', ngayTao: new Date().toISOString(), lanCuoi: '', soLan: 0 });
+            ds.push({ ten: ten, hoTen: m.hoTen || ten, vaiTro: m.vaiTro || 'hocsinh', lop: m.lop || '', mk: mk, trangThai: 'hoat-dong', ngayTao: new Date().toISOString(), lanCuoi: '', soLan: 0, hetHanSD: (m.vaiTro === 'admin' ? '' : hanMoi) });
             ketQua.push({ ten: ten, hoTen: m.hoTen || ten, matKhau: mk });
           });
           this.luu(ds); return { ok: true, daTao: ketQua, loi: loi };
@@ -127,6 +135,19 @@
           var t3 = tim(d.ten); if (!t3) return { ok: false, loi: 'Không tìm thấy tài khoản.' };
           ['hoTen', 'vaiTro', 'lop', 'trangThai'].forEach(function (k) { if (d[k] !== undefined) t3[k] = d[k]; });
           this.luu(ds); return { ok: true };
+        }
+        case 'giaHan': {
+          if (!laAdmin()) return { ok: false, loi: 'Không có quyền.' };
+          var sn = Math.round(Number(d.soNgay)); if (!(sn > 0) && !d.khongGioiHan) return { ok: false, loi: 'Số ngày phải là số nguyên dương.' };
+          sn = Math.min(sn, 3650);
+          var dsTen = d.ds && d.ds.length ? d.ds : [d.ten], kqGH = [], bay = Date.now();
+          dsTen.forEach(function (ten) {
+            var t = tim(ten); if (!t || t.vaiTro === 'admin') return;
+            var cu = t.hetHanSD ? new Date(t.hetHanSD).getTime() : 0;
+            t.hetHanSD = d.khongGioiHan ? '' : new Date((cu > bay ? cu : bay) + sn * 864e5).toISOString();
+            kqGH.push({ ten: t.ten, hetHanSD: t.hetHanSD });
+          });
+          this.luu(ds); return { ok: true, ds: kqGH };
         }
         case 'datLaiMatKhau': {
           if (!laAdmin()) return { ok: false, loi: 'Không có quyền.' };

@@ -45,7 +45,7 @@
   function tao(cfg) {
     document.body.classList.add('trang-mo-hinh');
     document.title = cfg.ten + ' · ' + ((window.CAU_HINH || {}).TEN_NGAN || (window.CAU_HINH || {}).TEN_SAN_PHAM || '');
-    if (window.GiaoDien) GiaoDien.thanhTren({ quayLai: '../thu-vien.html' });
+    if (window.GiaoDien) GiaoDien.thanhTren(cfg.quayLai ? { quayLai: cfg.quayLai.duongDan, nhanQuayLai: cfg.quayLai.nhan } : { quayLai: '../thu-vien.html' });
 
     var ts = {}; cfg.thamSo.forEach(function (p) { ts[p.khoa] = p.gt; });
     var TT = { cach: 0, goc: 0, chay: false, toc: 'vua', sang: null, ten: true, quet: true, soDo: true, bong: true, xongBao: false };

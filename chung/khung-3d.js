@@ -132,6 +132,7 @@
     xoay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>',
     datLai: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
     toan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    phepQuay: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20" stroke-dasharray="2.5 2.5"/><path d="M12 7h6v10h-6"/><path d="M5 5.5a8 2.6 0 0 1 14 0"/><path d="M19 5.5l-2.6-1.4M19 5.5l-2.4 1.7"/></svg>',
   };
 
   /* =====================================================================
@@ -952,6 +953,9 @@
 
     function veBang() {
       var h = '';
+      // Tạo hình bằng phép quay (mở mô hình quay hình phẳng quanh một cạnh cố định)
+      if (cfg.phepQuay) h += muc('Tạo hình bằng phép quay', '<p style="margin:0 0 10px;font-size:15px">' + cfg.phepQuay.moTa + '</p>' +
+        '<a class="nut chinh" style="width:100%;justify-content:center" href="' + cfg.phepQuay.duongDan + '">' + ICON.phepQuay + ' ' + thoat(cfg.phepQuay.nhan) + '</a>');
       h += muc('Kích thước', cfg.thamSo.map(function (p) {
         var mau = p.mau || 'var(--chinh)';
         return '<div class="tham-so" style="--mau:' + mau + '"><div class="dong"><span>' + p.nhan + '</span>' +
@@ -989,6 +993,7 @@
         '<label class="cong-tac">Lưới nền <input type="checkbox" id="hien-luoi" checked></label>' +
         '<label class="cong-tac">Số đo <input type="checkbox" id="hien-so" checked></label>');
       bang.innerHTML = h;
+      if (cfg.phepQuay && window.Latex) window.Latex.ve(bang.querySelector('.muc'));
       ganSuKienBang();
     }
 
@@ -1061,7 +1066,8 @@
         nut('phong', 'phong', 'Phóng to', 'Phóng to') + nut('thu', 'thu', 'Thu nhỏ', 'Thu nhỏ') + '<span class="ngan"></span>' +
         nut('truoc', 'truoc', 'Trước', 'Nhìn từ phía trước') + nut('tren', 'tren', 'Trên', 'Nhìn từ trên xuống') +
         nut('ben', 'ben', 'Bên', 'Nhìn từ bên phải') + nut('cheo', 'cheo', 'Chéo', 'Góc nhìn như hình vẽ trong SGK') + '<span class="ngan"></span>' +
-        nut('xoay', 'xoay', 'Tự xoay', 'Tự động xoay chậm') + nut('datlai', 'datLai', 'Đặt lại', 'Đưa hình về ban đầu') + nut('toan', 'toan', 'Toàn MH', 'Toàn màn hình');
+        nut('xoay', 'xoay', 'Tự xoay', 'Tự động xoay chậm') + nut('datlai', 'datLai', 'Đặt lại', 'Đưa hình về ban đầu') + nut('toan', 'toan', 'Toàn MH', 'Toàn màn hình') +
+        (cfg.phepQuay ? '<span class="ngan"></span>' + nut('phepquay', 'phepQuay', 'Phép quay', cfg.phepQuay.nhan) : '');
       document.getElementById('cc-phong').onclick = function () { phong(0.8); };
       document.getElementById('cc-thu').onclick = function () { phong(1.25); };
       ['truoc', 'tren', 'ben', 'cheo'].forEach(function (h) { document.getElementById('cc-' + h).onclick = function () { nhinTheo(h); }; });
@@ -1069,6 +1075,7 @@
         dk.autoRotate = !dk.autoRotate; this.classList.toggle('bat', dk.autoRotate);
       };
       document.getElementById('cc-datlai').onclick = datLai;
+      if (cfg.phepQuay) document.getElementById('cc-phepquay').onclick = function () { location.href = cfg.phepQuay.duongDan; };
       document.getElementById('cc-toan').onclick = function () {
         var el = document.getElementById('mh');
         if (document.fullscreenElement) document.exitFullscreen();

@@ -260,7 +260,7 @@
       var el = document.getElementById('thanh-tren'); if (!el) return;
       var p = Phien.lay() || {};
       var trai = tuyChon.quayLai
-        ? '<a class="nut nho" href="' + tuyChon.quayLai + '" title="Về thư viện"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span class="ten-nd">Thư viện</span></a>'
+        ? '<a class="nut nho" href="' + tuyChon.quayLai + '" title="' + thoatHtml(tuyChon.nhanQuayLai ? 'Về ' + tuyChon.nhanQuayLai : 'Về thư viện') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span class="ten-nd">' + thoatHtml(tuyChon.nhanQuayLai || 'Thư viện') + '</span></a>'
         : '';
       el.className = 'thanh-tren';
       el.innerHTML = trai +

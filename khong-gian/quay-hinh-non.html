@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tạo hình nón bằng phép quay</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/thanh-chia.js"></script>
+<script src="../chung/quay-tao-hinh.js"></script>
+<script>
+/* =====================================================================
+   TẠO HÌNH NÓN BẰNG CÁCH QUAY TAM GIÁC VUÔNG — Toán 9
+   Quay tam giác SOA vuông tại O một vòng quanh một cạnh góc vuông cố định (SO hoặc OA) thì được một hình nón.
+   ===================================================================== */
+var M = QuayHinh.MAU, PI = Math.PI;
+QuayHinh.tao({
+  ten: 'Tạo hình nón bằng phép quay',
+  lop: 9,
+  thamSo: [
+    { khoa: 'a', nhan: 'Cạnh góc vuông SO', min: 1, max: 8, buoc: 0.5, gt: 5, mau: M.truc },
+    { khoa: 'b', nhan: 'Cạnh góc vuông OA', min: 1, max: 5, buoc: 0.5, gt: 3, mau: M.banKinh },
+  ],
+  goiYCach: 'Tam giác $SOA$ vuông tại $O$. Cạnh góc vuông cố định nằm trên trục quay và trở thành chiều cao của hình nón.',
+  cachQuay: [
+    { id: 'SO', nhan: 'Quay quanh cạnh SO', dung: function (ts) {
+      return { diem: { S: [0, ts.a], O: [0, 0], A: [ts.b, 0] }, thuTu: ['S', 'O', 'A'], r: ts.b, h: ts.a,
+               tenHinh: 'tam giác vuông $SOA$', tenTruc: 'SO', tenR: 'OA', tenL: 'SA', dinh: 'S' }; } },
+    { id: 'OA', nhan: 'Quay quanh cạnh OA', dung: function (ts) {
+      return { diem: { A: [0, ts.b], O: [0, 0], S: [ts.a, 0] }, thuTu: ['A', 'O', 'S'], r: ts.a, h: ts.b,
+               tenHinh: 'tam giác vuông $SOA$', tenTruc: 'OA', tenR: 'OS', tenL: 'SA', dinh: 'A' }; } },
+  ],
+  lamSang: [
+    { id: 'truc', nhan: 'Trục – chiều cao', ghiChu: function (i) { return 'Cạnh góc vuông $' + i.truc + '$ đứng yên, nằm trên <b>trục</b>. Độ dài $' + i.truc + ' = h = ' + i.soL(i.h) + '$ cm là <b>chiều cao</b> của hình nón; đầu mút $' + i.H.dinh + '$ là <b>đỉnh</b>.'; } },
+    { id: 'banKinh', nhan: 'Bán kính đáy', ghiChu: function (i) { return 'Cạnh góc vuông $' + i.tenR + '$ quét nên <b>đáy</b> là hình tròn tâm $O$, bán kính $r = ' + i.tenR + ' = ' + i.soL(i.r) + '$ cm.'; } },
+    { id: 'duongSinh', nhan: 'Đường sinh', ghiChu: function (i) { return 'Cạnh huyền $' + i.tenL + '$ quét nên <b>mặt xung quanh</b>. Mỗi vị trí của $' + i.tenL + '$ là một <b>đường sinh</b>: $l = \\sqrt{r^2 + h^2} \\approx ' + i.soL(i.l) + '$ cm.'; } },
+    { id: 'xq', nhan: 'Mặt xung quanh', ghiChu: function (i) { return 'Mặt xung quanh do cạnh huyền $' + i.tenL + '$ quét nên. Trải phẳng ra là một <b>hình quạt tròn</b> bán kính $l$, độ dài cung bằng chu vi đáy $2\\pi r$.'; } },
+    { id: 'day', nhan: 'Mặt đáy', ghiChu: function (i) { return 'Điểm đầu của cạnh huyền vạch nên <b>đường tròn đáy</b>; cạnh $' + i.tenR + '$ quét nên <b>hình tròn đáy</b> bán kính $r = ' + i.soL(i.r) + '$ cm.'; } },
+  ],
+  ketQua: function (i) { var d = i.H.dinh; return 'Quay ' + i.tenHinh + ' một vòng quanh cạnh góc vuông $' + i.truc + '$ cố định, ta được một <b>hình nón</b> đỉnh $' + d + '$, bán kính đáy $r = ' + i.tenR + ' = ' + i.soL(i.r) + '$ cm, chiều cao $h = ' + i.truc + ' = ' + i.soL(i.h) + '$ cm. Cạnh huyền $' + i.tenL + '$ là một <b>đường sinh</b>: $l \\approx ' + i.soL(i.l) + '$ cm.'; },
+  congThuc: function (r, h, l, n) {
+    return [
+      { ten: 'Đường sinh', bt: '$l = \\sqrt{r^2 + h^2} = \\sqrt{' + n(r) + '^2 + ' + n(h) + '^2} \\approx \\mathbf{' + n(l) + '}$ (cm)' },
+      { ten: 'Diện tích xung quanh', bt: '$S_{xq} = \\pi rl \\approx \\pi\\cdot ' + n(r) + '\\cdot ' + n(l) + ' \\approx \\mathbf{' + n(PI * r * l) + '}$ (cm²)' },
+      { ten: 'Diện tích toàn phần', bt: '$S_{tp} = \\pi rl + \\pi r^2 \\approx \\mathbf{' + n(PI * r * l + PI * r * r) + '}$ (cm²)' },
+      { ten: 'Thể tích', bt: '$V = \\dfrac{1}{3}\\pi r^2 h = \\dfrac{1}{3}\\pi\\cdot ' + n(r) + '^2\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(PI * r * r * h / 3) + '}$ (cm³)' },
+    ];
+  },
+  soSanh: [
+    { tinh: function (r, h, n) { return '$S_{xq}\\approx ' + n(PI * r * Math.hypot(r, h), 1) + '$'; } },
+    { tinh: function (r, h, n) { return '$V\\approx ' + n(PI * r * r * h / 3, 1) + '$'; } },
+  ],
+  nhanXetSoSanh: 'Cùng một tam giác vuông nhưng quay quanh hai cạnh góc vuông khác nhau thì được hai hình nón khác nhau: đường sinh vẫn là cạnh huyền (bằng nhau), còn bán kính đáy và chiều cao đổi chỗ.',
+});
+</script>
+</body>
+</html>

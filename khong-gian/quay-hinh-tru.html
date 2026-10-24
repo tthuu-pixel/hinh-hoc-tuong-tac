@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tạo hình trụ bằng phép quay</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/thanh-chia.js"></script>
+<script src="../chung/quay-tao-hinh.js"></script>
+<script>
+/* =====================================================================
+   TẠO HÌNH TRỤ BẰNG CÁCH QUAY HÌNH CHỮ NHẬT — Toán 9
+   Quay hình chữ nhật ABCD một vòng quanh một cạnh cố định (CD hoặc BC) thì được một hình trụ.
+   ===================================================================== */
+var M = QuayHinh.MAU, PI = Math.PI;
+QuayHinh.tao({
+  ten: 'Tạo hình trụ bằng phép quay',
+  lop: 9,
+  thamSo: [
+    { khoa: 'a', nhan: 'Cạnh AB = CD', min: 1, max: 8, buoc: 0.5, gt: 5, mau: M.truc },
+    { khoa: 'b', nhan: 'Cạnh AD = BC', min: 1, max: 5, buoc: 0.5, gt: 2.5, mau: M.banKinh },
+  ],
+  goiYCach: 'Cạnh cố định nằm trên trục quay và trở thành chiều cao của hình trụ.',
+  cachQuay: [
+    { id: 'CD', nhan: 'Quay quanh cạnh CD', dung: function (ts) {
+      return { diem: { A: [ts.b, 0], B: [ts.b, ts.a], C: [0, ts.a], D: [0, 0] }, thuTu: ['A', 'B', 'C', 'D'], r: ts.b, h: ts.a,
+               tenHinh: 'hình chữ nhật $ABCD$', tenTruc: 'CD', tenR: 'DA', tenR2: 'CB', tenL: 'AB' }; } },
+    { id: 'BC', nhan: 'Quay quanh cạnh BC', dung: function (ts) {
+      return { diem: { A: [ts.a, ts.b], B: [0, ts.b], C: [0, 0], D: [ts.a, 0] }, thuTu: ['A', 'B', 'C', 'D'], r: ts.a, h: ts.b,
+               tenHinh: 'hình chữ nhật $ABCD$', tenTruc: 'BC', tenR: 'CD', tenR2: 'BA', tenL: 'AD' }; } },
+  ],
+  lamSang: [
+    { id: 'truc', nhan: 'Trục – chiều cao', ghiChu: function (i) { return 'Cạnh $' + i.truc + '$ đứng yên, nằm trên <b>trục</b> của hình trụ. Độ dài $' + i.truc + ' = h = ' + i.soL(i.h) + '$ cm là <b>chiều cao</b> của hình trụ.'; } },
+    { id: 'banKinh', nhan: 'Bán kính đáy', ghiChu: function (i) { return 'Hai cạnh vuông góc với trục là $' + i.tenR + '$ và $' + i.H.tenR2 + '$. Khi quay, chúng quét nên <b>hai đáy</b>: hai hình tròn bằng nhau, bán kính $r = ' + i.tenR + ' = ' + i.soL(i.r) + '$ cm.'; } },
+    { id: 'duongSinh', nhan: 'Đường sinh', ghiChu: function (i) { return 'Cạnh $' + i.tenL + '$ song song với trục quét nên <b>mặt xung quanh</b>. Mỗi vị trí của $' + i.tenL + '$ là một <b>đường sinh</b>; đường sinh vuông góc với hai đáy và dài bằng chiều cao $h = ' + i.soL(i.h) + '$ cm.'; } },
+    { id: 'xq', nhan: 'Mặt xung quanh', ghiChu: function (i) { return 'Mặt xung quanh do cạnh $' + i.tenL + '$ quét nên. Trải phẳng ra là một hình chữ nhật dài $2\\pi r$, rộng $h$.'; } },
+    { id: 'day', nhan: 'Hai mặt đáy', ghiChu: function (i) { return 'Đầu mút của cạnh $' + i.tenL + '$ vạch nên hai <b>đường tròn đáy</b>; hai cạnh vuông góc với trục quét nên hai <b>hình tròn đáy</b> bán kính $r = ' + i.soL(i.r) + '$ cm.'; } },
+  ],
+  ketQua: function (i) { return 'Quay ' + i.tenHinh + ' một vòng quanh cạnh $' + i.truc + '$ cố định, ta được một <b>hình trụ</b> có bán kính đáy $r = ' + i.tenR + ' = ' + i.soL(i.r) + '$ cm và chiều cao $h = ' + i.truc + ' = ' + i.soL(i.h) + '$ cm. Cạnh $' + i.tenL + '$ là một <b>đường sinh</b>.'; },
+  congThuc: function (r, h, l, n) {
+    return [
+      { ten: 'Diện tích xung quanh', bt: '$S_{xq} = 2\\pi rh = 2\\pi\\cdot ' + n(r) + '\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(2 * PI * r * h) + '}$ (cm²)' },
+      { ten: 'Diện tích toàn phần', bt: '$S_{tp} = 2\\pi rh + 2\\pi r^2 \\approx \\mathbf{' + n(2 * PI * r * h + 2 * PI * r * r) + '}$ (cm²)' },
+      { ten: 'Thể tích', bt: '$V = \\pi r^2 h = \\pi\\cdot ' + n(r) + '^2\\cdot ' + n(h) + ' \\approx \\mathbf{' + n(PI * r * r * h) + '}$ (cm³)' },
+    ];
+  },
+  soSanh: [
+    { tinh: function (r, h, n) { return '$S_{xq}\\approx ' + n(2 * PI * r * h, 1) + '$'; } },
+    { tinh: function (r, h, n) { return '$V\\approx ' + n(PI * r * r * h, 1) + '$'; } },
+  ],
+  nhanXetSoSanh: 'Cùng một hình chữ nhật nhưng quay quanh hai cạnh khác nhau thì bán kính đáy và chiều cao đổi chỗ cho nhau: hai hình trụ có cùng diện tích xung quanh nhưng thể tích khác nhau.',
+});
+</script>
+</body>
+</html>

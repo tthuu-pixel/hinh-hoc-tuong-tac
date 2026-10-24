@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tạo hình cầu bằng phép quay</title>
+<link rel="stylesheet" href="../chung/giao-dien.css">
+<link rel="stylesheet" href="../chung/khung-3d.css">
+<script src="../chung/cau-hinh.js"></script>
+<script src="../chung/dang-nhap.js" data-goc="../"></script>
+</head>
+<body>
+<div id="thanh-tren"></div>
+<div id="mo-hinh"></div>
+
+<script src="../thu-vien-ngoai/three-bundle.min.js"></script>
+<script src="../chung/thanh-chia.js"></script>
+<script src="../chung/quay-tao-hinh.js"></script>
+<script>
+/* =====================================================================
+   TẠO HÌNH CẦU BẰNG CÁCH QUAY NỬA HÌNH TRÒN — Toán 9
+   Quay nửa hình tròn tâm O, đường kính AB một vòng quanh đường kính AB cố định thì được một hình cầu.
+   ===================================================================== */
+var M = QuayHinh.MAU, PI = Math.PI, so = QuayHinh.so;
+QuayHinh.tao({
+  ten: 'Tạo hình cầu bằng phép quay',
+  lop: 9,
+  thamSo: [
+    { khoa: 'R', nhan: 'Bán kính R', min: 1, max: 4, buoc: 0.5, gt: 2.5, mau: M.banKinh },
+  ],
+  goiYCach: 'Đường kính $AB$ của nửa hình tròn nằm trên trục quay và đứng yên.',
+  cachQuay: [
+    { id: 'AB', nhan: 'Quay quanh đường kính AB', dung: function (ts) {
+      var R = ts.R;
+      return { diem: { A: [0, 0], B: [0, 2 * R], O: [0, R], M: [R, R] }, thuTu: ['A', 'B'], cung: { BA: { tam: [0, R] } },
+               phu: [{ a: 'O', b: 'M', vai: 'banKinh' }], vet: ['M'], r: R, h: 2 * R,
+               tenHinh: 'nửa hình tròn tâm $O$, đường kính $AB$', tenTruc: 'AB', moTaTruc: 'đường kính $AB$ cố định', tenR: 'OM',
+               soDo: [{ chu: '<i>R</i> = ' + so(R) + ' cm', vi: [R / 2, R + 0.12 + R * 0.06], mau: M.banKinh, quay: true },
+                      { chu: '<i>AB</i> = 2<i>R</i> = ' + so(2 * R) + ' cm', vi: [-(R * 0.32 + 0.55), R * 0.62], mau: M.truc }] }; } },
+  ],
+  lamSang: [
+    { id: 'truc', nhan: 'Đường kính AB (trục)', ghiChu: function (i) { return 'Đường kính $AB$ đứng yên, nằm trên <b>trục</b>. Tâm $O$ là trung điểm $AB$ và là <b>tâm</b> của hình cầu; $AB = 2R = ' + i.soL(2 * i.r) + '$ cm.'; } },
+    { id: 'banKinh', nhan: 'Bán kính R', ghiChu: function (i) { return 'Mọi điểm của nửa đường tròn cách tâm $O$ một khoảng $R = OM = ' + i.soL(i.r) + '$ cm, nên mọi điểm của <b>mặt cầu</b> cũng cách $O$ một khoảng $R$.'; } },
+    { id: 'xq', nhan: 'Mặt cầu', ghiChu: function (i) { return 'Nửa đường tròn quét nên <b>mặt cầu</b> tâm $O$, bán kính $R$. Nửa hình tròn quét nên <b>hình cầu</b> (gồm mặt cầu và phần bên trong).'; } },
+    { id: 'vet', nhan: 'Đường tròn lớn', ghiChu: function (i) { return 'Điểm $M$ (với $OM \\perp AB$) vạch nên một đường tròn tâm $O$, bán kính $R$ — đó là một <b>đường tròn lớn</b> của mặt cầu.'; } },
+  ],
+  ketQua: function (i) { return 'Quay ' + i.tenHinh + ' một vòng quanh đường kính $AB$ cố định, ta được một <b>hình cầu</b> tâm $O$, bán kính $R = ' + i.soL(i.r) + '$ cm. Nửa đường tròn quét nên <b>mặt cầu</b>; điểm $M$ vạch nên một <b>đường tròn lớn</b>.'; },
+  congThuc: function (r, h, l, n) {
+    return [
+      { ten: 'Diện tích mặt cầu', bt: '$S = 4\\pi R^2 = 4\\pi\\cdot ' + n(r) + '^2 \\approx \\mathbf{' + n(4 * PI * r * r) + '}$ (cm²)' },
+      { ten: 'Thể tích hình cầu', bt: '$V = \\dfrac{4}{3}\\pi R^3 = \\dfrac{4}{3}\\pi\\cdot ' + n(r) + '^3 \\approx \\mathbf{' + n(4 / 3 * PI * r * r * r) + '}$ (cm³)' },
+    ];
+  },
+});
+</script>
+</body>
+</html>

@@ -15,6 +15,9 @@ window.DANH_MUC = [
   { id: 'hinh-tru',          nhom: 'khong-gian', lop: 9, ten: 'Hình trụ',                   moTa: 'Bán kính đáy, chiều cao, mặt cắt',                       duongDan: 'khong-gian/hinh-tru.html', hinh: 'tru', trangThai: 'san-sang' },
   { id: 'hinh-non',          nhom: 'khong-gian', lop: 9, ten: 'Hình nón',                   moTa: 'Bán kính đáy, chiều cao, đường sinh',                    duongDan: 'khong-gian/hinh-non.html', hinh: 'non', trangThai: 'san-sang' },
   { id: 'hinh-cau',          nhom: 'khong-gian', lop: 9, ten: 'Hình cầu',                   moTa: 'Tâm, bán kính, đường tròn lớn',                          duongDan: 'khong-gian/hinh-cau.html', hinh: 'cau', trangThai: 'san-sang' },
+  { id: 'quay-hinh-tru',     nhom: 'khong-gian', lop: 9, ten: 'Tạo hình trụ bằng phép quay', moTa: 'Quay hình chữ nhật quanh một cạnh cố định',          duongDan: 'khong-gian/quay-hinh-tru.html', hinh: 'quayTru', trangThai: 'san-sang' },
+  { id: 'quay-hinh-non',     nhom: 'khong-gian', lop: 9, ten: 'Tạo hình nón bằng phép quay', moTa: 'Quay tam giác vuông quanh một cạnh góc vuông',       duongDan: 'khong-gian/quay-hinh-non.html', hinh: 'quayNon', trangThai: 'san-sang' },
+  { id: 'quay-hinh-cau',     nhom: 'khong-gian', lop: 9, ten: 'Tạo hình cầu bằng phép quay', moTa: 'Quay nửa hình tròn quanh đường kính',                duongDan: 'khong-gian/quay-hinh-cau.html', hinh: 'quayCau', trangThai: 'san-sang' },
 
   /* ---------- HÌNH HỌC PHẲNG · LỚP 6 ---------- */
   { id: 'doan-thang',     nhom: 'phang', lop: 6, ten: 'Đoạn thẳng',         moTa: 'Vẽ, đo độ dài bằng thước; trung điểm',  duongDan: 'phang/lop6/doan-thang.html', hinh: 'doanThang', trangThai: 'san-sang' },
@@ -97,6 +100,9 @@ window.DANH_MUC = [
     chopTuGiac: p('M60 12 L22 64 L74 78 Z M60 12 L102 60 L74 78') + p('M22 64 L50 50 L102 60 M60 12 L50 50', K),
     tru: p('M34 22 L34 70 M86 22 L86 70') + '<ellipse cx="60" cy="22" rx="26" ry="8" ' + N + '/>' + p('M34 70 A26 8 0 0 0 86 70') + p('M34 70 A26 8 0 0 1 86 70', K),
     non: p('M60 12 L32 70 M60 12 L88 70') + p('M32 70 A28 9 0 0 0 88 70') + p('M32 70 A28 9 0 0 1 88 70', K),
+    quayTru: p('M60 6 V86', K) + p('M60 24 H90 V70 H60', N) + p('M60 24 H90 V70 H60 Z', T) + p('M30 24 V70', K) + '<ellipse cx="60" cy="24" rx="30" ry="7" ' + K + '/>' + p('M48 12 A12 4 0 1 0 72 12', N) + p('M72 12 l-4 -3 M72 12 l-5 2', N),
+    quayNon: p('M60 6 V86', K) + p('M60 18 L60 72 L92 72 Z') + p('M60 18 L60 72 L92 72 Z', T) + p('M60 18 L28 72', K) + p('M28 72 A32 7 0 0 0 92 72', K) + p('M48 10 A12 4 0 1 0 72 10', N) + p('M72 10 l-4 -3 M72 10 l-5 2', N),
+    quayCau: p('M60 6 V86', K) + p('M60 16 A30 30 0 0 1 60 76 Z') + p('M60 16 A30 30 0 0 1 60 76 Z', T) + p('M60 16 A30 30 0 0 0 60 76', K) + p('M30 46 A30 8 0 0 0 90 46', K) + p('M48 9 A12 4 0 1 0 72 9', N) + p('M72 9 l-4 -3 M72 9 l-5 2', N),
     cau: '<circle cx="60" cy="46" r="32" ' + N + '/>' + p('M28 46 A32 10 0 0 0 92 46') + p('M28 46 A32 10 0 0 1 92 46', K),
     tamGiacDeu: p('M60 14 L96 76 L24 76 Z') + p('M60 14 L96 76 L24 76 Z', T),
     tamGiac: p('M44 14 L100 76 L18 76 Z') + p('M44 14 L100 76 L18 76 Z', T) + p('M44 14 V76', K),

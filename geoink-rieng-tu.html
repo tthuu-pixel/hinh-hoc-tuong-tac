@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoInk – Chính sách quyền riêng tư</title>
+<style>
+  :root { --chu: #1F2937; --phu: #4B5563; --xanh: #1E40AF; --nen: #F5F8FF; --the: #FFFFFF; --vien: #DCE5F5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--nen); color: var(--chu); font: 16px/1.65 "Segoe UI", Roboto, Arial, sans-serif; }
+  .khung { max-width: 820px; margin: 0 auto; padding: 32px 16px 56px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  header img { width: 52px; height: 52px; border-radius: 12px; }
+  header h1 { margin: 0; font-size: 26px; line-height: 1.2; color: var(--xanh); }
+  header p { margin: 2px 0 0; color: var(--phu); font-size: 14px; }
+  .the { background: var(--the); border: 1px solid var(--vien); border-radius: 16px; padding: 8px 24px 20px; }
+  h2 { font-size: 19px; margin: 24px 0 6px; color: var(--xanh); }
+  ul { padding-left: 22px; margin: 6px 0; }
+  li { margin: 4px 0; }
+  a { color: var(--xanh); }
+  .nho { color: var(--phu); font-size: 14px; margin-top: 18px; }
+</style>
+</head>
+<body>
+<div class="khung">
+  <header>
+    <div><h1>GeoInk – Chính sách quyền riêng tư</h1><p>Bảng viết tay &amp; dựng hình cho giáo viên Toán · Nhóm nghiên cứu khoa học trường TH-THCS An Lạc</p></div>
+  </header>
+  <div class="the">
+    <h2>GeoInk là gì</h2>
+    <p>GeoInk là phần mềm bảng viết tay và dựng hình cho giáo viên Toán, chạy trên máy tính Windows và máy tính bảng Android, dùng chung tài khoản với hệ thống <a href="https://nckh-geolab.com/">GeoLab</a>.</p>
+
+    <h2>Dữ liệu GeoInk sử dụng</h2>
+    <ul>
+      <li><b>Tài khoản GeoLab</b>: tên đăng nhập và mật khẩu chỉ dùng để đăng nhập, được gửi tới máy chủ GeoLab. GeoInk giữ lại phiên đăng nhập trên máy để không phải đăng nhập lại.</li>
+      <li><b>Bảng, sổ, tệp PDF, hình ảnh</b> bạn tạo hoặc mở trong GeoInk được lưu <b>trên máy của bạn</b> (thư viện sổ, các tệp <code>.geoink</code>). GeoInk không gửi nội dung này lên máy chủ của nhóm phát triển.</li>
+    </ul>
+
+    <h2>Đồng bộ với Google Drive (tuỳ chọn)</h2>
+    <p>Khi bạn bấm <b>Đồng bộ Google Drive</b> và đăng nhập Google, GeoInk xin hai quyền:</p>
+    <ul>
+      <li><code>drive.file</code>: tạo, đọc, sửa, xoá <b>chỉ các tệp do chính GeoInk tạo</b> trên Google Drive của bạn (thư mục “GeoInk – Thư viện sổ”). GeoInk <b>không</b> xem được các tài liệu khác trên Drive.</li>
+      <li><code>userinfo.email</code>: đọc địa chỉ email tài khoản Google để hiện “đã kết nối với …” trong app.</li>
+    </ul>
+    <p>Sổ được chép giữa máy của bạn và <b>Google Drive của chính bạn</b>, trực tiếp qua Google Drive API. Nhóm phát triển không nhận, không lưu và không xem được nội dung hay mã truy cập Google của bạn. Mã truy cập chỉ lưu trên máy của bạn (trên Windows được mã hoá bằng cơ chế của hệ điều hành).</p>
+    <p>Việc GeoInk dùng thông tin nhận được từ các API của Google tuân theo <a href="https://developers.google.com/terms/api-services-user-data-policy">Chính sách dữ liệu người dùng của dịch vụ API Google</a>, bao gồm các yêu cầu về Sử dụng giới hạn (Limited Use).</p>
+
+    <h2>Chia sẻ dữ liệu</h2>
+    <p>GeoInk không bán, không chia sẻ dữ liệu của bạn cho bên thứ ba, không dùng dữ liệu để quảng cáo. Dữ liệu chỉ rời máy khi bạn chủ động: đồng bộ lên Google Drive của bạn, hoặc dùng “Gửi bảng”, “Xuất ảnh” tới nơi bạn chọn.</p>
+
+    <h2>Ngắt kết nối và xoá dữ liệu</h2>
+    <ul>
+      <li>Trong GeoInk: Thư viện → nút Google Drive → <b>Ngắt kết nối</b> (GeoInk xoá mã truy cập trên máy và thu hồi quyền).</li>
+      <li>Hoặc thu hồi quyền tại <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      <li>Xoá thư mục “GeoInk – Thư viện sổ” trên Google Drive để xoá bản sao trên Drive. Gỡ GeoInk để xoá dữ liệu trên máy.</li>
+    </ul>
+
+    <h2>Liên hệ</h2>
+    <p>Mọi câu hỏi về quyền riêng tư, vui lòng liên hệ nhóm nghiên cứu khoa học trường TH-THCS An Lạc qua trang <a href="https://nckh-geolab.com/">nckh-geolab.com</a>.</p>
+    <p class="nho">Cập nhật: 24/10/2026.</p>
+  </div>
+</div>
+</body>
+</html>

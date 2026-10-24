@@ -41,27 +41,47 @@ function nutVe(nhan) {
   return { id: 've', nhan: nhan, anDiem: true, vuaKhung: khungVe,
     thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } };
 }
+// Đặt vạch 0 của thước tại O rồi xoay thước (từ hướng O→T0) cho tới khi vạch dài |OT1| chạm điểm T1
+function xoayThuoc(O, T0, T1, o) {
+  o = o || {};
+  var r = H.dai(O, T1), a0 = Math.atan2(T0[1] - O[1], T0[0] - O[0]), a1 = Math.atan2(T1[1] - O[1], T1[0] - O[0]), da = a1 - a0;
+  while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  function dau(e) { var a = a0 + da * e; return [O[0] + r * Math.cos(a), O[1] + r * Math.sin(a)]; }
+  function vet(e) { var ds = []; for (var i = 0; i <= 30; i++) ds.push(dau(e * i / 30)); return ds; }
+  return { tg: o.tg == null ? 2.4 : o.tg, ghi: o.ghi,
+    ve: function (g, e) { var k = Math.min(1, e / 0.8); if (k > 0) g.duong(vet(k), { mau: '#DC2626', rong: 1.5, dut: '4 4' }); if (e > 0.8) g.diem(T1, '', { r: 4.5, mau: '#DC2626' }); },
+    xong: function (g) { g.duong(vet(1), { mau: '#DC2626', rong: 1.2, dut: '4 4' }); g.diem(T1, '', { r: 3.5, mau: '#DC2626' }); if (o.sau) o.sau(g); },
+    cu: function (g, e) { var T = dau(H.em(Math.min(1, e / 0.8))); g.thuoc(O, T, { ben: o.ben || -1, chia: true }); if (e > 0.8) g.but(T1); } };
+}
 function kbVe(P) {
-  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), b = H.dai(Dd, C), c = H.dai(A, Dd), n = 0;
-  var u = donVi(H.tru(B, A)), Y = H.cong(Dd, H.nhan(u, b + 1.4)), dat;
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), c = H.dai(A, Dd), dc = H.dai(B, Dd), n = 0;
+  var u = donVi(H.tru(B, A)), b = H.dai(Dd, C), Y = H.cong(Dd, H.nhan(u, b + 1.4)), dat, CHEO = { rong: 2, mau: M.duongCheo, dut: '6 4' };
   function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
   return KhungPhang.kichBan([
     D.doanChia(A, B, { ghi: Bc('Dùng thước thẳng có vạch chia vẽ đáy lớn $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenVe(g, q, 'AB'); } }),
     D.doanChia(A, Dd, { ben: 1, ghi: Bc('Dùng thước vẽ cạnh bên $AD = ' + soL(c) + '$ cm (điểm $D$ nằm ngoài $AB$).'), sau: function (g) { tenVe(g, q, 'D'); } }),
-    (dat = D.datThuocHaiLe(A, B, Dd, Dd, Y, { ghi: Bc('Qua $D$ kẻ đường thẳng song song với $AB$: đặt một lề của thước thẳng hai lề trùng với $AB$, giữ thước song song rồi trượt tới khi lề thước đi qua $D$.') })),
+    (dat = D.datThuocHaiLe(A, B, Dd, Dd, Y, { ghi: Bc('Qua $D$ kẻ đường thẳng song song với $AB$ (chứa đáy nhỏ): đặt một lề của thước thẳng hai lề trùng với $AB$, giữ thước song song rồi trượt tới khi lề thước đi qua $D$.') })),
     D.keTheoThuocHaiLe(dat, Dd, Y, { net: TIA, ghi: 'Kẻ tia $Dy$ theo lề thước: $Dy \\parallel AB$.', sau: function (g) { tenTia(g, Y, 'y', Dd); } }),
-    D.doDoan(Dd, C, { ben: 1, ghi: Bc('Trên tia $Dy$ dùng thước đánh dấu điểm $C$ sao cho $DC = ' + soL(b) + '$ cm (đáy nhỏ, ngắn hơn đáy lớn).'),
-      sau: function (g) { tenVe(g, q, 'C'); } }),
+    D.doanChia(B, Dd, { ben: -1, net: CHEO, ghi: Bc('Nối $B$ với $D$ và dùng thước đo <b>đường chéo</b> $BD \\approx ' + soL(dc) + '$ cm.') }),
+    xoayThuoc(A, B, C, { ben: -1, ghi: Bc('Đặt vạch 0 của thước tại $A$, xoay thước cho tới khi vạch $' + soL(dc) + '$ cm nằm trên tia $Dy$. Đánh dấu điểm $C$ ở đó: khi ấy <b>$AC = BD$</b>.'), sau: function (g) { tenVe(g, q, 'C'); } }),
+    D.doan(A, C, { net: CHEO, ghi: 'Nối $A$ với $C$: hai đường chéo $AC$ và $BD$ bằng nhau.' }),
     D.doan(B, C, { ghi: Bc('Dùng thước thẳng nối $B$ với $C$.') }),
-    D.doDoan(B, C, { ben: -1, ghi: Bc('Kiểm tra bằng thước: $BC = AD \\approx ' + soL(c) + '$ cm — hai cạnh bên bằng nhau.') }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.3, rong: 0 });
+      g.doan(A, C, { mau: M.duongCheo, rong: 2.5, kyHieu: 3 }); g.doan(B, Dd, { mau: M.duongCheo, rong: 2.5, kyHieu: 3 });
+      g.doan(A, B, { mau: M1, rong: 3.5 }); g.doan(Dd, C, { mau: M1, rong: 3.5 }); g.doan(A, Dd, { rong: 3 }); g.doan(B, C, { rong: 3 });
+      muiTenDay(g, H.trung(A, B), u); muiTenDay(g, H.trung(Dd, C), u);
+      tenVe(g, q, 'ABCD');
+    }, { tg: 2.2, ghi: '<b>Vì sao cân?</b> Tứ giác $ABCD$ có $AB \\parallel CD$ nên là hình thang; hình thang này có <b>hai đường chéo bằng nhau</b> ($AC = BD$). Theo dấu hiệu nhận biết: <b>hình thang có hai đường chéo bằng nhau là hình thang cân</b>.' }),
     D.hien(function (g) {
       g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      g.doan(A, C, { mau: M.duongCheo, rong: 1.6, dut: '6 4', kyHieu: 3 }); g.doan(B, Dd, { mau: M.duongCheo, rong: 1.6, dut: '6 4', kyHieu: 3 });
       g.doan(A, B, { mau: M1, rong: 3.5 }); g.doan(Dd, C, { mau: M1, rong: 3.5 });
       g.doan(A, Dd, { mau: M2, rong: 3.5, kyHieu: 1 }); g.doan(B, C, { mau: M2, rong: 3.5, kyHieu: 1 });
       muiTenDay(g, H.trung(A, B), u); muiTenDay(g, H.trung(Dd, C), u);
       TG.goc(g, q, 0, { mau: MG1, r: 22, kyHieu: 1, doMoTo: 0.3 }); TG.goc(g, q, 1, { mau: MG1, r: 22, kyHieu: 1, doMoTo: 0.3 });
       tenVe(g, q, 'ABCD');
-    }, { tg: 1.3, ghi: 'Ta được <b>hình thang cân $ABCD$</b>: $AB \\parallel CD$, hai cạnh bên $AD = BC$, hai góc kề đáy $\\widehat{A} = \\widehat{B}$.' }),
+    }, { tg: 1.6, ghi: 'Ta được <b>hình thang cân $ABCD$</b>. Do đó hai cạnh bên bằng nhau $AD = BC \\approx ' + soL(c) + '$ cm và hai góc kề đáy bằng nhau $\\widehat{A} = \\widehat{B}$.' }),
   ]);
 }
 function khungVe(P) {

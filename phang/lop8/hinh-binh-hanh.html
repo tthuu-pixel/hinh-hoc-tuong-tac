@@ -27,6 +27,43 @@ var soL = KhungPhang.soL;
    A cố định; kéo B, D tự do; C = B + D − A (luôn là hình bình hành).
    ===================================================================== */
 function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, C: [B[0] + D[0] - A[0], B[1] + D[1] - A[1]], D: D }; }
+
+/* ---------- Vẽ hình bằng thước thẳng ---------- */
+var D = KhungPhang.dung, TIA = { rong: 2, mau: '#475569' };
+function donVi(v) { var L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L]; }
+function tenVe(g, q, chi) {
+  var tam = H.nhan(H.cong(H.cong(q.A, q.B), H.cong(q.C, q.D)), 0.25);
+  chi.split('').forEach(function (k) { g.diem(q[k], k, { huong: donVi(H.tru(q[k], tam)) }); });
+}
+function tenTia(g, X, ten, P) { var u = donVi(H.tru(X, P)); g.chu(H.cong(X, H.nhan(u, 0.35)), ten, { mau: '#475569', nghieng: true }); }
+function muiTen(g, m, u, mau, so) { for (var k = 0; k < so; k++) { var c = H.cong(m, H.nhan(u, (k - (so - 1) / 2) * 0.22)); g.duong([H.cong(c, H.cong(H.nhan(u, -0.15), [-u[1] * 0.15, u[0] * 0.15])), H.cong(c, H.nhan(u, 0.1)), H.cong(c, H.cong(H.nhan(u, -0.15), [u[1] * 0.15, -u[0] * 0.15]))], { mau: mau, rong: 2.5 }); } }
+function kbVe(P) {
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), b = H.dai(A, Dd), n = 0, dat1, dat2;
+  var u = donVi(H.tru(B, A)), v = donVi(H.tru(Dd, A)), X = H.cong(B, H.nhan(v, b + 1.2)), Y = H.cong(Dd, H.nhan(u, a + 1.2));
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doanChia(A, B, { ghi: Bc('Dùng thước thẳng có vạch chia vẽ đoạn thẳng $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenVe(g, q, 'AB'); } }),
+    D.doanChia(A, Dd, { ben: 1, ghi: Bc('Vẽ đoạn thẳng $AD = ' + soL(b) + '$ cm ($D$ không nằm trên đường thẳng $AB$).'), sau: function (g) { tenVe(g, q, 'D'); } }),
+    (dat1 = D.datThuocHaiLe(A, Dd, B, B, X, { ghi: Bc('Qua $B$ kẻ đường thẳng song song với $AD$: đặt một lề của thước thẳng hai lề trùng với $AD$, giữ thước song song rồi trượt tới khi lề thước đi qua $B$.') })),
+    D.keTheoThuocHaiLe(dat1, B, X, { net: TIA, ghi: 'Kẻ tia $Bx$ theo lề thước: $Bx \\parallel AD$.', sau: function (g) { tenTia(g, X, 'x', B); } }),
+    (dat2 = D.datThuocHaiLe(A, B, Dd, Dd, Y, { ghi: Bc('Qua $D$ kẻ đường thẳng song song với $AB$: đặt lề thước trùng với $AB$ rồi trượt song song tới khi lề thước đi qua $D$.') })),
+    D.keTheoThuocHaiLe(dat2, Dd, Y, { net: TIA, ghi: 'Kẻ tia $Dy$ theo lề thước: $Dy \\parallel AB$.', sau: function (g) { tenTia(g, Y, 'y', Dd); } }),
+    D.hien(function (g) { g.diem(C, '', { r: 5, mau: '#DC2626' }); tenVe(g, q, 'C'); }, { tg: 1.2, ghi: Bc('Hai tia $Bx$ và $Dy$ cắt nhau tại $C$.') }),
+    D.doan(B, C, { tg: 0.6, ghi: 'Tô đậm các cạnh $BC$, $CD$.' }),
+    D.doan(Dd, C, { tg: 0.6 }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      g.doan(A, B, { mau: M1, rong: 3.5 }); g.doan(Dd, C, { mau: M1, rong: 3.5 }); g.doan(A, Dd, { mau: M2, rong: 3.5 }); g.doan(B, C, { mau: M2, rong: 3.5 });
+      muiTen(g, H.trung(A, B), u, M1, 1); muiTen(g, H.trung(Dd, C), u, M1, 1); muiTen(g, H.trung(A, Dd), v, M2, 2); muiTen(g, H.trung(B, C), v, M2, 2);
+      tenVe(g, q, 'ABCD');
+    }, { tg: 1.6, ghi: 'Tứ giác $ABCD$ có <b>các cạnh đối song song</b> ($AB \\parallel CD$, $AD \\parallel BC$) nên là <b>hình bình hành</b> (theo định nghĩa).' }),
+  ]);
+}
+function khungVe(P) {
+  var q = dinh(P), u = donVi(H.tru(q.B, q.A)), v = donVi(H.tru(q.D, q.A)), a = H.dai(q.A, q.B), b = H.dai(q.A, q.D), nu = [-u[1], u[0]], nv = [v[1], -v[0]];
+  var X = H.cong(q.B, H.nhan(v, b + 1.6)), Y = H.cong(q.D, H.nhan(u, a + 1.6));
+  return [q.A, q.B, q.C, q.D, X, Y, H.cong(X, H.nhan(nv, 1.6)), H.cong(Y, H.nhan(nu, 1.6)), H.tru(q.A, H.nhan(nu, 1.8)), H.tru(q.A, H.nhan(nv, 1.8)), H.tru(q.B, H.nhan(nu, 1.8)), H.tru(q.D, H.nhan(nv, 1.8))];
+}
 function info(P) { var q = dinh(P); return { ten: 'Hình bình hành', ds: [q.A, q.B, q.C, q.D], tam: H.trung(q.A, q.C), truc: [] }; }
 var lech = function (p, P) { return H.dai(p, P.A) < 1 ? null : p; };
 
@@ -49,12 +86,15 @@ KhungPhang.tao({
     { id: 'cheo', nhan: 'Hai đường chéo', mau: M.duongCheo, ghiChu: 'Trong hình bình hành, <b>hai đường chéo cắt nhau tại trung điểm của mỗi đường</b>: $OA = OC$, $OB = OD$.' },
   ],
   hoatHinh: [
+    { id: 've', nhan: 'Vẽ bằng thước thẳng', anDiem: true, vuaKhung: khungVe,
+      thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } },
     { id: 'quay', nhan: 'Quay nửa vòng quanh O', thoiGian: 4200,
       ghiChu: function (P, ts, t) { return t < 1 ? 'Quay hình bình hành nửa vòng ($180^\\circ$) quanh giao điểm $O$ của hai đường chéo…' : 'Hình trùng khít với chính nó: $A \\leftrightarrow C$, $B \\leftrightarrow D$. Vì vậy các cạnh đối, các góc đối bằng nhau và $O$ là trung điểm hai đường chéo.'; } },
   ],
 
   ve: function (g, P) {
-    var q = dinh(P), f = info(P);
+    var q = dinh(P), f = info(P), tv = g.hoat('ve');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
     if (g.hoat('quay') !== null) { DX.ve(g, f, { truc: 0 }); return; }
     g.daGiac(f.ds, { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
     if (g.bat('cheo')) TG.cheo(g, q, { sang: 'cheo', trung: true });

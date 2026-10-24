@@ -29,6 +29,48 @@ var soL = KhungPhang.soL;
 function phap(P) { var u = H.tru(P.B, P.A), L = Math.hypot(u[0], u[1]) || 1; return [-u[1] / L, u[0] / L]; }
 function dinh(P) { var A = P.A, B = P.B, D = P.D; return { A: A, B: B, C: [B[0] + D[0] - A[0], B[1] + D[1] - A[1]], D: D }; }
 
+/* ---------- Vẽ hình bằng dụng cụ (dùng chung) ---------- */
+var D = KhungPhang.dung, MAU_GOC_VE = '#16A34A', TIA = { rong: 2, mau: '#475569' };
+function donVi(v) { var L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L]; }
+// tên các đỉnh trong chuỗi chi, chữ đặt ra phía ngoài hình
+function tenVe(g, q, chi) {
+  var tam = H.nhan(H.cong(H.cong(q.A, q.B), H.cong(q.C, q.D)), 0.25);
+  chi.split('').forEach(function (k) { g.diem(q[k], k, { huong: donVi(H.tru(q[k], tam)) }); });
+}
+function tenTia(g, X, ten, P) { var u = donVi(H.tru(X, P)); g.chu(H.cong(X, H.nhan(u, 0.35)), ten, { mau: '#475569', nghieng: true }); }
+function kbVe(P) {
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), b = H.dai(A, Dd), n = 0, L = Math.max(a, b) * 0.75 + 1;
+  var aAB = H.huong(A, B), aBA = H.huong(B, A), nn = donVi(H.tru(Dd, A));
+  var X = H.cong(B, H.nhan(nn, b + 1.2)), Y = H.cong(A, H.nhan(nn, b + 1.2));
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doanChia(A, B, { ghi: Bc('Dùng thước thẳng có vạch chia vẽ đoạn thẳng $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenVe(g, q, 'AB'); } }),
+    D.datEke(B, aBA, -1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke sao cho đỉnh góc vuông trùng với $B$, một cạnh góc vuông nằm trên $BA$.') }),
+    D.keTheoEke(B, aBA, -1, X, { loai: 'vuong', dai: L, net: TIA, ghi: 'Kẻ tia $Bx$ theo cạnh góc vuông còn lại: $Bx \\perp AB$.',
+      sau: function (g) { tenTia(g, X, 'x', B); g.goc(A, B, X, { mau: MAU_GOC_VE, r: 16, nhan: false }); } }),
+    D.doDoan(B, C, { ben: 1, ghi: Bc('Đặt thước dọc theo tia $Bx$ (vạch 0 tại $B$), đánh dấu điểm $C$ sao cho $BC = ' + soL(b) + '$ cm.'),
+      sau: function (g) { tenVe(g, q, 'C'); } }),
+    D.datEke(A, aAB, 1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke tại $A$: đỉnh góc vuông trùng với $A$, một cạnh góc vuông nằm trên $AB$.') }),
+    D.keTheoEke(A, aAB, 1, Y, { loai: 'vuong', dai: L, net: TIA, ghi: 'Kẻ tia $Ay \\perp AB$.',
+      sau: function (g) { tenTia(g, Y, 'y', A); g.goc(B, A, Y, { mau: MAU_GOC_VE, r: 16, nhan: false }); } }),
+    D.doDoan(A, Dd, { ben: -1, ghi: Bc('Trên tia $Ay$ dùng thước đánh dấu điểm $D$ sao cho $AD = ' + soL(b) + '$ cm.'),
+      sau: function (g) { tenVe(g, q, 'D'); } }),
+    D.doan(Dd, C, { ghi: Bc('Dùng thước thẳng nối $D$ với $C$.') }),
+    D.doan(B, C, { tg: 0.5, ghi: 'Tô đậm các cạnh $BC$, $AD$.' }),
+    D.doan(A, Dd, { tg: 0.5 }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      [[A, B, 1, M1], [Dd, C, 1, M1], [B, C, 2, M2], [A, Dd, 2, M2]].forEach(function (c) { g.doan(c[0], c[1], { mau: c[3], rong: 3.5, kyHieu: c[2] }); });
+      [0, 1, 2, 3].forEach(function (i) { TG.goc(g, q, i, { mau: MAU_GOC_VE, r: 16, doMoTo: 0.3 }); });
+      tenVe(g, q, 'ABCD');
+    }, { tg: 1.3, ghi: 'Ta được <b>hình chữ nhật $ABCD$</b>: bốn góc vuông, các cạnh đối bằng nhau.' }),
+  ]);
+}
+function khungVe(P) {
+  var q = dinh(P), a = H.dai(q.A, q.B), b = H.dai(q.A, q.D), L = Math.max(a, b) * 0.75 + 1, u = donVi(H.tru(q.B, q.A)), nn = donVi(H.tru(q.D, q.A));
+  return [H.cong(q.C, H.nhan(nn, 1.6)), H.cong(q.D, H.nhan(nn, 1.6)), H.tru(q.B, H.nhan(u, L)), H.cong(q.A, H.nhan(nn, L)), H.cong(q.B, H.nhan(nn, L)), H.cong(q.A, H.nhan(u, L)), H.tru(q.A, H.nhan(nn, 1))];
+}
+
 KhungPhang.tao({
   ten: 'Hình chữ nhật',
   lop: 8,
@@ -41,6 +83,10 @@ KhungPhang.tao({
   },
   sauKeo: function (ten, P) { if (ten === 'B') P.D = H.cong(P.A, H.nhan(phap(P), H.dai(P.A, P.D))); },
   batDau: ['goc'],
+  hoatHinh: [
+    { id: 've', nhan: 'Vẽ bằng thước thẳng và ê ke', anDiem: true, vuaKhung: khungVe,
+      thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } },
+  ],
 
   lamSang: [
     { id: 'goc', nhan: 'Bốn góc vuông', mau: '#16A34A', ghiChu: 'Hình chữ nhật là tứ giác có <b>bốn góc vuông</b>. Hình chữ nhật cũng là một hình bình hành, một hình thang cân.' },
@@ -50,7 +96,8 @@ KhungPhang.tao({
   ],
 
   ve: function (g, P) {
-    var q = dinh(P), O = H.trung(q.A, q.C);
+    var q = dinh(P), O = H.trung(q.A, q.C), tv = g.hoat('ve');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
     g.daGiac([q.A, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
     if (g.bat('tv')) {
       g.daGiac([q.A, q.B, q.D], { to: '#FDE68A', doMoTo: 0.5, rong: 0 });

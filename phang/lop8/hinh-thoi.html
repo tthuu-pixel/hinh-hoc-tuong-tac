@@ -30,6 +30,49 @@ var soL = KhungPhang.soL;
 var O0 = [0, 0];
 function phap(P) { var u = H.tru(P.A, O0), L = Math.hypot(u[0], u[1]) || 1; return [-u[1] / L, u[0] / L]; }
 function dinh(P) { return { A: P.A, B: P.B, C: [-P.A[0], -P.A[1]], D: [-P.B[0], -P.B[1]] }; }
+
+/* ---------- Vẽ hình bằng dụng cụ (dùng chung) ---------- */
+var D = KhungPhang.dung, MAU_GOC_VE = '#16A34A', TIA = { rong: 2, mau: '#475569' };
+function donVi(v) { var L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L]; }
+function tenVe(g, q, chi, tam) {
+  tam = tam || H.nhan(H.cong(H.cong(q.A, q.B), H.cong(q.C, q.D)), 0.25);
+  chi.split('').forEach(function (k) { g.diem(q[k], k, { huong: donVi(H.tru(q[k], tam)) }); });
+}
+function tenTia(g, X, ten, P) { var u = donVi(H.tru(X, P)); g.chu(H.cong(X, H.nhan(u, 0.35)), ten, { mau: '#475569', nghieng: true }); }
+function muiTenDay(g, m, u) { g.duong([H.cong(m, H.cong(H.nhan(u, -0.15), [-u[1] * 0.15, u[0] * 0.15])), H.cong(m, H.nhan(u, 0.1)), H.cong(m, H.cong(H.nhan(u, -0.15), [u[1] * 0.15, -u[0] * 0.15]))], { mau: M1, rong: 2.5 }); }
+function nutVe(nhan) {
+  return { id: 've', nhan: nhan, anDiem: true, vuaKhung: khungVe,
+    thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } };
+}
+function kbVe(P) {
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, O = O0, d1 = H.dai(A, C), d2 = H.dai(B, Dd), n = 0, L = Math.max(d2 * 0.55, 1.6) + 0.8;
+  var nn = donVi(H.tru(B, O)), X = H.cong(O, H.nhan(nn, d2 / 2 + 1)), Y = H.tru(O, H.nhan(nn, d2 / 2 + 1));
+  var qO = { A: A, B: B, C: C, D: Dd, O: O };
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doanChia(C, A, { ghi: Bc('Dùng thước thẳng có vạch chia vẽ đường chéo $AC = ' + soL(d1) + '$ cm.'), sau: function (g) { tenVe(g, q, 'AC', O); } }),
+    D.doDoan(C, O, { ben: -1, ghi: Bc('Dùng thước đánh dấu trung điểm $O$ của $AC$: $OA = OC = ' + soL(d1 / 2) + '$ cm.'), sau: function (g) { g.diem(O, 'O', { huong: donVi([nn[0] - 0.7 * nn[1], nn[1] + 0.7 * nn[0]]).map(function (x) { return -x; }) }); } }),
+    D.datEke(O, H.huong(O, A), 1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke sao cho đỉnh góc vuông trùng với $O$, một cạnh góc vuông nằm trên $OA$.') }),
+    D.keTheoEke(O, H.huong(O, A), 1, X, { loai: 'vuong', dai: L, net: TIA, ghi: 'Kẻ tia $Ox \\perp AC$ theo cạnh góc vuông còn lại.',
+      sau: function (g) { tenTia(g, X, 'x', O); g.goc(A, O, X, { mau: MAU_GOC_VE, r: 14, nhan: false }); } }),
+    D.doan(O, Y, { net: TIA, ghi: 'Dùng thước kéo dài về phía đối diện được tia $Oy$: đường thẳng $xy \\perp AC$ tại $O$.', sau: function (g) { tenTia(g, Y, 'y', O); } }),
+    D.doDoan(O, B, { ben: 1, ghi: Bc('Trên tia $Ox$ dùng thước đánh dấu điểm $B$ sao cho $OB = ' + soL(d2 / 2) + '$ cm.'), sau: function (g) { tenVe(g, q, 'B', O); } }),
+    D.doDoan(O, Dd, { ben: -1, ghi: Bc('Trên tia $Oy$ đánh dấu điểm $D$ sao cho $OD = OB = ' + soL(d2 / 2) + '$ cm.'), sau: function (g) { tenVe(g, q, 'D', O); } }),
+    D.doan(A, B, { tg: 0.7, ghi: Bc('Dùng thước thẳng nối lần lượt $AB$, $BC$, $CD$, $DA$.') }),
+    D.doan(B, C, { tg: 0.7 }), D.doan(C, Dd, { tg: 0.7 }), D.doan(Dd, A, { tg: 0.7 }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      g.doan(A, C, { mau: M.duongCheo, rong: 2, dut: '6 4' }); g.doan(B, Dd, { mau: M.duongCheo, rong: 2, dut: '6 4' });
+      [[A, B], [B, C], [C, Dd], [Dd, A]].forEach(function (c) { g.doan(c[0], c[1], { mau: M1, rong: 3.5, kyHieu: 1 }); });
+      g.goc(A, O, B, { mau: MAU_GOC_VE, r: 14, nhan: false });
+      tenVe(g, q, 'ABCD', O);
+    }, { tg: 1.3, ghi: 'Ta được <b>hình thoi $ABCD$</b>: bốn cạnh bằng nhau, hai đường chéo vuông góc và cắt nhau tại trung điểm $O$ của mỗi đường.' }),
+  ]);
+}
+function khungVe(P) {
+  var q = dinh(P), nn = donVi(H.tru(q.B, O0)), d2 = H.dai(q.B, q.D), L = Math.max(d2 * 0.55, 1.6) + 0.8;
+  return [q.A, q.B, q.C, q.D, H.cong(O0, H.nhan(nn, d2 / 2 + 1.4)), H.tru(O0, H.nhan(nn, d2 / 2 + 1.4)), H.cong(O0, H.nhan(donVi(q.A), L)), H.cong(q.A, H.nhan(donVi(q.A), 0.8)), H.cong(q.C, H.nhan(donVi(q.C), 0.8))];
+}
 function info(P) { var q = dinh(P); return { ten: 'Hình thoi', ds: [q.A, q.B, q.C, q.D], tam: O0, truc: [[q.A, q.C], [q.B, q.D]] }; }
 
 KhungPhang.tao({
@@ -50,12 +93,14 @@ KhungPhang.tao({
     { id: 'pg', nhan: 'Đường chéo là phân giác', mau: MG1, ghiChu: 'Trong hình thoi, <b>hai đường chéo là các đường phân giác của các góc</b> của hình thoi.' },
   ],
   hoatHinh: [
+    nutVe('Vẽ bằng thước thẳng và ê ke'),
     { id: 'gap', nhan: 'Gấp theo đường chéo AC', thoiGian: 4200,
       ghiChu: function (P, ts, t) { return t < 1 ? 'Gấp hình thoi theo đường chéo $AC$…' : 'Hai nửa trùng khít: $B$ trùng $D$. Đường chéo là <b>trục đối xứng</b> và là <b>phân giác</b> các góc $A$, $C$.'; } },
   ],
 
   ve: function (g, P) {
-    var q = dinh(P), f = info(P);
+    var q = dinh(P), f = info(P), tv = g.hoat('ve');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
     if (g.hoat('gap') !== null) { DX.ve(g, f, { truc: 0 }); return; }
     g.daGiac(f.ds, { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
     var opg = g.bat('pg');

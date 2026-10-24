@@ -28,6 +28,47 @@ var soL = KhungPhang.soL;
    ===================================================================== */
 function dinh(P) { return { A: P.A, B: P.B, C: [P.C[0], P.D[1]], D: P.D }; }
 
+/* ---------- Vẽ hình bằng dụng cụ (dùng chung) ---------- */
+var D = KhungPhang.dung, MAU_GOC_VE = '#16A34A', TIA = { rong: 2, mau: '#475569' };
+function donVi(v) { var L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L]; }
+function tenVe(g, q, chi, tam) {
+  tam = tam || H.nhan(H.cong(H.cong(q.A, q.B), H.cong(q.C, q.D)), 0.25);
+  chi.split('').forEach(function (k) { g.diem(q[k], k, { huong: donVi(H.tru(q[k], tam)) }); });
+}
+function tenTia(g, X, ten, P) { var u = donVi(H.tru(X, P)); g.chu(H.cong(X, H.nhan(u, 0.35)), ten, { mau: '#475569', nghieng: true }); }
+function muiTenDay(g, m, u) { g.duong([H.cong(m, H.cong(H.nhan(u, -0.15), [-u[1] * 0.15, u[0] * 0.15])), H.cong(m, H.nhan(u, 0.1)), H.cong(m, H.cong(H.nhan(u, -0.15), [u[1] * 0.15, -u[0] * 0.15]))], { mau: M1, rong: 2.5 }); }
+function nutVe(nhan) {
+  return { id: 've', nhan: nhan, anDiem: true, vuaKhung: khungVe,
+    thoiGian: function (P) { return kbVe(P).tong * 1000; }, ghiChu: function (P, ts, t) { return kbVe(P).ghi(t); } };
+}
+function kbVe(P) {
+  var q = dinh(P), A = q.A, B = q.B, C = q.C, Dd = q.D, a = H.dai(A, B), b = H.dai(Dd, C), h = H.dai(A, Dd), n = 0, L = Math.max(a * 0.6, h) + 1;
+  var u = donVi(H.tru(B, A)), nn = donVi(H.tru(Dd, A)), Y = H.cong(A, H.nhan(nn, h + 1.2)), X = H.cong(Dd, H.nhan(u, b + 1.4)), dat;
+  function Bc(t) { n++; return '<b>Bước ' + n + '.</b> ' + t; }
+  return KhungPhang.kichBan([
+    D.doanChia(A, B, { ghi: Bc('Dùng thước thẳng có vạch chia vẽ đáy $AB = ' + soL(a) + '$ cm.'), sau: function (g) { tenVe(g, q, 'AB'); } }),
+    D.datEke(A, H.huong(A, B), 1, { loai: 'vuong', dai: L, ghi: Bc('Đặt ê ke sao cho đỉnh góc vuông trùng với $A$, một cạnh góc vuông nằm trên $AB$.') }),
+    D.keTheoEke(A, H.huong(A, B), 1, Y, { loai: 'vuong', dai: L, net: TIA, ghi: 'Kẻ tia $Ay$ theo cạnh góc vuông còn lại: $Ay \\perp AB$.',
+      sau: function (g) { tenTia(g, Y, 'y', A); g.goc(B, A, Y, { mau: MAU_GOC_VE, r: 16, nhan: false }); } }),
+    D.doDoan(A, Dd, { ben: -1, ghi: Bc('Trên tia $Ay$ dùng thước đánh dấu điểm $D$ sao cho $AD = ' + soL(h) + '$ cm (đường cao).'), sau: function (g) { tenVe(g, q, 'D'); } }),
+    (dat = D.datThuocHaiLe(A, B, Dd, Dd, X, { ghi: Bc('Qua $D$ kẻ đường thẳng song song với $AB$: đặt một lề của thước thẳng hai lề trùng với $AB$ rồi trượt song song tới khi lề thước đi qua $D$.') })),
+    D.keTheoThuocHaiLe(dat, Dd, X, { net: TIA, ghi: 'Kẻ tia $Dx$ theo lề thước: $Dx \\parallel AB$.', sau: function (g) { tenTia(g, X, 'x', Dd); } }),
+    D.doDoan(Dd, C, { ben: 1, ghi: Bc('Trên tia $Dx$ dùng thước đánh dấu điểm $C$ sao cho $DC = ' + soL(b) + '$ cm.'), sau: function (g) { tenVe(g, q, 'C'); } }),
+    D.doan(B, C, { ghi: Bc('Dùng thước thẳng nối $B$ với $C$.') }),
+    D.hien(function (g) {
+      g.daGiac([A, B, C, Dd], { to: '#93C5FD', doMoTo: 0.35, rong: 0 });
+      g.doan(A, B, { mau: M1, rong: 3.5 }); g.doan(Dd, C, { mau: M1, rong: 3.5 }); g.doan(A, Dd, { mau: MCAO, rong: 3.5 }); g.doan(B, C, { rong: 3 });
+      muiTenDay(g, H.trung(A, B), u); muiTenDay(g, H.trung(Dd, C), u);
+      TG.goc(g, q, 0, { mau: MAU_GOC_VE, r: 16, doMoTo: 0.3 }); TG.goc(g, q, 3, { mau: MAU_GOC_VE, r: 16, doMoTo: 0.3 });
+      tenVe(g, q, 'ABCD');
+    }, { tg: 1.3, ghi: 'Ta được <b>hình thang vuông $ABCD$</b>: $AB \\parallel CD$, $\\widehat{A} = \\widehat{D} = 90^\\circ$, cạnh bên $AD$ là đường cao.' }),
+  ]);
+}
+function khungVe(P) {
+  var q = dinh(P), u = donVi(H.tru(q.B, q.A)), nn = donVi(H.tru(q.D, q.A)), a = H.dai(q.A, q.B), h = H.dai(q.A, q.D), b = H.dai(q.D, q.C), L = Math.max(a * 0.6, h) + 1;
+  return [q.A, q.B, q.C, q.D, H.cong(q.A, H.nhan(nn, h + 1.6)), H.cong(q.A, H.nhan(u, L)), H.cong(q.A, H.nhan(nn, L)), H.cong(q.D, H.nhan(u, b + 1.8)), H.cong(H.cong(q.D, H.nhan(u, b + 1.8)), H.nhan(nn, 1.6)), H.tru(q.A, H.nhan(nn, 1.8))];
+}
+
 KhungPhang.tao({
   ten: 'Hình thang vuông',
   lop: 8,
@@ -47,6 +88,7 @@ KhungPhang.tao({
   },
   sauKeo: function (ten, P) { if (ten === 'D') P.C = [P.C[0], P.D[1]]; },
   batDau: ['vuong'],
+  hoatHinh: [nutVe('Vẽ bằng thước thẳng và ê ke')],
 
   lamSang: [
     { id: 'day', nhan: 'Hai đáy AB // CD', mau: M1, ghiChu: 'Hình thang vuông vẫn là hình thang: ${AB \\parallel CD}$.' },
@@ -56,7 +98,8 @@ KhungPhang.tao({
   ],
 
   ve: function (g, P) {
-    var q = dinh(P);
+    var q = dinh(P), tv = g.hoat('ve');
+    if (tv !== null) { kbVe(P).ve(g, tv); return; }
     g.daGiac([q.A, q.B, q.C, q.D], { to: '#93C5FD', doMoTo: 0.22, rong: 0 });
     veCanh(g, q.A, q.B, g.bat('day'), M1); veCanh(g, q.D, q.C, g.bat('day'), M1);
     if (g.bat('cao')) { g.doan(q.A, q.D, { sang: 'cao' }); g.nhanDo(q.A, q.D, 'h = ' + so(q.D[1] - q.A[1]), { mau: MCAO, kc: 28 }); } else veCanh(g, q.A, q.D, false);

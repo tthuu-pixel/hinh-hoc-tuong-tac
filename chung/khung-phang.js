@@ -233,12 +233,19 @@
       '<linearGradient id="dcLuoiKeo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64748B"/><stop offset="0.35" stop-color="#E2E8F0"/><stop offset="0.5" stop-color="#F8FAFC"/><stop offset="0.8" stop-color="#94A3B8"/><stop offset="1" stop-color="#475569"/></linearGradient>' +
       '<linearGradient id="dcTayKeo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F87171"/><stop offset="0.35" stop-color="#FCA5A5"/><stop offset="0.6" stop-color="#DC2626"/><stop offset="1" stop-color="#991B1B"/></linearGradient>' +
       '</defs>';
+    var demCat = 0;
     var g = {
       H: H, so: so, MAU: MAU,
       bat: bat,
       hoat: function (id) { return TT.hoat && TT.hoat.id === id ? TT.hoat.t : null; },
       tg: function (id) { return bat(id) ? (performance.now() - (TT.thoiDiemBat[id] || 0)) / 1000 : null; },
       raw: function (s) { out.push(s); },
+      // Chỉ giữ phần hình vẽ trong ve() nằm bên trong đa giác ds (toạ độ hình), ví dụ nửa mặt phẳng của trục gấp
+      cat: function (ds, ve) {
+        var id = 'kpCat' + (++demCat);
+        out.push('<clipPath id="' + id + '"><polygon points="' + pts(ds) + '"/></clipPath><g clip-path="url(#' + id + ')">');
+        ve(); out.push('</g>');
+      },
       X: X, Y: Y,
       tamNhin: function () { return [V.cx, V.cy]; },
       hienSo: function () { return TT.hienSo; },
@@ -1341,19 +1348,6 @@
       }
       return ra;
     }
-    // Các đoạn của đường nằm đúng trên trục (ví dụ chữ I, thân chữ T khi gấp theo trục dọc)
-    function doanTrenTruc(ds, A, B) {
-      var ra = [], cur = [], L = H.dai(A, B);
-      function tren(P) { return Math.abs(cheo(A, B, P)) / L < 1e-6; }
-      for (var i = 0; i < ds.length - 1; i++) {
-        if (tren(ds[i]) && tren(ds[i + 1])) { if (!cur.length) cur.push(ds[i]); cur.push(ds[i + 1]); }
-        else { if (cur.length > 1) ra.push(cur); cur = []; }
-      }
-      if (cur.length > 1) ra.push(cur);
-      return ra;
-    }
-    // Dời đường đi một khoảng k theo pháp tuyến của trục (k > 0: sang phía bị gấp)
-    function doiNgang(ds, A, B, k) { var L = H.dai(A, B), nx = -(B[1] - A[1]) / L, ny = (B[0] - A[0]) / L; return ds.map(function (p) { return [p[0] + nx * k, p[1] + ny * k]; }); }
     function doDai(ds) { var s = 0; for (var i = 0; i < ds.length - 1; i++) s += H.dai(ds[i], ds[i + 1]); return s; }
     // Lấy điểm ở tỉ lệ s (0..1) trên tập đường; kèm phần đường đã đi (để vẽ vết)
     function diemTren(dsDuong, s) {
@@ -1539,26 +1533,21 @@
               g.daGiac(p3.map(function (p) { return chieu(g, p); }), { to: Math.cos(th) >= 0 ? MAU_TRUOC : MAU_SAU, doMoTo: 0.85, rong: 2.5, mauNet: '#1B2540' });
             }
           } else {
-            netCua(info).forEach(function (d) {
-              catDuong(d, A, B, -1).forEach(function (x) { g.duong(x, { rongCm: info.rongCm, nhon: info.nhon, mau: info.mauNet || '#2451C7' }); });
-              catDuong(d, A, B, 1).forEach(function (x) { g.duong(x, { rongCm: info.rongCm, nhon: info.nhon, mau: '#CBD5E1' }); });
-              // nét nằm trên trục: nửa bề dày bên này đứng yên, nửa bên kia (vết xám) sẽ lật qua trục
-              if (info.rongCm) doanTrenTruc(d, A, B).forEach(function (x) {
-                g.duong(doiNgang(x, A, B, -info.rongCm / 4), { rongCm: info.rongCm / 2, mau: info.mauNet || '#2451C7' });
-                g.duong(doiNgang(x, A, B, info.rongCm / 4), { rongCm: info.rongCm / 2, mau: '#CBD5E1' });
-              });
-            });
-            netCua(info).forEach(function (d) {
-              catDuong(d, A, B, 1).forEach(function (x) {
-                var p3 = x.map(function (p) { return quanhTruc(p, A, B, th); });
-                g.duong(p3.map(bong), { rongCm: info.rongCm, nhon: info.nhon, mau: '#0F172A', doMo: 0.15 * Math.sin(th) });
-                g.duong(p3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, mau: Math.cos(th) >= 0 ? (info.mauNet || '#2451C7') : '#EA580C', doMo: 0.9 });
-              });
-              // nửa bề dày của nét nằm trên trục lật qua trục, trùng khít nửa còn lại
-              if (info.rongCm) doanTrenTruc(d, A, B).forEach(function (x) {
-                var p3 = doiNgang(x, A, B, info.rongCm / 4).map(function (p) { return quanhTruc(p, A, B, th); });
-                g.duong(p3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm / 2, mau: Math.cos(th) >= 0 ? (info.mauNet || '#2451C7') : '#EA580C', doMo: 0.9 });
-              });
+            // Cắt cả bề dày nét theo đúng trục: nửa đứng yên chỉ hiện phần bên này trục, nửa lật chỉ hiện phần bên kia,
+            // nên chỗ nét chạm trục (đáy chữ V giữa chữ M, chữ I nằm trên trục…) không còn mẩu thừa lấn qua trục.
+            var L = H.dai(A, B), u = [(B[0] - A[0]) / L, (B[1] - A[1]) / L], nT = [-u[1], u[0]], R = 7;
+            var mien = function (dau) {   // nửa mặt phẳng phía dau của trục (dau = +1: phía bị gấp), chia mịn cạnh để biến đổi 3D vẫn đúng
+              var P0 = H.cong(A, H.nhan(u, -R)), P1 = H.cong(B, H.nhan(u, R)), P2 = H.cong(P1, H.nhan(nT, dau * R)), P3 = H.cong(P0, H.nhan(nT, dau * R)), goc = [P0, P1, P2, P3], ra = [];
+              for (var i = 0; i < 4; i++) for (var j = 0; j < 24; j++) ra.push(H.lerp(goc[i], goc[(i + 1) % 4], j / 24));
+              return ra;
+            };
+            var mauNet = info.mauNet || '#2451C7', ds = netCua(info), lat = function (p) { return quanhTruc(p, A, B, th); };
+            g.cat(mien(-1), function () { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: mauNet }); }); });
+            g.cat(mien(1), function () { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: '#CBD5E1' }); }); });
+            var vung = mien(1).map(lat);
+            g.cat(vung.map(bong), function () { ds.forEach(function (d) { g.duong(d.map(lat).map(bong), { rongCm: info.rongCm, nhon: info.nhon, mau: '#0F172A', doMo: 0.15 * Math.sin(th) }); }); });
+            g.cat(vung.map(function (p) { return chieu(g, p); }), function () {
+              ds.forEach(function (d) { g.duong(d.map(lat).map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, mau: Math.cos(th) >= 0 ? mauNet : '#EA580C', doMo: 0.9 }); });
             });
           }
           var dt = daiTruc(info, A, B), mG = trucHienTai(info, ts) ? mauTruc(Math.min(ts.truc || 0, info.truc.length - 1)) : '#C026D3';

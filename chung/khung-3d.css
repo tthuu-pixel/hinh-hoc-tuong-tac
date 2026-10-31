@@ -13,7 +13,7 @@ body.trang-mo-hinh { overflow: hidden; }
   touch-action: none;
 }
 .mh-canh canvas { display: block; width: 100%; height: 100%; outline: none; }
-.mh-nhan-lop { position: absolute; inset: 0; pointer-events: none; }
+.mh-nhan-lop { position: absolute; inset: 0; pointer-events: none; z-index: 1; }   /* chữ trên hình luôn nằm dưới ghi chú, thanh công cụ */
 
 /* Tiêu đề nổi góc trái */
 .mh-tieu-de {

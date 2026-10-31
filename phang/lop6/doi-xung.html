@@ -96,7 +96,25 @@ var KI = {
   // ---- Hình trong thực tế ----
   tim: { nhom: 'thucTe', ten: 'Trái tim', net: [(function () { var ds = []; for (var i = 0; i <= 120; i++) { var t = i / 120 * 2 * Math.PI; ds.push([16 * Math.pow(Math.sin(t), 3) / 8, (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 8 + 0.3]); } return ds; })()], truc: [90] },
   sao: { nhom: 'thucTe', ten: 'Ngôi sao năm cánh', net: [(function () { var ds = []; for (var i = 0; i <= 10; i++) { var a = (90 + i * 36) * Math.PI / 180, r = i % 2 ? 0.85 : 2.1; ds.push([r * Math.cos(a), r * Math.sin(a)]); } return ds; })()], truc: [90, 18, 162, 54, 126] },
-  buom: { nhom: 'thucTe', ten: 'Con bướm', net: [cucTa(function (t) { return 0.35 + 1.6 * Math.abs(Math.cos(t)) * (1 + 0.35 * Math.sin(t)); }), [[0, -1.3], [0, 1.2]], [[0, 1.2], [-0.5, 2]], [[0, 1.2], [0.5, 2]]], truc: [90] },
+  // Con bướm: hai cánh trên to, hai cánh dưới nhỏ (mỗi cánh có một đốm), thân, đầu, hai râu cong có chấm ở đầu
+  buom: { nhom: 'thucTe', ten: 'Con bướm', net: (function () {
+    // một cánh: đường cong khép kín đi ra từ gốc (gx, gy), quét góc a0 → a1 (độ), bán kính lớn nhất R, độ phình p
+    function canh(gx, gy, a0, a1, R, p) {
+      var ds = [];
+      for (var i = 0; i <= 60; i++) { var t = i / 60, a = (a0 + (a1 - a0) * t) * Math.PI / 180, r = R * Math.pow(Math.sin(Math.PI * t), p); ds.push([gx + r * Math.cos(a), gy + r * Math.sin(a)]); }
+      return ds;
+    }
+    function lat(ds) { return ds.map(function (q) { return [-q[0], q[1]]; }).reverse(); }
+    var phai = [
+      canh(0.12, 0.15, -8, 88, 2.5, 0.55),                 // cánh trên
+      canh(0.12, -0.05, -95, -18, 1.75, 0.6),              // cánh dưới
+      elip(0.32, 0.32, 24, 1.25, 1.05),                    // đốm cánh trên
+      elip(0.2, 0.2, 20, 0.75, -0.95),                     // đốm cánh dưới
+      [[0.08, 1.62], [0.22, 1.95], [0.42, 2.2], [0.66, 2.36]],   // râu
+      elip(0.11, 0.11, 16, 0.76, 2.38),                    // chấm đầu râu
+    ];
+    return phai.concat(phai.map(lat), [elip(0.17, 1.25, 40, 0, -0.15), elip(0.27, 0.27, 28, 0, 1.38)]);
+  })(), truc: [90] },
   hoa: { nhom: 'thucTe', ten: 'Bông hoa sáu cánh', net: [cucTa(function (t) { return 1.35 + 0.75 * Math.cos(6 * t); }, 240), elip(0.45, 0.45, 30)], truc: [0, 30, 60, 90, 120, 150], tam: true },
   bongTuyet: { nhom: 'thucTe', ten: 'Bông tuyết', net: [].concat.apply([], [0, 60, 120, 180, 240, 300].map(function (d) {
     return [xoay([[0, 0], [0, 2.4]], d), xoay([[-0.55, 1.95], [0, 1.4], [0.55, 1.95]], d), xoay([[-0.4, 1.05], [0, 0.7], [0.4, 1.05]], d)];

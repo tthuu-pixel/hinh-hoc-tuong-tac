@@ -85,6 +85,10 @@ KhongGian.tao({
       ghiChu: function (ts) { return 'Hai mặt đáy $ABCD$ và $A\'B\'C\'D\'$ là hình chữ nhật, diện tích $a\\cdot b = ' + soL(ts.a * ts.b) + '$ cm².'; },
     },
     {
+      id: 'matBen', nhan: 'Mặt bên', mau: M.matBen, mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
+      ghiChu: 'Hình hộp chữ nhật có <b>4 mặt bên</b> $ABB\'A\', BCC\'B\', CDD\'C\', DAA\'D\'$. Các mặt bên là <b>hình chữ nhật</b>; hai mặt bên đối diện thì bằng nhau.',
+    },
+    {
       id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
       mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
       ghiChu: 'Diện tích xung quanh là tổng diện tích <b>4 mặt bên</b>. Trải ra, 4 mặt bên ghép thành một hình chữ nhật có chiều dài bằng chu vi đáy.',

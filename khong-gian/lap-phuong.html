@@ -70,6 +70,10 @@ KhongGian.tao({
       ghiChu: 'Hai mặt đáy $ABCD$ và $A\'B\'C\'D\'$ là <b>hình vuông</b>.',
     },
     {
+      id: 'matBen', nhan: 'Mặt bên', mau: M.matBen, mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
+      ghiChu: 'Hình lập phương có <b>4 mặt bên</b> $ABB\'A\', BCC\'B\', CDD\'C\', DAA\'D\'$. Bốn mặt bên là <b>4 hình vuông bằng nhau</b>, cạnh $a$.',
+    },
+    {
       id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh,
       mat: ["ABB'A'", "BCC'B'", "CDD'C'", "DAA'D'"],
       ghiChu: function (ts) { return '<b>4 mặt bên</b> là 4 hình vuông cạnh $a$. Mỗi mặt có diện tích $a^2 = ' + soL(ts.a * ts.a) + '$ cm².'; },

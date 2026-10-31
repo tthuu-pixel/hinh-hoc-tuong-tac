@@ -83,6 +83,10 @@ KhongGian.tao({
       ghiChu: function (ts) { return 'Mặt đáy $ABC$ là tam giác đều cạnh $' + soL(ts.a) + '$ cm, diện tích $\\approx ' + soL(soDo(ts).sDay) + '$ cm².'; },
     },
     {
+      id: 'matBen', nhan: 'Mặt bên', mau: M.matBen, mat: ['SAB', 'SBC', 'SCA'],
+      ghiChu: 'Hình chóp tam giác đều có <b>3 mặt bên</b> $SAB, SBC, SCA$. Các mặt bên là <b>tam giác cân bằng nhau</b>, có chung đỉnh $S$.',
+    },
+    {
       id: 'xq', nhan: 'Diện tích xung quanh', mau: M.xungQuanh, mat: ['SAB', 'SBC', 'SCA'],
       ghiChu: 'Ba <b>mặt bên</b> là ba tam giác cân bằng nhau, mỗi tam giác có đáy $a$ và đường cao là trung đoạn $d$.',
     },

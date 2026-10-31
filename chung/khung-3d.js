@@ -24,6 +24,7 @@
     duongCaoDay: '#0891B2',
     chuVi: '#E0342F',
     matDay: '#7C3AED',
+    matBen: '#16A34A',      // xanh lá: nút Mặt bên
     xungQuanh: '#FF9800',   // cam vàng tươi, đậm (dễ phân biệt với nền xanh nhạt)
     toanPhan: '#EC4899',
     theTich: '#0D9488',

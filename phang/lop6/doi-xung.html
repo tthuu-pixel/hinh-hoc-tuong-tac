@@ -129,7 +129,7 @@ var DS_KI = Object.keys(KI);
 function tenKi(k) { return KI[k].ten || (KI[k].nhom === 'so' ? 'Chữ số ' + k : 'Chữ ' + k); }
 function thongTin(P, ts) {
   var k = KI[ts.ki], kieu = KIEU[k.nhom];
-  return { ten: tenKi(ts.ki), net: k.net, rongCm: kieu.rongCm, mauNet: kieu.mau, nhon: true, tam: k.tam ? [0, 0] : null, tamThu: [0, 0],
+  return { ten: tenKi(ts.ki), net: k.net, rongCm: kieu.rongCm, mauNet: kieu.mau, nhon: true, gioiHanNhon: kieu.gioiHan, tam: k.tam ? [0, 0] : null, tamThu: [0, 0],
     truc: k.truc.map(function (a) { var r = a * Math.PI / 180; return [[-3 * Math.cos(r), -3 * Math.sin(r)], [3 * Math.cos(r), 3 * Math.sin(r)]]; }) };
 }
 function dapAn(ts) { var k = KI[ts.ki], t = k.truc.length > 0, c = !!k.tam; return t && c ? 'caHai' : t ? 'truc' : c ? 'tam' : 'khong'; }

@@ -1397,7 +1397,7 @@
     function veHinh(g, info, o) {
       o = o || {};
       if (info.ds) g.daGiac(o.ds || info.ds, { to: o.to || info.to || '#93C5FD', doMoTo: o.doMo == null ? 0.55 : o.doMo, rong: o.rong == null ? 2.5 : o.rong, mauNet: o.mauNet, dut: o.dut });
-      if (info.net && !info.ds) (o.net || info.net).forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: o.mauNet || info.mauNet || '#2451C7', doMo: o.doMo == null ? 1 : o.doMo + 0.3 }); });
+      if (info.net && !info.ds) (o.net || info.net).forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, gioiHanNhon: info.gioiHanNhon, mau: o.mauNet || info.mauNet || '#2451C7', doMo: o.doMo == null ? 1 : o.doMo + 0.3 }); });
     }
     function daiTruc(info, A, B) {   // kéo dài trục vừa quá hình
       var ds = info.ds || [].concat.apply([], info.net || []), u = H.tru(B, A), L = Math.hypot(u[0], u[1]); u = [u[0] / L, u[1] / L];
@@ -1557,7 +1557,7 @@
               var m11 = b11 * i11 + b12 * i21, m12 = b11 * i12 + b12 * i22, m21 = b21 * i11 + b22 * i21, m22 = b21 * i12 + b22 * i22;
               return [m11, m21, m12, m22, o2[0] - m11 * o[0] - m12 * o[1], o2[1] - m21 * o[0] - m22 * o[1]];
             };
-            var veNet = function (mau, doMo) { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: mau, doMo: doMo }); }); };
+            var veNet = function (mau, doMo) { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, gioiHanNhon: info.gioiHanNhon, mau: mau, doMo: doMo }); }); };
             g.cat(mien(-1), function () { veNet(mauNet); });
             g.cat(mien(1), function () { veNet('#CBD5E1'); });
             g.bienDoi(afin(function (p) { return bong(lat(p)); }), function () { g.cat(mien(1), function () { veNet('#0F172A', 0.15 * Math.sin(th)); }); });
@@ -1582,8 +1582,8 @@
           } else {
             netCua(info).forEach(function (d) {
               var q3 = d.map(bien);
-              g.duong(q3.map(bong), { rongCm: info.rongCm, nhon: info.nhon, mau: '#0F172A', doMo: 0.12 * Math.sin(Math.PI * e) });
-              g.duong(q3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, mau: '#EA580C', doMo: 0.8 });
+              g.duong(q3.map(bong), { rongCm: info.rongCm, nhon: info.nhon, gioiHanNhon: info.gioiHanNhon, mau: '#0F172A', doMo: 0.12 * Math.sin(Math.PI * e) });
+              g.duong(q3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, gioiHanNhon: info.gioiHanNhon, mau: '#EA580C', doMo: 0.8 });
             });
           }
           var ghim = chieu(g, [O[0], O[1], cao]);

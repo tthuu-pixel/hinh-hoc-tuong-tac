@@ -1341,6 +1341,19 @@
       }
       return ra;
     }
+    // Các đoạn của đường nằm đúng trên trục (ví dụ chữ I, thân chữ T khi gấp theo trục dọc)
+    function doanTrenTruc(ds, A, B) {
+      var ra = [], cur = [], L = H.dai(A, B);
+      function tren(P) { return Math.abs(cheo(A, B, P)) / L < 1e-6; }
+      for (var i = 0; i < ds.length - 1; i++) {
+        if (tren(ds[i]) && tren(ds[i + 1])) { if (!cur.length) cur.push(ds[i]); cur.push(ds[i + 1]); }
+        else { if (cur.length > 1) ra.push(cur); cur = []; }
+      }
+      if (cur.length > 1) ra.push(cur);
+      return ra;
+    }
+    // Dời đường đi một khoảng k theo pháp tuyến của trục (k > 0: sang phía bị gấp)
+    function doiNgang(ds, A, B, k) { var L = H.dai(A, B), nx = -(B[1] - A[1]) / L, ny = (B[0] - A[0]) / L; return ds.map(function (p) { return [p[0] + nx * k, p[1] + ny * k]; }); }
     function doDai(ds) { var s = 0; for (var i = 0; i < ds.length - 1; i++) s += H.dai(ds[i], ds[i + 1]); return s; }
     // Lấy điểm ở tỉ lệ s (0..1) trên tập đường; kèm phần đường đã đi (để vẽ vết)
     function diemTren(dsDuong, s) {
@@ -1529,12 +1542,22 @@
             netCua(info).forEach(function (d) {
               catDuong(d, A, B, -1).forEach(function (x) { g.duong(x, { rongCm: info.rongCm, nhon: info.nhon, mau: info.mauNet || '#2451C7' }); });
               catDuong(d, A, B, 1).forEach(function (x) { g.duong(x, { rongCm: info.rongCm, nhon: info.nhon, mau: '#CBD5E1' }); });
+              // nét nằm trên trục: nửa bề dày bên này đứng yên, nửa bên kia (vết xám) sẽ lật qua trục
+              if (info.rongCm) doanTrenTruc(d, A, B).forEach(function (x) {
+                g.duong(doiNgang(x, A, B, -info.rongCm / 4), { rongCm: info.rongCm / 2, mau: info.mauNet || '#2451C7' });
+                g.duong(doiNgang(x, A, B, info.rongCm / 4), { rongCm: info.rongCm / 2, mau: '#CBD5E1' });
+              });
             });
             netCua(info).forEach(function (d) {
               catDuong(d, A, B, 1).forEach(function (x) {
                 var p3 = x.map(function (p) { return quanhTruc(p, A, B, th); });
                 g.duong(p3.map(bong), { rongCm: info.rongCm, nhon: info.nhon, mau: '#0F172A', doMo: 0.15 * Math.sin(th) });
                 g.duong(p3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, mau: Math.cos(th) >= 0 ? (info.mauNet || '#2451C7') : '#EA580C', doMo: 0.9 });
+              });
+              // nửa bề dày của nét nằm trên trục lật qua trục, trùng khít nửa còn lại
+              if (info.rongCm) doanTrenTruc(d, A, B).forEach(function (x) {
+                var p3 = doiNgang(x, A, B, info.rongCm / 4).map(function (p) { return quanhTruc(p, A, B, th); });
+                g.duong(p3.map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm / 2, mau: Math.cos(th) >= 0 ? (info.mauNet || '#2451C7') : '#EA580C', doMo: 0.9 });
               });
             });
           }

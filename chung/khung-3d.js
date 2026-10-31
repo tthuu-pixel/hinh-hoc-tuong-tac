@@ -1279,9 +1279,21 @@
         if (o.userData && o.userData.loai) o.material.linewidth = o.userData.loai === 'thay' ? nhip(o.userData.sang, 6, 5) : nhip(o.userData.sang, 4, 2);
       });
       if (!(TT.donVi && KIEU_V === 'nuoc')) {
+        // Một nút tô nhiều mặt (ví dụ diện tích xung quanh): mặt quay về phía người xem tô đậm, mặt nằm phía sau chỉ tô thật nhạt
+        // để màu không xuyên qua mặt trước (trông như tô cả mặt đáy). Nút chỉ có mặt khuất (ví dụ mặt đáy) vẫn hiện rõ như cũ.
+        var C0 = camera.position, matTen = {}, coTruoc = {};
+        DD.mat.forEach(function (m) { matTen[m.ten] = m; });
+        Object.keys(doiTuong.matMesh).forEach(function (k) {
+          var M = doiTuong.matMesh[k], id = M.userData.sang, m = matTen[k];
+          M.userData.truoc = !m || !m.phap || m.phap.dot(new T.Vector3().subVectors(C0, m.tam)) > 1e-6;
+          if (id && M.userData.truoc) coTruoc[id] = true;
+        });
         Object.keys(doiTuong.matMesh).forEach(function (k) {
           var M = doiTuong.matMesh[k], id = M.userData.sang;
-          if (id) M.material.opacity = nhip(id, mapSang[id].khoi ? 0.4 : 0.68, 0.14);   // nhịp nhẹ: không nhạt hẳn vào màu nền
+          if (!id) return;
+          var doMo = nhip(id, mapSang[id].khoi ? 0.4 : 0.68, 0.14);   // nhịp nhẹ: không nhạt hẳn vào màu nền
+          if (!M.userData.truoc && coTruoc[id] && !mapSang[id].khoi) doMo *= 0.2;
+          M.material.opacity = doMo;
         });
       }
       capNhatDonVi(now);

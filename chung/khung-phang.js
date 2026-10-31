@@ -240,6 +240,10 @@
       hoat: function (id) { return TT.hoat && TT.hoat.id === id ? TT.hoat.t : null; },
       tg: function (id) { return bat(id) ? (performance.now() - (TT.thoiDiemBat[id] || 0)) / 1000 : null; },
       raw: function (s) { out.push(s); },
+      // Vẽ ve() rồi biến đổi cả mảng bằng phép afin m = [a, b, c, d, e, f] (toạ độ điểm ảnh, như SVG matrix)
+      bienDoi: function (m, ve) {
+        out.push('<g transform="matrix(' + m.map(function (x) { return (+x).toFixed(5); }).join(' ') + ')">'); ve(); out.push('</g>');
+      },
       // Chỉ giữ phần hình vẽ trong ve() nằm bên trong đa giác ds (toạ độ hình), ví dụ nửa mặt phẳng của trục gấp
       cat: function (ds, ve) {
         var id = 'kpCat' + (++demCat);
@@ -1542,13 +1546,22 @@
               return ra;
             };
             var mauNet = info.mauNet || '#2451C7', ds = netCua(info), lat = function (p) { return quanhTruc(p, A, B, th); };
-            g.cat(mien(-1), function () { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: mauNet }); }); });
-            g.cat(mien(1), function () { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: '#CBD5E1' }); }); });
-            var vung = mien(1).map(lat);
-            g.cat(vung.map(bong), function () { ds.forEach(function (d) { g.duong(d.map(lat).map(bong), { rongCm: info.rongCm, nhon: info.nhon, mau: '#0F172A', doMo: 0.15 * Math.sin(th) }); }); });
-            g.cat(vung.map(function (p) { return chieu(g, p); }), function () {
-              ds.forEach(function (d) { g.duong(d.map(lat).map(function (p) { return chieu(g, p); }), { rongCm: info.rongCm, nhon: info.nhon, mau: Math.cos(th) >= 0 ? mauNet : '#EA580C', doMo: 0.9 }); });
-            });
+            // Phép lật nửa tờ giấy quanh trục rồi chiếu xuống màn hình, lấy gần đúng bằng một phép afin (khớp đúng tại 3 điểm gần hình).
+            // Vẽ nét như hình gốc rồi biến đổi cả mảng: đỉnh nhọn (chữ A, M…) giữ nguyên, không bị vạt góc.
+            var afin = function (F) {
+              var O = H.chan(info.tamThu || info.tam || [0, 0], A, B), U = H.cong(O, H.nhan(u, 2)), Nn = H.cong(O, H.nhan(nT, 2));
+              var px = function (p) { return [g.X(p), g.Y(p)]; }, o = px(O), pu = px(U), pn = px(Nn), o2 = px(F(O)), pu2 = px(F(U)), pn2 = px(F(Nn));
+              var a11 = pu[0] - o[0], a21 = pu[1] - o[1], a12 = pn[0] - o[0], a22 = pn[1] - o[1], det = a11 * a22 - a12 * a21;
+              var i11 = a22 / det, i12 = -a12 / det, i21 = -a21 / det, i22 = a11 / det;
+              var b11 = pu2[0] - o2[0], b21 = pu2[1] - o2[1], b12 = pn2[0] - o2[0], b22 = pn2[1] - o2[1];
+              var m11 = b11 * i11 + b12 * i21, m12 = b11 * i12 + b12 * i22, m21 = b21 * i11 + b22 * i21, m22 = b21 * i12 + b22 * i22;
+              return [m11, m21, m12, m22, o2[0] - m11 * o[0] - m12 * o[1], o2[1] - m21 * o[0] - m22 * o[1]];
+            };
+            var veNet = function (mau, doMo) { ds.forEach(function (d) { g.duong(d, { rongCm: info.rongCm, nhon: info.nhon, mau: mau, doMo: doMo }); }); };
+            g.cat(mien(-1), function () { veNet(mauNet); });
+            g.cat(mien(1), function () { veNet('#CBD5E1'); });
+            g.bienDoi(afin(function (p) { return bong(lat(p)); }), function () { g.cat(mien(1), function () { veNet('#0F172A', 0.15 * Math.sin(th)); }); });
+            g.bienDoi(afin(function (p) { return chieu(g, lat(p)); }), function () { g.cat(mien(1), function () { veNet(Math.cos(th) >= 0 ? mauNet : '#EA580C', 0.9); }); });
           }
           var dt = daiTruc(info, A, B), mG = trucHienTai(info, ts) ? mauTruc(Math.min(ts.truc || 0, info.truc.length - 1)) : '#C026D3';
           g.doan(dt[0], dt[1], { mau: mG, rong: 3, dut: '10 6' });

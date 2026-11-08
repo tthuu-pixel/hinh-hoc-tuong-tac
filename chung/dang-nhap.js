@@ -341,3 +341,54 @@
   window.DangNhap = DangNhap;
   window.GiaoDien = GiaoDien;
 })();
+
+/* =====================================================================
+   CON TRỎ CHUỘT XANH, TO HƠN MẶC ĐỊNH MỘT CHÚT
+   Mũi tên (thường), bàn tay chỉ (nút, đường link, chấm kéo được), bàn tay nắm (đang kéo).
+   Đổi thẳng các luật "cursor" trong tệp CSS của trang nên không phải sửa từng chỗ.
+   ===================================================================== */
+(function () {
+  'use strict';
+  var CO = 30;   // cỡ con trỏ (px); mặc định của Windows khoảng 20–24 px
+  function url(ve, hx, hy, duPhong) {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + CO + '" height="' + CO + '" viewBox="0 0 28 28">' + ve + '</svg>';
+    var k = CO / 28;
+    return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '") ' + Math.round(hx * k) + ' ' + Math.round(hy * k) + ', ' + duPhong;
+  }
+  var XANH = '#2563EB', VIEN = '#FFFFFF', DAM = '#1E3A8A';
+  var MUI_TEN = url('<path d="M5 2.5V22l5-4.6 3.5 7.6 3.6-1.6-3.5-7.5h7.1z" fill="' + XANH + '" stroke="' + VIEN + '" stroke-width="1.7" stroke-linejoin="round"/>', 5, 2.5, 'default');
+  // bàn tay: ghép các ngón (hình chữ nhật bo tròn) với lòng bàn tay; vẽ lớp viền trắng trước rồi tô xanh lên trên
+  function ghep(hinh, ke) {
+    return '<g fill="' + VIEN + '" stroke="' + VIEN + '" stroke-width="3" stroke-linejoin="round">' + hinh + '</g><g fill="' + XANH + '">' + hinh + '</g>' +
+      (ke ? '<path d="' + ke + '" stroke="' + DAM + '" stroke-width="1" stroke-linecap="round" opacity=".45"/>' : '');
+  }
+  function ngon(x, y, w, h) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (w / 2) + '"/>'; }
+  function long(x0, x1, y) { return '<path d="M' + x0 + ' ' + y + 'H' + x1 + 'v5.5c0 3.9-3 7-6.9 7h-1.6c-2.6 0-4.3-1.2-5.6-3l-3.9-5a1.9 1.9 0 0 1 3-2.3l1.2 1.5z"/>'; }
+  var TAY_CHI = url(ghep(ngon(9.2, 1.6, 4.2, 15) + ngon(13.2, 9.4, 3.9, 8) + ngon(16.9, 10.2, 3.9, 8) + ngon(20.6, 11.4, 3.6, 7) + long(9.2, 24.2, 14), 'M13.3 11.5v4M17 12.3v3.4M20.7 13.4v2.6'), 11.3, 1.8, 'pointer');
+  var TAY_MO = url(ghep(ngon(8.4, 5.4, 3.7, 12) + ngon(12.1, 3.4, 3.7, 13) + ngon(15.8, 4.6, 3.7, 12) + ngon(19.5, 7.2, 3.4, 10) + long(8.4, 22.9, 13.5), 'M12.2 8v6M15.9 7v7M19.6 9v5'), 15, 14, 'grab');
+  var TAY_NAM = url(ghep(ngon(8.4, 10.6, 3.7, 7) + ngon(12.1, 10, 3.7, 7.5) + ngon(15.8, 10.4, 3.7, 7) + ngon(19.5, 11.4, 3.4, 6.2) + long(8.4, 22.9, 14), 'M12.2 12v3M15.9 11.6v3.4M19.6 12.4v2.6'), 15, 15, 'grabbing');
+  var DOI = { 'default': MUI_TEN, 'auto': null, 'pointer': TAY_CHI, 'grab': TAY_MO, 'grabbing': TAY_NAM };
+  function doiLuat(ds) {
+    for (var i = 0; i < ds.length; i++) {
+      var r = ds[i];
+      if (r.cssRules) doiLuat(r.cssRules);   // @media…
+      if (r.style && r.style.cursor && DOI[r.style.cursor]) r.style.setProperty('cursor', DOI[r.style.cursor], r.style.getPropertyPriority('cursor'));
+    }
+  }
+  var daDoi = typeof WeakSet === 'function' ? new WeakSet() : null;
+  function doiTatCa() {
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var s = document.styleSheets[i]; if (daDoi && daDoi.has(s)) continue;
+      try { doiLuat(s.cssRules); if (daDoi) daDoi.add(s); } catch (e) { /* tệp CSS khác nguồn: bỏ qua */ }
+    }
+  }
+  var st = document.createElement('style');
+  st.textContent = 'html{cursor:' + MUI_TEN + '}' +
+    'a[href],button:not(:disabled),select,summary,label,[role=button],input[type=checkbox],input[type=radio],input[type=range],input[type=color],input[type=file],input[type=submit],input[type=button]{cursor:' + TAY_CHI + '}' +
+    'input:not([type]),input[type=text],input[type=password],input[type=search],input[type=number],input[type=email],input[type=tel],input[type=url],textarea,[contenteditable=true]{cursor:text}';
+  (document.head || document.documentElement).appendChild(st);
+  doiTatCa();
+  document.addEventListener('DOMContentLoaded', doiTatCa);
+  window.addEventListener('load', doiTatCa);
+  setTimeout(doiTatCa, 1500);   // KaTeX… nạp CSS sau
+})();

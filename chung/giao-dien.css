@@ -118,3 +118,62 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .thuong-hieu > span { display: none; }
   .nguoi-dung .huy-hieu { display: none; }
 }
+
+/* =====================================================================
+   TÔNG XANH ĐẬM (kiểu MathTikZ): nền xanh dương, thẻ trắng,
+   nút chính màu vàng, nút phụ viền trắng mờ trên nền xanh.
+   Trang mô hình giữ khung hình sáng để nhìn hình rõ; chỉ thanh trên cùng đổi màu.
+   ===================================================================== */
+:root {
+  --xanh-1: #1C3A9A; --xanh-2: #2349B8; --xanh-3: #2B57CC;
+  --vang: #FCD34D; --vang-dam: #F5C02A; --chu-vang: #1E2A5A;
+  --kinh: rgba(255, 255, 255, .10); --kinh-vien: rgba(255, 255, 255, .34);
+  --chinh: #2349B8; --chinh-dam: #1C3A9A;
+}
+/* nền trang (trừ trang mô hình) */
+body:not(.trang-mo-hinh) {
+  background:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520' fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1.6'%3E%3Cpath d='M120 40 L40 200 H200 Z M120 40 V200'/%3E%3Ccircle cx='400' cy='120' r='70'/%3E%3Cpath d='M330 120 H470 M400 50 V190' stroke-dasharray='6 6'/%3E%3Cpath d='M300 330 L380 290 L460 330 L460 430 L380 470 L300 430 Z M300 330 L380 370 L460 330 M380 370 V470'/%3E%3Cpath d='M60 330 h120 v120 h-120 z M60 330 l40 -30 h120 l-40 30 M220 300 v120 l-40 30' /%3E%3C/svg%3E") 0 0 / 520px 520px fixed,
+    linear-gradient(150deg, var(--xanh-1) 0%, var(--xanh-2) 50%, var(--xanh-3) 100%) fixed;
+  color: var(--chu);
+}
+/* thanh trên cùng: xanh đậm, chữ trắng */
+body .thanh-tren { background: rgba(20, 44, 130, .92); border-bottom: 1px solid rgba(255, 255, 255, .14); color: #fff; }
+body .thanh-tren .thuong-hieu { color: #fff; }
+body .thanh-tren .thuong-hieu small { color: rgba(255, 255, 255, .78); }
+body .thanh-tren .logo rect { fill: #fff; }
+body .thanh-tren .logo path { stroke: #2349B8; }
+body .thanh-tren .logo path:first-of-type { fill: #2349B8; }
+body .nguoi-dung { color: rgba(255, 255, 255, .8); }
+body .nguoi-dung b { color: #fff; }
+body .thanh-tren .huy-hieu { background: var(--vang); color: var(--chu-vang); }
+/* nút trên nền xanh: viền trắng mờ */
+body .thanh-tren .nut, body:not(.trang-mo-hinh) .nen-xanh .nut:not(.chinh), body .loc button {
+  background: var(--kinh); border-color: var(--kinh-vien); color: #fff;
+}
+body .thanh-tren .nut:hover, body .loc button:hover { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .55); }
+/* nút chính: vàng */
+body .nut.chinh { background: var(--vang); border-color: var(--vang); color: var(--chu-vang); }
+body .nut.chinh:hover { background: var(--vang-dam); border-color: var(--vang-dam); }
+body .loc button.bat { background: var(--vang); border-color: var(--vang); color: var(--chu-vang); }
+body .loc .ngan { background: rgba(255, 255, 255, .3); }
+/* chữ đặt thẳng trên nền xanh */
+body:not(.trang-mo-hinh) .noi-dung > .dau h1, body:not(.trang-mo-hinh) .nhom-lop h2, body:not(.trang-mo-hinh) .noi-dung > h1 { color: #fff; }
+body:not(.trang-mo-hinh) .noi-dung > .dau p, body:not(.trang-mo-hinh) .nhom-lop h2 small, body:not(.trang-mo-hinh) .chan, body:not(.trang-mo-hinh) .trong { color: rgba(255, 255, 255, .82); }
+body:not(.trang-mo-hinh) .chan a { color: var(--vang); }
+/* thẻ trắng nổi rõ trên nền xanh */
+body:not(.trang-mo-hinh) .the, body:not(.trang-mo-hinh) .o-mh { border-color: rgba(255, 255, 255, .7); box-shadow: 0 10px 30px rgba(10, 25, 80, .25); }
+body:not(.trang-mo-hinh) a.o-mh:hover { box-shadow: 0 16px 38px rgba(10, 25, 80, .35); border-color: var(--vang); }
+body .moi-ks { background: #fff; }
+body .moi-ks .bt { background: var(--xanh-2); }
+/* ô nhập: viền xanh khi gõ */
+body .o-nhap:focus { border-color: var(--xanh-3); box-shadow: 0 0 0 3px rgba(252, 211, 77, .45); }
+/* trang mô hình: nút "Thư viện" và tiêu đề trên thanh xanh */
+body.trang-mo-hinh .thanh-tren .nut { background: var(--kinh); border-color: var(--kinh-vien); color: #fff; }
+/* trang đăng nhập: hình trang trí bên phải thành nét trắng mờ */
+body .ben-phai .trang-tri { stroke: #fff; opacity: .13; }
+body .gioi-thieu { background: linear-gradient(150deg, rgba(20, 44, 130, .55), rgba(20, 44, 130, .15)); }
+/* tiêu đề, mô tả đầu trang (quản trị, kết quả khảo sát…) trên nền xanh */
+body:not(.trang-mo-hinh) .noi-dung > .dau h1, body:not(.trang-mo-hinh) .noi-dung > .dau > div > h1 { color: #fff; }
+body:not(.trang-mo-hinh) .noi-dung > .mo-ta, body:not(.trang-mo-hinh) .noi-dung > .dau .mo-ta { color: rgba(255, 255, 255, .82); }
+body:not(.trang-mo-hinh) .noi-dung > .dau .nut-hang .nut:not(.chinh) { background: var(--kinh); border-color: var(--kinh-vien); color: #fff; }
